@@ -1,0 +1,24 @@
+{
+ "Files" : [
+  {
+   "Path" : "F:/Github/gowin/20kbase/src/blink_led.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "F:/Github/gowin/20kbase/src/WS2812B.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "F:/Github/gowin/20kbase/src/WS2812B_bit.v",
+   "Type" : "verilog"
+  }
+ ],
+ "IncludePath" : [
+
+ ],
+ "LoopLimit" : 2000,
+ "ResultFile" : "F:/Github/gowin/20kbase/impl/temp/rtl_parser.result",
+ "Top" : "",
+ "VerilogStd" : "verilog_2001",
+ "VhdlStd" : "vhdl_93"
+}

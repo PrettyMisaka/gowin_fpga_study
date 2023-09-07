@@ -1,0 +1,18 @@
+[
+ {
+  "InstFile" : "F:/Github/gowin/20kbase/src/blink_led.v",
+  "InstLine" : 1,
+  "InstName" : "led",
+  "ModuleFile" : "F:/Github/gowin/20kbase/src/blink_led.v",
+  "ModuleLine" : 1,
+  "ModuleName" : "led"
+ },
+ {
+  "InstFile" : "F:/Github/gowin/20kbase/src/WS2812B.v",
+  "InstLine" : 1,
+  "InstName" : "WS2812B",
+  "ModuleFile" : "F:/Github/gowin/20kbase/src/WS2812B.v",
+  "ModuleLine" : 1,
+  "ModuleName" : "WS2812B"
+ }
+]
