@@ -1,15 +1,19 @@
 {
  "Files" : [
   {
-   "Path" : "F:/Github/gowin/20kbase/src/blink_led.v",
-   "Type" : "verilog"
-  },
-  {
    "Path" : "F:/Github/gowin/20kbase/src/WS2812B.v",
    "Type" : "verilog"
   },
   {
    "Path" : "F:/Github/gowin/20kbase/src/WS2812B_bit.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "F:/Github/gowin/20kbase/src/blink_led.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "F:/Github/gowin/20kbase/src/WS2812B_test.v",
    "Type" : "verilog"
   }
  ],

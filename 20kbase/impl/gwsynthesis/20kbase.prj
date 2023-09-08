@@ -4,7 +4,10 @@
     <Version>beta</Version>
     <Device id="GW2A-18C" package="PBGA256" speed="8" partNumber="GW2A-LV18PG256C8/I7"/>
     <FileList>
+        <File path="F:\Github\gowin\20kbase\src\WS2812B.v" type="verilog"/>
+        <File path="F:\Github\gowin\20kbase\src\WS2812B_bit.v" type="verilog"/>
         <File path="F:\Github\gowin\20kbase\src\blink_led.v" type="verilog"/>
+        <File path="F:\Github\gowin\20kbase\src\WS2812B_test.v" type="verilog"/>
     </FileList>
     <OptionList>
         <Option type="disable_insert_pad" value="0"/>
