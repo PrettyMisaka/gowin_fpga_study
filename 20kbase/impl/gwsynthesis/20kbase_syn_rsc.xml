@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Module name="WS2812B_test" Register="7" Lut="9">
-    <SubModule name="WS2812B0" Register="37" Lut="65">
-        <SubModule name="WS2812B_bit1" Register="10" Lut="25"/>
-    </SubModule>
-</Module>
