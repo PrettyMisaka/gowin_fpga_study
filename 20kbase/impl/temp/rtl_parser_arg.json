@@ -9,11 +9,11 @@
    "Type" : "verilog"
   },
   {
-   "Path" : "F:/Github/gowin/20kbase/src/blink_led.v",
+   "Path" : "F:/Github/gowin/20kbase/src/WS2812B_test.v",
    "Type" : "verilog"
   },
   {
-   "Path" : "F:/Github/gowin/20kbase/src/WS2812B_test.v",
+   "Path" : "F:/Github/gowin/20kbase/src/blink_led.v",
    "Type" : "verilog"
   }
  ],

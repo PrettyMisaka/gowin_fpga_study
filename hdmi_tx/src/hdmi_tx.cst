@@ -1,0 +1,27 @@
+//Copyright (C)2014-2023 Gowin Semiconductor Corporation.
+//All rights reserved. 
+//File Title: Physical Constraints file
+//GOWIN Version: 1.9.8.11 Education
+//Part Number: GW2A-LV18PG256C8/I7
+//Device: GW2A-18
+//Device Version: C
+//Created Time: Sat 09 09 21:36:23 2023
+
+IO_LOC "O_tmds_clk_p_o" G16,H15;
+IO_PORT "O_tmds_clk_p_o" IO_TYPE=LVDS25 PULL_MODE=NONE DRIVE=3.5 BANK_VCCIO=2.5;
+IO_LOC "O_tmds_data_p_o[0]" H14,H16;
+IO_PORT "O_tmds_data_p_o[0]" IO_TYPE=LVDS25 PULL_MODE=NONE DRIVE=3.5 BANK_VCCIO=2.5;
+IO_LOC "O_tmds_data_p_o[1]" J15,K16;
+IO_PORT "O_tmds_data_p_o[1]" IO_TYPE=LVDS25 PULL_MODE=NONE DRIVE=3.5 BANK_VCCIO=2.5;
+IO_LOC "O_tmds_data_p_o[2]" K14,K15;
+IO_PORT "O_tmds_data_p_o[2]" PULL_MODE=NONE DRIVE=3.5 BANK_VCCIO=2.5;
+IO_LOC "pll_lock" N14;
+IO_PORT "pll_lock" IO_TYPE=LVCMOS25 PULL_MODE=UP DRIVE=8 BANK_VCCIO=2.5;
+IO_LOC "busy" N16;
+IO_PORT "busy" IO_TYPE=LVCMOS25 PULL_MODE=UP DRIVE=8 BANK_VCCIO=2.5;
+IO_LOC "rst" T5;
+IO_PORT "rst" PULL_MODE=UP BANK_VCCIO=1.8;
+IO_LOC "en" C7;
+IO_PORT "en" IO_TYPE=LVCMOS18 PULL_MODE=UP BANK_VCCIO=1.8;
+IO_LOC "clk" H11;
+IO_PORT "clk" IO_TYPE=LVCMOS25 PULL_MODE=UP BANK_VCCIO=2.5;
