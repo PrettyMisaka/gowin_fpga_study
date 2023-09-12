@@ -70,7 +70,7 @@ end
 
 assign  running = (run_cnt < 32'd14_000_000) ? 1'b1 : 1'b0;
 
-assign  O_led[0] = running;
+assign  O_led[0] = pll_lock;
 assign  O_led[1] = running;
 assign  O_led[2] = ~I_rst_n;
 assign  O_led[3] = ~I_rst_n;
@@ -136,7 +136,7 @@ assign hdmi4_rst_n = I_rst_n & pll_lock;
 // defparam u_clkdiv.GSREN="false";
 
 Gowin_CLKDIV clkdiv0(
-    .clkout(pix_clk), //output clkout
+    .clkout(pix_clk), //output clkout 486MHZ
     .hclkin(serial_clk), //input hclkin
     .resetn(hdmi4_rst_n) //input resetn
 );
