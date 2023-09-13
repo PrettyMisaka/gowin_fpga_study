@@ -1,6 +1,7 @@
 module dvi_test (
     input clk,
     input en,
+    input rst,
     output wire busy,
     output wire pll_lock,
     output O_tmds_clk_p_o,
@@ -22,23 +23,23 @@ reg [23:0] color = WHITE;
 reg [2:0] color_cnt;
 initial color_cnt = 3'd0;
 
-reg  busy_before;
-wire busy_falling_flag;
-assign busy_falling_flag = busy_before&(~busy);
-// wire hdmi_en;
-// assign hdmi_en = ~en;
+wire hdmi_en;
+assign hdmi_en = 1;
 
 wire pxl_clk;
 wire serial_clk;
 wire O_de, O_hs, O_vs;
-wire rst;
-assign rst = 1;
-
-always@(negedge busy)begin
-    // if(busy_falling_flag) begin
-        color_cnt <= color_cnt + 3'd1;
-    // end
-    // busy_before <= busy;
+// wire rst;
+// assign rst = 1;
+// always@(negedge busy or negedge en)begin
+//     if(en) begin
+//         color_cnt <= 0;
+//     end
+//     else begin
+//     end
+// end
+always@(posedge pxl_clk)begin
+    color_cnt <= color_cnt + 3'd1;
     case(color_cnt)
         3'd0: begin color <= WHITE	    ;  end
         3'd1: begin color <= YELLOW	    ;  end
@@ -54,7 +55,7 @@ end
 my_testpattern my_testpattern0(
     .I_pxl_clk   (pxl_clk            ),//pixel clock
     .I_rst_n     (rst                ),//low active 
-    .I_en        (en                 ),             //800x600    //1024x768   //1280x720    
+    .I_en        (hdmi_en                 ),             //800x600    //1024x768   //1280x720    
     .I_h_total   (12'd1650           ),//hor total time  // 12'd1056  // 12'd1344  // 12'd1650  
     .I_h_sync    (12'd40             ),//hor sync time   // 12'd128   // 12'd136   // 12'd40    
     .I_h_bporch  (12'd220            ),//hor back porch  // 12'd88    // 12'd160   // 12'd220   
@@ -68,6 +69,7 @@ my_testpattern my_testpattern0(
     .O_hs        (O_hs               ),//������
     .O_vs        (O_vs               ) 
 );
+defparam my_testpattern0.AHEAD_CLK = 12'd0;
 
 DVI_TX_Top your_instance_name(
     .I_rst_n            (rst        ), //input I_rst_n
