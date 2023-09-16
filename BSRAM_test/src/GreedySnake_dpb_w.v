@@ -4,7 +4,7 @@ module GreedySnake_dpb_w(
     input [1:0] forward,
     input [3:0] mode,
     input [7:0] snake_point_pos,
-    output busy,
+    output reg busy,
 // Gowin_DPB channel A
     output reg i_a_clk_en,
     output reg i_a_data_en,
@@ -33,9 +33,9 @@ localparam
 localparam NULL_ADDRESS = 11'd0;
 localparam HEAD_ADDRESS = 11'd4;
 localparam
-    MODE_UPDATE_POS     = 4'd0,
-    MODE_RESET_SNAKE    = 4'd1;
-localparam HEAD_POSITION_XY = (8'd8)<<4+8'd8;
+    MODE_UPDATE_POS     = 4'd1,
+    MODE_RESET_SNAKE    = 4'd0;
+localparam HEAD_POSITION_XY = 8'h44;
 
 reg [10:0]   list_head_addr;
 reg [10:0]   list_tmp0_addr;
@@ -78,6 +78,7 @@ always @(posedge clk) begin
                         state <= BSRAM_UPDATE_POS_CMP;
                         i_forward <= forward;
                         list_now_addr <= list_head_addr;
+                        busy <= 1;
                     end
                     MODE_RESET_SNAKE:begin
                         state <= BSRAM_RESET_SNAKE;
@@ -86,6 +87,7 @@ always @(posedge clk) begin
                         list_head_addr <= HEAD_ADDRESS;
                         list_now_addr  <= HEAD_ADDRESS;
                         snake_head_pos <= HEAD_POSITION_XY;
+                        busy <= 1;
                     end
                     default: begin
                         state <= BSRAM_IDLE;
@@ -123,16 +125,16 @@ always @(posedge clk) begin
                     i_a_address <= NULL_ADDRESS;
                     case(i_forward)
                         FORWARD_X_UP:begin
-                            snake_next_head_pos <= snake_head_pos + 8'd00010000;
+                            snake_next_head_pos <= snake_head_pos + 8'b00010000;
                         end
                         FORWARD_X_DOWN:begin
-                            snake_next_head_pos <= snake_head_pos - 8'd00010000;
+                            snake_next_head_pos <= snake_head_pos - 8'b00010000;
                         end
                         FORWARD_Y_UP:begin
-                            snake_next_head_pos <= snake_head_pos + 8'd00000001;
+                            snake_next_head_pos <= snake_head_pos + 8'b00000001;
                         end
                         FORWARD_Y_DOWN:begin
-                            snake_next_head_pos <= snake_head_pos - 8'd00000001;
+                            snake_next_head_pos <= snake_head_pos - 8'b00000001;
                         end
                     endcase
                 end
@@ -156,7 +158,8 @@ always @(posedge clk) begin
         end
         BSRAM_UPDATE_POS_ADD_RD:begin
             list_length <= list_length + 11'd1;
-            list_tmp0_addr <= (list_length + 11'd1)<<4 + HEAD_ADDRESS;
+            list_tmp0_addr <= (list_length + 11'd1)<<2;
+            state <= BSRAM_UPDATE_POS_WRT;
         end
         BSRAM_UPDATE_POS_UPD_RD:begin
             i_a_wr_en <= 0;
@@ -191,7 +194,7 @@ always @(posedge clk) begin
                     list_now_addr <= {o_a_data[2:0],8'd0};
                 end
                 4'd6:begin
-                    step_cnt <= 4'd2;
+                    step_cnt <= 4'd0;
                     i_a_address <= NULL_ADDRESS;
                     list_now_addr <= list_now_addr + o_a_data;
                     if((list_now_addr + o_a_data) == NULL_ADDRESS)begin
@@ -206,7 +209,7 @@ always @(posedge clk) begin
                 4'd0:begin
                     i_a_address <= list_tmp1_addr;
                     step_cnt <= step_cnt + 4'd1;
-                    i_a_data <=  snake_next_head_pos;
+                    // i_a_data <=  snake_next_head_pos;
                 end
                 4'd1:begin
                     step_cnt <= step_cnt + 4'd1;
@@ -259,7 +262,7 @@ always @(posedge clk) begin
                 4'd0:begin
                     list_length <= list_length + 11'd1;
                     i_a_address <= list_now_addr;
-                    i_a_data <=  snake_head_pos - wr_cnt<<4;
+                    i_a_data <=  snake_head_pos - (wr_cnt<<4);
                     step_cnt <= step_cnt + 4'd1;
                 end
                 4'd1:begin
@@ -286,7 +289,7 @@ always @(posedge clk) begin
                         i_a_data <= NULL_ADDRESS;
                     end
                     else begin
-                        state <= BSRAM_WRITE;
+                        state <= BSRAM_RESET_SNAKE;
                         wr_cnt <= wr_cnt + 11'd1;
                         list_now_addr <= list_now_addr + ADDRESS_STEP_N;
                         i_a_data <= list_now_addr[7:0] + ADDRESS_STEP_N;
@@ -295,6 +298,7 @@ always @(posedge clk) begin
             endcase
         end
         BSRAM_FINISH:begin
+            i_a_wr_en <= 0;
             busy <= 0;
             state <= BSRAM_IDLE;
         end

@@ -1,29 +1,29 @@
+`timescale 1ps/1ps
 module GreedySnake_Top(
     input clk
 );
 
+localparam
+    FORWARD_X_UP    = 2'b00,
+    FORWARD_X_DOWN  = 2'b01,
+    FORWARD_Y_UP    = 2'b10,
+    FORWARD_Y_DOWN  = 2'b11;
 /****************** dpb reg ********************/
-reg i_a_clk_en, i_a_data_en, i_a_wr_en;
-reg [7:0]   i_a_data;
+wire i_a_clk_en, i_a_data_en, i_a_wr_en;
+wire [7:0]   i_a_data;
 wire [7:0]   o_a_data;
-reg [10:0]  i_a_address;
+wire [10:0]  i_a_address;
 
-reg i_b_clk_en, i_b_data_en, i_b_wr_en;
-reg [7:0]   i_b_data;
+wire i_b_clk_en, i_b_data_en, i_b_wr_en;
+wire [7:0]   i_b_data;
 wire [7:0]   o_b_data;
-reg [10:0]  i_b_address;
+wire [10:0]  i_b_address;
 /****************** snake reg ********************/
-reg en, busy;
+reg en;
+wire busy;
 reg [1:0] forward;
 reg [3:0] mode;
 reg [7:0] snake_point_pos;
-
-
-initial begin
-    i_a_clk_en     <= 1;
-    i_a_data_en    <= 1;
-    i_a_wr_en      <= 0;
-end
 
 GreedySnake_dpb_w GreedySnake_dpb_w0(
     .clk            (clk),
