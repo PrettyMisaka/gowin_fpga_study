@@ -11,7 +11,10 @@ module GreedySnake_dpb_w(
     output reg i_a_wr_en,
     input       [7:0]   o_a_data,
     output reg  [7:0]   i_a_data,
-    output reg  [10:0]  i_a_address
+    output reg  [10:0]  i_a_address,
+// Gowin_DPB channel B DATA
+    output wire [10:0] list_length_wire,
+    output wire [10:0] list_head_addr_wire
 );
 
 parameter ADDRESS_STEP_N = 11'd4;
@@ -50,6 +53,9 @@ reg [10:0] wr_cnt;
 reg [1:0]  i_forward;
 reg [7:0]  snake_head_pos;
 reg [7:0]  snake_next_head_pos;
+
+assign list_length_wire = list_length;
+assign list_head_addr_wire = list_head_addr;
 
 initial begin
     list_head_addr <= HEAD_ADDRESS;

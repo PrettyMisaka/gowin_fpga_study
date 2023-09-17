@@ -24,6 +24,13 @@ wire busy;
 reg [1:0] forward;
 reg [3:0] mode;
 reg [7:0] snake_point_pos;
+/******************** CHAN A AND B WIRE ********************/
+wire [10:0] list_length_wire;
+wire [10:0] list_head_addr_wire;
+/***************CHAN B AND HDMI_TX*************/
+wire [15:0] snake_map_arr [0:15];
+wire hdmi_tx_en;
+wire game_over_flag;
 
 GreedySnake_dpb_w GreedySnake_dpb_w0(
     .clk            (clk),
@@ -38,7 +45,30 @@ GreedySnake_dpb_w GreedySnake_dpb_w0(
     .i_a_wr_en      (i_a_wr_en),
     .o_a_data       (o_a_data),
     .i_a_data       (i_a_data),
-    .i_a_address    (i_a_address)
+    .i_a_address    (i_a_address),
+// Gowin_DPB channel B DATA
+    .list_length_wire       (list_length_wire),
+    .list_head_addr_wire    (list_head_addr_wire)
+);
+
+GreedySnake_dpb_r GreedySnake_dpb_r0(
+    .clk        (clk),
+    .en         (dpb_r_en),
+    .busy        (dpb_r_busy),
+// Gowin_DPB channel A receive
+    .list_length(list_length_wire),
+    .list_head_addr(list_head_addr_wire),
+// Gowin_DPB channel B
+    .i_b_clk_en (i_b_clk_en ),
+    .i_b_data_en(i_b_data_en),
+    .i_b_wr_en  (i_b_wr_en  ),
+    .o_b_data   (o_b_data   ),
+    .i_b_data   (i_b_data   ),
+    .i_b_address(i_b_address),
+//  HDMI_TX DATA
+    .snake_map_arr  (snake_map_arr ) ,
+    .hdmi_tx_en     (hdmi_tx_en    ) ,
+    .game_over_flag (game_over_flag)
 );
 
 Gowin_DPB Gowin_DPB0(
