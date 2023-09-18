@@ -7,7 +7,8 @@ module GreedySnake_key_ctrl(
     input key_y_down,
 
     output reg en,
-    output wire [1:0]forward
+    output wire [1:0]forward,
+    output reg [3:0] mode
 );
 
 parameter CLK_1S_DELAY_CNT = 32'd27_000_000;
@@ -17,6 +18,9 @@ localparam
     FORWARD_X_DOWN  = 2'b01,
     FORWARD_Y_UP    = 2'b10,
     FORWARD_Y_DOWN  = 2'b11;
+localparam
+    MODE_UPDATE_POS     = 4'd1,
+    MODE_RESET_SNAKE    = 4'd0;
 
 reg [31:0]  clk_cnt;
 reg [1:0]   last_forward_reg;
@@ -31,6 +35,7 @@ initial begin
     last_forward_reg <= FORWARD_X_UP;
     i_forward <= FORWARD_X_UP;
 end
+
 
 always@(posedge clk or negedge rst)begin
     if(!rst)begin
@@ -91,17 +96,20 @@ always@(posedge clk or negedge rst)begin
         last_forward_reg <= FORWARD_X_UP;
         clk_cnt <= 32'd0;
         en <= 0;
+        mode <= MODE_RESET_SNAKE;
     end
     else begin
         if(clk_cnt == CLK_1S_DELAY_CNT - 32'd1)begin
             clk_cnt <= 32'd0;
             en <= 1;
             last_forward_reg <= forward;
+            mode <= MODE_UPDATE_POS;
         end
         else begin
             clk_cnt <= clk_cnt + 32'd1;
             en <= 0;
             last_forward_reg <= last_forward_reg;
+            mode <= MODE_UPDATE_POS;
         end
     end
 end

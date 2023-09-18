@@ -13,15 +13,31 @@ module GreedySnake_dpb_r(
     output reg  [7:0]   i_b_data,
     output reg  [10:0]  i_b_address,
 //  HDMI_TX DATA
-    output reg [15:0] snake_map_arr [0:15],
+    output wire [15:0] snake_map_arr_0 ,
+    output wire [15:0] snake_map_arr_1 ,
+    output wire [15:0] snake_map_arr_2 ,
+    output wire [15:0] snake_map_arr_3 ,
+    output wire [15:0] snake_map_arr_4 ,
+    output wire [15:0] snake_map_arr_5 ,
+    output wire [15:0] snake_map_arr_6 ,
+    output wire [15:0] snake_map_arr_7 ,
+    output wire [15:0] snake_map_arr_8 ,
+    output wire [15:0] snake_map_arr_9 ,
+    output wire [15:0] snake_map_arr_10,
+    output wire [15:0] snake_map_arr_11,
+    output wire [15:0] snake_map_arr_12,
+    output wire [15:0] snake_map_arr_13,
+    output wire [15:0] snake_map_arr_14,
+    output wire [15:0] snake_map_arr_15,
     output reg hdmi_tx_en,
     output reg game_over_flag
 );
 
 parameter ADDRESS_STEP_N = 11'd4;
 parameter HDMI_TX_EN_DELAY_CLK = 4'd5;
+parameter DATA_BEGIN_ADDRESS = 11'd4;
 
-localparam DATA_BEGIN_ADDRESS = 11'd4;
+localparam HEAD_ADDRESS = 11'd4;
 localparam NULL_ADDRESS = 11'd0;
 localparam
     SNAKE_DPB_CHANB_IDLE    = 4'd0,
@@ -41,26 +57,58 @@ reg [7:0]  snake_head_pos;
 reg [7:0]  snake_body_pos_x;
 reg [7:0]  snake_body_pos_y;
 
+reg [15:0] snake_map_arr [0:15];
+
+assign snake_map_arr_0  = snake_map_arr[0 ];
+assign snake_map_arr_1  = snake_map_arr[1 ];
+assign snake_map_arr_2  = snake_map_arr[2 ];
+assign snake_map_arr_3  = snake_map_arr[3 ];
+assign snake_map_arr_4  = snake_map_arr[4 ];
+assign snake_map_arr_5  = snake_map_arr[5 ];
+assign snake_map_arr_6  = snake_map_arr[6 ];
+assign snake_map_arr_7  = snake_map_arr[7 ];
+assign snake_map_arr_8  = snake_map_arr[8 ];
+assign snake_map_arr_9  = snake_map_arr[9 ];
+assign snake_map_arr_10 = snake_map_arr[10];
+assign snake_map_arr_11 = snake_map_arr[11];
+assign snake_map_arr_12 = snake_map_arr[12];
+assign snake_map_arr_13 = snake_map_arr[13];
+assign snake_map_arr_14 = snake_map_arr[14];
+assign snake_map_arr_15 = snake_map_arr[15];
+
 initial begin
     list_now_addr  <= HEAD_ADDRESS;
-    list_tmp0_addr <= 11'd0;
-    list_tmp1_addr <= 11'd0;
     state          <= SNAKE_DPB_CHANB_IDLE;
     step_cnt       <= 0;
     wr_cnt         <= 0;
-    i_a_clk_en     <= 1;
-    i_a_data_en    <= 1;
-    i_a_wr_en      <= 0;
+    i_b_clk_en     <= 1;
+    i_b_data_en    <= 1;
+    i_b_wr_en      <= 0;
     hdmi_tx_en     <= 0;
     busy           <= 0;
     game_over_flag <= 0;
-    snake_map_arr  <= '{8'h00, 8'h00, 8'h00, 8'h00,
-                        8'h00, 8'h00, 8'h00, 8'h00,
-                        8'h00, 8'h00, 8'h00, 8'h00,
-                        8'h00, 8'h00, 8'h00, 8'h00};
+    snake_map_arr[0 ] <= 8'h00;
+    snake_map_arr[1 ] <= 8'h00;
+    snake_map_arr[2 ] <= 8'h00;
+    snake_map_arr[3 ] <= 8'h00;
+    snake_map_arr[4 ] <= 8'h00;
+    snake_map_arr[5 ] <= 8'h00;
+    snake_map_arr[6 ] <= 8'h00;
+    snake_map_arr[7 ] <= 8'h00;
+    snake_map_arr[8 ] <= 8'h00;
+    snake_map_arr[9 ] <= 8'h00;
+    snake_map_arr[10] <= 8'h00;
+    snake_map_arr[11] <= 8'h00;
+    snake_map_arr[12] <= 8'h00;
+    snake_map_arr[13] <= 8'h00;
+    snake_map_arr[14] <= 8'h00;
+    snake_map_arr[15] <= 8'h00;
 end
 
 always@(posedge clk)begin
+    i_b_clk_en     <= 1;
+    i_b_data_en    <= 1;
+    i_b_data       <= 8'd0;
     case(state)
     SNAKE_DPB_CHANB_IDLE:begin
         step_cnt       <= 0;
@@ -76,10 +124,22 @@ always@(posedge clk)begin
         end
     end
     SNAKE_DPB_CHANB_CL_CACHE:begin
-        snake_map_arr  <= '{8'h00, 8'h00, 8'h00, 8'h00,
-                            8'h00, 8'h00, 8'h00, 8'h00,
-                            8'h00, 8'h00, 8'h00, 8'h00,
-                            8'h00, 8'h00, 8'h00, 8'h00};
+        snake_map_arr[0 ] <= 8'h00;
+        snake_map_arr[1 ] <= 8'h00;
+        snake_map_arr[2 ] <= 8'h00;
+        snake_map_arr[3 ] <= 8'h00;
+        snake_map_arr[4 ] <= 8'h00;
+        snake_map_arr[5 ] <= 8'h00;
+        snake_map_arr[6 ] <= 8'h00;
+        snake_map_arr[7 ] <= 8'h00;
+        snake_map_arr[8 ] <= 8'h00;
+        snake_map_arr[9 ] <= 8'h00;
+        snake_map_arr[10] <= 8'h00;
+        snake_map_arr[11] <= 8'h00;
+        snake_map_arr[12] <= 8'h00;
+        snake_map_arr[13] <= 8'h00;
+        snake_map_arr[14] <= 8'h00;
+        snake_map_arr[15] <= 8'h00;
         state <= SNAKE_DPB_CHANB_GETHEAD;
         step_cnt       <= 0;
         wr_cnt         <= 0;
@@ -132,7 +192,7 @@ always@(posedge clk)begin
                     step_cnt <= 4'd0;
                     list_now_addr <= list_now_addr + ADDRESS_STEP_N;
                     wr_cnt <= wr_cnt + 11'd1;
-                    snake_map_arr[snake_body_pos_y] <= snake_map_arr[snake_body_pos_y]|(16'd1<<snake_body_pos_x)
+                    snake_map_arr[snake_body_pos_y] <= snake_map_arr[snake_body_pos_y]|(16'd1<<snake_body_pos_x);
                     if(wr_cnt == list_length - 1)begin
                         state <= SNAKE_DPB_CHANB_OUT;
                     end

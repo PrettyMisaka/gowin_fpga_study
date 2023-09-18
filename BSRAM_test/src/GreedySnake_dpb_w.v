@@ -1,6 +1,7 @@
 module GreedySnake_dpb_w(
     input clk,
     input en,
+    input rst,
     input [1:0] forward,
     input [3:0] mode,
     input [7:0] snake_point_pos,
@@ -71,6 +72,10 @@ initial begin
 end
 
 always @(posedge clk) begin
+    if(rst)begin
+        i_a_clk_en     <= 1;
+        i_a_data_en    <= 1;
+    end
     case(state)
         BSRAM_IDLE:begin
             i_a_wr_en   <= 0;
@@ -251,14 +256,14 @@ always @(posedge clk) begin
                 4'd2:begin
                     step_cnt <= step_cnt + 4'd1;
                     i_a_address <= list_tmp0_addr + step_cnt;
-                    i_a_data <=  (list_head_addr) >> 8;
+                    i_a_data <=  {5'd0,list_head_addr[10:8]};
                 end
                 4'd3:begin
                     step_cnt <= 4'd0;
                     i_a_address <= list_tmp0_addr + step_cnt;
                     state <= BSRAM_FINISH;
                     list_head_addr <= list_tmp0_addr;
-                    i_a_data <= list_head_addr;
+                    i_a_data <= list_head_addr[7:0];
                 end
             endcase
         end
@@ -268,7 +273,7 @@ always @(posedge clk) begin
                 4'd0:begin
                     list_length <= list_length + 11'd1;
                     i_a_address <= list_now_addr;
-                    i_a_data <=  snake_head_pos - (wr_cnt<<4);
+                    i_a_data <=  snake_head_pos - {wr_cnt[3:0],4'd0};
                     step_cnt <= step_cnt + 4'd1;
                 end
                 4'd1:begin
@@ -298,7 +303,7 @@ always @(posedge clk) begin
                         state <= BSRAM_RESET_SNAKE;
                         wr_cnt <= wr_cnt + 11'd1;
                         list_now_addr <= list_now_addr + ADDRESS_STEP_N;
-                        i_a_data <= list_now_addr[7:0] + ADDRESS_STEP_N;
+                        i_a_data <= list_now_addr[7:0] + ADDRESS_STEP_N[7:0];
                     end
                 end
             endcase
