@@ -142,10 +142,10 @@ always @(posedge clk) begin
                             snake_next_head_pos <= snake_head_pos - 8'b00010000;
                         end
                         FORWARD_Y_UP:begin
-                            snake_next_head_pos <= snake_head_pos + 8'b00000001;
+                            snake_next_head_pos <= {snake_head_pos[7:4],snake_head_pos[3:0] + 4'b0001};
                         end
                         FORWARD_Y_DOWN:begin
-                            snake_next_head_pos <= snake_head_pos - 8'b00000001;
+                            snake_next_head_pos <= {snake_head_pos[7:4],snake_head_pos[3:0] - 4'b0001};
                         end
                     endcase
                 end
@@ -215,28 +215,31 @@ always @(posedge clk) begin
             endcase
         end
         BSRAM_UPDATE_POS_UPD_CL:begin
-            i_a_wr_en <= 1;
             case(step_cnt)
                 4'd0:begin
                     i_a_address <= list_tmp1_addr;
                     step_cnt <= step_cnt + 4'd1;
                     // i_a_data <=  snake_next_head_pos;
+                    i_a_wr_en <= 0;
                 end
                 4'd1:begin
                     step_cnt <= step_cnt + 4'd1;
                     i_a_address <= list_tmp1_addr + step_cnt;
                     i_a_data <=  8'd0;
+                    i_a_wr_en <= 0;
                 end
                 4'd2:begin
                     step_cnt <= step_cnt + 4'd1;
                     i_a_address <= list_tmp1_addr + step_cnt;
                     i_a_data <=  NULL_ADDRESS >> 8;
+                    i_a_wr_en <= 1;
                 end
                 4'd3:begin
                     step_cnt <= 4'd0;
                     i_a_address <= list_tmp1_addr + step_cnt;
                     state <= BSRAM_UPDATE_POS_WRT;
                     i_a_data <= NULL_ADDRESS;
+                    i_a_wr_en <= 1;
                 end
             endcase
         end

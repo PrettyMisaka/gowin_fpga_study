@@ -91,7 +91,12 @@ always@(posedge clk or negedge rst)begin
     end
 end
 
+reg rst_before;
+wire rst_up_flag;
+assign rst_up_flag = rst&&(!rst_before);
+
 always@(posedge clk or negedge rst)begin
+    rst_before <= rst;
     if(!rst)begin
         last_forward_reg <= FORWARD_X_UP;
         clk_cnt <= 32'd0;
@@ -106,10 +111,16 @@ always@(posedge clk or negedge rst)begin
             mode <= MODE_UPDATE_POS;
         end
         else begin
+            if(rst_up_flag)begin
+                en <= 1;
+                mode <= MODE_RESET_SNAKE;
+            end
+            else begin
+                en <= 0;
+                mode <= MODE_UPDATE_POS;
+            end
             clk_cnt <= clk_cnt + 32'd1;
-            en <= 0;
             last_forward_reg <= last_forward_reg;
-            mode <= MODE_UPDATE_POS;
         end
     end
 end

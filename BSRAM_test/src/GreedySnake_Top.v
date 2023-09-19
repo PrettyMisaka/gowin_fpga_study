@@ -141,6 +141,7 @@ GreedySnake_key_ctrl GreedySnake_key_ctrl0(
     .forward(forward),
     .mode(mode)
 );
+defparam GreedySnake_key_ctrl0.CLK_1S_DELAY_CNT = 32'd100;
 
 Gowin_DPB Gowin_DPB0(
     .douta          (o_a_data), //output [7:0] douta
