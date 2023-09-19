@@ -4,8 +4,8 @@ module GreedySnake_Top(
     input key_x_up,
     input key_x_down,
     input key_y_up,
-    input key_y_down,
-    input [7:0] snake_point_pos
+    input key_y_down
+    // input [7:0] snake_point_pos
 );
 
 localparam
@@ -28,7 +28,7 @@ wire en;
 wire GreedySnake_dpb_w_busy;
 wire [1:0] forward;
 wire [3:0] mode;
-// wire [7:0] snake_point_pos;
+wire [7:0] snake_point_pos;
 /*******************************/
 reg dpb_r_en = 0;
 /******************** CHAN A AND B WIRE ********************/
@@ -95,9 +95,10 @@ GreedySnake_dpb_w GreedySnake_dpb_w0(
 
 
 GreedySnake_dpb_r GreedySnake_dpb_r0(
-    .clk        (clk),
-    .en         (dpb_r_en),
-    .busy        (dpb_r_busy),
+    .clk            (clk),
+    .en             (dpb_r_en),
+    .busy           (dpb_r_busy),
+    .snake_point_pos(snake_point_pos),
 // Gowin_DPB channel A receive
     .list_length(list_length_wire),
     .list_head_addr(list_head_addr_wire),

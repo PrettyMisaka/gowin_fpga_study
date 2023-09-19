@@ -2,6 +2,7 @@ module GreedySnake_dpb_r(
     input clk,
     input en,
     output reg busy,
+    output reg [7:0] snake_point_pos,
 // Gowin_DPB channel A receive
     input [10:0] list_length,
     input [10:0] list_head_addr,
@@ -45,7 +46,8 @@ localparam
     SNAKE_DPB_CHANB_GETHEAD = 4'd1,
     SNAKE_DPB_CHANB_RD_WR   = 4'd2,
     SNAKE_DPB_CHANB_OUT     = 4'd3,
-    SNAKE_DPB_CHANB_FINISH  = 4'd5;
+    SNAKE_DPB_CHANB_FINISH  = 4'd5,
+    SNAKE_UPD_POINT_POS     = 4'd6;
 
 reg [10:0] list_now_addr;
 
@@ -58,6 +60,10 @@ reg [7:0]  snake_body_pos_x;
 reg [7:0]  snake_body_pos_y;
 
 reg [15:0] snake_map_arr [0:15];
+
+reg snake_point_pos_exit = 0;
+reg [7:0] clk_cnt = 8'd0;
+reg [7:0] pos_cnt = 8'd0;
 
 assign snake_map_arr_0  = snake_map_arr[0 ];
 assign snake_map_arr_1  = snake_map_arr[1 ];
@@ -77,6 +83,10 @@ assign snake_map_arr_14 = snake_map_arr[14];
 assign snake_map_arr_15 = snake_map_arr[15];
 
 initial begin
+    clk_cnt <= 0;
+    pos_cnt <= 0;
+    snake_point_pos <= 8'hff;
+    snake_point_pos_exit <= 1'd1;
     list_now_addr  <= HEAD_ADDRESS;
     state          <= SNAKE_DPB_CHANB_IDLE;
     step_cnt       <= 0;
@@ -109,6 +119,15 @@ always@(posedge clk)begin
     i_b_clk_en     <= 1;
     i_b_data_en    <= 1;
     i_b_data       <= 8'd0;
+    if(state == SNAKE_DPB_CHANB_FINISH)begin
+        clk_cnt <= 0;
+    end
+    else if (state == SNAKE_UPD_POINT_POS)begin
+        clk_cnt <= clk_cnt;
+    end
+    else begin
+        clk_cnt <= clk_cnt + 8'd1;
+    end
     case(state)
     SNAKE_DPB_CHANB_IDLE:begin
         step_cnt       <= 0;
@@ -187,6 +206,9 @@ always@(posedge clk)begin
                     if(list_now_addr != list_head_addr && o_b_data == snake_head_pos)begin
                         game_over_flag <= 1;
                     end
+                    if(snake_point_pos == o_b_data)begin
+                        snake_point_pos_exit <= 0;
+                    end
                 end
                 4'd4:begin
                     step_cnt <= 4'd0;
@@ -194,13 +216,33 @@ always@(posedge clk)begin
                     wr_cnt <= wr_cnt + 11'd1;
                     snake_map_arr[snake_body_pos_y] <= snake_map_arr[snake_body_pos_y]|(16'd1<<snake_body_pos_x);
                     if(wr_cnt == list_length - 1)begin
-                        state <= SNAKE_DPB_CHANB_OUT;
+                        if(snake_point_pos_exit == 0)begin//果实被吃
+                            state <= SNAKE_UPD_POINT_POS;
+                            pos_cnt <= 0;
+                        end
+                        else begin
+                            state <= SNAKE_DPB_CHANB_OUT;
+                        end
                     end
                     else begin
                         state <= SNAKE_DPB_CHANB_RD_WR;
                     end
                 end
             endcase
+    end
+    SNAKE_UPD_POINT_POS:begin
+        pos_cnt <= pos_cnt + 8'd1;
+        if(~(snake_map_arr[pos_cnt&8'h0f]&(8'd1<<pos_cnt[7:4])))begin
+            clk_cnt <= clk_cnt - 8'd1;
+        end
+        if(clk_cnt == 8'd0)begin
+            state <= SNAKE_DPB_CHANB_OUT;
+            snake_point_pos_exit <= 1'd1;
+            snake_point_pos <= pos_cnt;
+        end
+        else begin
+            state <= SNAKE_UPD_POINT_POS;
+        end
     end
     SNAKE_DPB_CHANB_OUT:begin
         hdmi_tx_en <= 1;
