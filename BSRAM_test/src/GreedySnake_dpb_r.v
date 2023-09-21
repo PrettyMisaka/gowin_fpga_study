@@ -94,7 +94,7 @@ initial begin
     i_b_clk_en     <= 1;
     i_b_data_en    <= 1;
     i_b_wr_en      <= 0;
-    hdmi_tx_en     <= 0;
+    hdmi_tx_en     <= 1;
     busy           <= 0;
     game_over_flag <= 0;
     snake_map_arr[0 ] <= 8'h00;
@@ -132,7 +132,7 @@ always@(posedge clk)begin
     SNAKE_DPB_CHANB_IDLE:begin
         step_cnt       <= 0;
         wr_cnt         <= 0;
-        hdmi_tx_en     <= 0;
+        hdmi_tx_en     <= 1;
         if(en)begin
             state <= SNAKE_DPB_CHANB_CL_CACHE;
             busy <= 1;
@@ -256,6 +256,7 @@ always@(posedge clk)begin
     end
     SNAKE_DPB_CHANB_FINISH:begin
         busy <= 0;
+        hdmi_tx_en <= 1;
         state <= SNAKE_DPB_CHANB_IDLE;
     end
     endcase

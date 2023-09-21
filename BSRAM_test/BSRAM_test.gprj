@@ -8,7 +8,16 @@
         <File path="src/GreedySnake_Top.v" type="file.verilog" enable="1"/>
         <File path="src/GreedySnake_dpb_r.v" type="file.verilog" enable="1"/>
         <File path="src/GreedySnake_dpb_w.v" type="file.verilog" enable="1"/>
+        <File path="src/GreedySnake_hdmi.v" type="file.verilog" enable="1"/>
+        <File path="src/GreedySnake_hdmi_clk.v" type="file.verilog" enable="1"/>
         <File path="src/GreedySnake_key_ctrl.v" type="file.verilog" enable="1"/>
+        <File path="src/dvi_tx/dvi_tx.v" type="file.verilog" enable="1"/>
+        <File path="src/gowin_clkdiv/gowin_clkdiv.v" type="file.verilog" enable="1"/>
         <File path="src/gowin_dpb/gowin_dpb.v" type="file.verilog" enable="1"/>
+        <File path="src/gowin_rpll/gowin_rpll.v" type="file.verilog" enable="1"/>
+        <File path="src/my_testpattern.v" type="file.verilog" enable="0"/>
+        <File path="src/BSRAM_test.cst" type="file.cst" enable="1"/>
+        <File path="src/hdmi_tx.cst" type="file.cst" enable="0"/>
+        <File path="src/BSRAM_test.rao" type="file.gao" enable="0"/>
     </FileList>
 </Project>

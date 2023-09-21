@@ -31,7 +31,7 @@ localparam
     HDMI_IDLE   = 4'd0,
     HDMI_JUDGE  = 4'd1,
     HDMI_FINISH = 4'd2;
-localparam SNAKE_HSVS_STEP_CNT = 11'd30;
+localparam SNAKE_HSVS_STEP_CNT = 11'd40;
 
 reg  [3:0]   state;
 
@@ -67,9 +67,9 @@ localparam	BLUE	= { 8'd255 , 8'd0   , 8'd0   };
 localparam	BLACK	= { 8'd0   , 8'd0   , 8'd0   };
 localparam	GRAY	= { 8'd100 , 8'd100 , 8'd100 };
 
-localparam  POINT_COLOR = WHITE;
-localparam  SNAKE_COLOR = BLACK;
-localparam  BACKG_COLOR = GRAY ;
+localparam  POINT_COLOR = GRAY;
+localparam  SNAKE_COLOR = BLUE;
+localparam  BACKG_COLOR = WHITE;
 
 always@(posedge I_pxl_clk)begin
     O_de   <= O_de_delay  ; 
@@ -89,8 +89,8 @@ always@(posedge I_pxl_clk or negedge I_rst_n)begin
                     x_cnt  <= 0;
                     y_cnt  <= 0;
                     state  <= HDMI_JUDGE;
-                    vs_cmp <= 12'd60 + SNAKE_HSVS_STEP_CNT;
-                    hs_cmp <= 12'd160 + SNAKE_HSVS_STEP_CNT;
+                    vs_cmp <= 12'd40 + SNAKE_HSVS_STEP_CNT;
+                    hs_cmp <= 12'd320 + SNAKE_HSVS_STEP_CNT;
                     O_busy <= 1;
                 end
                 else begin
@@ -99,12 +99,12 @@ always@(posedge I_pxl_clk or negedge I_rst_n)begin
                 end
             end
             HDMI_JUDGE:begin
-                if(O_h_cnt == 12'd800)begin
-                    if(O_v_cnt == 12'd60 ) begin
+                if(O_h_cnt == 12'd1280)begin
+                    if(O_v_cnt == 12'd40 ) begin
                         y_cnt <= 5'd1;
                     end
-                    else if(O_v_cnt == 12'd540 ) begin
-                        vs_cmp <= 12'd60 + SNAKE_HSVS_STEP_CNT;
+                    else if(O_v_cnt == 12'd680 ) begin
+                        vs_cmp <= 12'd40 + SNAKE_HSVS_STEP_CNT;
                         y_cnt <= 5'd17;
                     end
                     else if(O_v_cnt == vs_cmp ) begin
@@ -114,16 +114,16 @@ always@(posedge I_pxl_clk or negedge I_rst_n)begin
                     else begin
                         y_cnt <= y_cnt;
                     end
-                    if(O_v_cnt == 12'd600 ) begin
+                    if(O_v_cnt == 12'd720 ) begin
                         state <= HDMI_FINISH;
                     end
                 end
                 /*********** hs cnt ****************/
-                if(O_h_cnt == 12'd159) begin
+                if(O_h_cnt == 12'd320) begin
                     x_cnt <= 5'd1;
                 end
-                else if(O_h_cnt == 12'd639 ) begin
-                    hs_cmp <= 12'd160 + SNAKE_HSVS_STEP_CNT;
+                else if(O_h_cnt == 12'd960 ) begin
+                    hs_cmp <= 12'd320 + SNAKE_HSVS_STEP_CNT;
                     x_cnt <= 5'd17;
                 end
                 else if(O_h_cnt == hs_cmp - 5'd1) begin
@@ -221,14 +221,14 @@ GreedySnake_hdmi_clk GreedySnake_hdmi_clk0(
 	.I_pxl_clk   (I_pxl_clk          ),//pixel clock
     .I_en        (I_en               ),
     .I_rst_n     (I_rst_n            ),//low active 
-    .I_h_total   (12'd1056           ),//hor total time  // 12'd1056  // 12'd1344  // 12'd1650   
-    .I_h_sync    (12'd128            ),//hor sync time   // 12'd128   // 12'd136   // 12'd40     
-    .I_h_bporch  (12'd88             ),//hor back porch  // 12'd88    // 12'd160   // 12'd220    
-    .I_h_res     (12'd800            ),//hor resolution  // 12'd800   // 12'd1024  // 12'd1280   
-    .I_v_total   (12'd628            ),//ver total time  // 12'd628   // 12'd806   // 12'd750     
-    .I_v_sync    (12'd4              ),//ver sync time   // 12'd4     // 12'd6     // 12'd5       
-    .I_v_bporch  (12'd23             ),//ver back porch  // 12'd23    // 12'd29    // 12'd20       
-    .I_v_res     (12'd600            ),//ver resolution  // 12'd600   // 12'd768   // 12'd720     
+    .I_h_total   (12'd1650           ),//hor total time  // 12'd1056  // 12'd1344  // 12'd1650   
+    .I_h_sync    (12'd40             ),//hor sync time   // 12'd128   // 12'd136   // 12'd40     
+    .I_h_bporch  (12'd220            ),//hor back porch  // 12'd88    // 12'd160   // 12'd220    
+    .I_h_res     (12'd1280           ),//hor resolution  // 12'd800   // 12'd1024  // 12'd1280   
+    .I_v_total   (12'd750            ),//ver total time  // 12'd628   // 12'd806   // 12'd750     
+    .I_v_sync    (12'd5              ),//ver sync time   // 12'd4     // 12'd6     // 12'd5       
+    .I_v_bporch  (12'd20             ),//ver back porch  // 12'd23    // 12'd29    // 12'd20       
+    .I_v_res     (12'd720            ),//ver resolution  // 12'd600   // 12'd768   // 12'd720     
     .O_h_cnt     (O_h_cnt            ),
     .O_v_cnt     (O_v_cnt            ),
     .O_busy      (O_busy_after       ),

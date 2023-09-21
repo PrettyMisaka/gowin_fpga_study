@@ -1,17 +1,28 @@
 module GreedySnake_key_ctrl(
     input clk,
     input rst,
-    input key_x_up,
-    input key_x_down,
-    input key_y_up,
-    input key_y_down,
+    input i_key_x_up  ,
+    input i_key_x_down,
+    input i_key_y_up  ,
+    input i_key_y_down,
 
     output reg en,
+    output reg led,
     output wire [1:0]forward,
     output reg [3:0] mode
 );
 
 parameter CLK_1S_DELAY_CNT = 32'd27_000_000;
+
+wire key_x_up   ;
+wire key_x_down ;
+wire key_y_up   ;
+wire key_y_down ;
+
+assign key_x_up   = ~ i_key_x_up   ;
+assign key_x_down = ~ i_key_x_down ;
+assign key_y_up   = ~ i_key_y_up   ;
+assign key_y_down = ~ i_key_y_down ;
 
 localparam
     FORWARD_X_UP    = 2'b00,
@@ -34,6 +45,7 @@ initial begin
     clk_cnt <= 0;
     last_forward_reg <= FORWARD_X_UP;
     i_forward <= FORWARD_X_UP;
+    led <= 0;
 end
 
 
@@ -95,7 +107,7 @@ reg rst_before;
 wire rst_up_flag;
 assign rst_up_flag = rst&&(!rst_before);
 
-always@(posedge clk or negedge rst)begin
+always@(posedge clk)begin
     rst_before <= rst;
     if(!rst)begin
         last_forward_reg <= FORWARD_X_UP;
@@ -107,6 +119,7 @@ always@(posedge clk or negedge rst)begin
         if(clk_cnt == CLK_1S_DELAY_CNT - 32'd1)begin
             clk_cnt <= 32'd0;
             en <= 1;
+            led <= ~led;
             last_forward_reg <= forward;
             mode <= MODE_UPDATE_POS;
         end
