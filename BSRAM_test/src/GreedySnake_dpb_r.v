@@ -3,6 +3,8 @@ module GreedySnake_dpb_r(
     input en,
     output reg busy,
     output reg [7:0] snake_point_pos,
+    output reg snake_point_pos_exit,
+    input [7:0] I_clk_cnt,
 // Gowin_DPB channel A receive
     input [10:0] list_length,
     input [10:0] list_head_addr,
@@ -61,7 +63,6 @@ reg [7:0]  snake_body_pos_y;
 
 reg [15:0] snake_map_arr [0:15];
 
-reg snake_point_pos_exit = 0;
 reg [7:0] clk_cnt = 8'd0;
 reg [7:0] pos_cnt = 8'd0;
 
@@ -159,6 +160,7 @@ always@(posedge clk)begin
         snake_map_arr[13] <= 8'h00;
         snake_map_arr[14] <= 8'h00;
         snake_map_arr[15] <= 8'h00;
+        snake_point_pos_exit <= 1'd1;
         state <= SNAKE_DPB_CHANB_GETHEAD;
         step_cnt       <= 0;
         wr_cnt         <= 0;
@@ -217,6 +219,7 @@ always@(posedge clk)begin
                     snake_map_arr[snake_body_pos_y] <= snake_map_arr[snake_body_pos_y]|(16'd1<<snake_body_pos_x);
                     if(wr_cnt == list_length - 1)begin
                         if(snake_point_pos_exit == 0)begin//果实被吃
+                            clk_cnt <= I_clk_cnt;
                             state <= SNAKE_UPD_POINT_POS;
                             pos_cnt <= 0;
                         end

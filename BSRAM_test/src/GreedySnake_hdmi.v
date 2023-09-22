@@ -2,6 +2,8 @@ module GreedySnake_hdmi(
 	input              I_pxl_clk   ,//pixel clock
     input              I_en        ,
     input              I_rst_n     ,//low active 
+
+    input [7:0]     snake_point_pos,
     
     input [15:0] snake_map_arr_0   ,
     input [15:0] snake_map_arr_1   ,
@@ -65,11 +67,12 @@ localparam	MAGENTA	= { 8'd255 , 8'd0   , 8'd255 };
 localparam	RED		= { 8'd0   , 8'd0   , 8'd255 };
 localparam	BLUE	= { 8'd255 , 8'd0   , 8'd0   };
 localparam	BLACK	= { 8'd0   , 8'd0   , 8'd0   };
-localparam	GRAY	= { 8'd100 , 8'd100 , 8'd100 };
+localparam	GRAY	= { 8'd50  , 8'd50  , 8'd50  };
 
-localparam  POINT_COLOR = GRAY;
+localparam  FRUIT_COLOR = RED;
+localparam  POINT_COLOR = WHITE;
 localparam  SNAKE_COLOR = BLUE;
-localparam  BACKG_COLOR = WHITE;
+localparam  BACKG_COLOR = GRAY;
 
 always@(posedge I_pxl_clk)begin
     O_de   <= O_de_delay  ; 
@@ -134,6 +137,10 @@ always@(posedge I_pxl_clk or negedge I_rst_n)begin
                     x_cnt <= x_cnt;
                 end
                 if(5'd1 <= y_cnt && y_cnt <= 5'd16)begin
+                    if((y_cnt == {1'd0,snake_point_pos[3:0]}+5'd1)&&(x_cnt == 5'd16 - {1'd0,snake_point_pos[7:4]}))begin
+                        O_color <= FRUIT_COLOR;
+                    end
+                    else begin
                     case (x_cnt)
                         5'd1 : begin if(snake_map_arr_tmp & 16'b1000_0000_0000_0000)begin 
                                 O_color <= SNAKE_COLOR; end
@@ -187,6 +194,7 @@ always@(posedge I_pxl_clk or negedge I_rst_n)begin
                             O_color <= BACKG_COLOR;
                         end
                     endcase
+                    end
                 end
                 else begin
                     O_color <= BACKG_COLOR;

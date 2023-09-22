@@ -68,6 +68,7 @@ wire [15:0] snake_map_arr_15;
 wire hdmi_tx_en;
 assign hdmi_tx_en = 1;
 wire game_over_flag;
+wire [7:0] O_clk_cnt;
 /**************** hdmi show **********************/
 wire [23:0]O_color;
 // assign O_color = 24'hff00ff;
@@ -119,6 +120,8 @@ GreedySnake_dpb_r GreedySnake_dpb_r0(
     .en             (dpb_r_en),
     .busy           (dpb_r_busy),
     .snake_point_pos(snake_point_pos),
+    .snake_point_pos_exit(O_busy),
+    .I_clk_cnt(O_clk_cnt),
 // Gowin_DPB channel A receive
     .list_length(list_length_wire),
     .list_head_addr(list_head_addr_wire),
@@ -159,9 +162,10 @@ GreedySnake_key_ctrl GreedySnake_key_ctrl0(
     .i_key_y_down(key_y_down),
 
     .en(en),
-    .led(O_busy),
+    // .led(O_busy),
     .forward(forward),
-    .mode(mode)
+    .mode(mode),
+    .O_clk_cnt(O_clk_cnt)
 );
 defparam GreedySnake_key_ctrl0.CLK_1S_DELAY_CNT = 32'd27_000_000;
 
@@ -189,6 +193,8 @@ GreedySnake_hdmi GreedySnake_hdmi0(
 	.I_pxl_clk(pxl_clk     )   ,//pixel clock
     .I_en     (hdmi_tx_en  )   ,
     .I_rst_n  (rst         )   ,//low active 
+
+    .snake_point_pos ( snake_point_pos ),
                                    
     .snake_map_arr_0 ( snake_map_arr_0  )  ,
     .snake_map_arr_1 ( snake_map_arr_1  )  ,
