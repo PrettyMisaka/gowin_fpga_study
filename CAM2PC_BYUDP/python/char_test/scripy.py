@@ -2,7 +2,7 @@ import socket
 import time
 import random
 import string
-import cv2
+# import cv2
 
 # Define the host address
 UDP_IP = "127.0.0.1"
@@ -25,7 +25,7 @@ def recvUDPData():
     sock.bind((UDP_IP, UDP_PORT))
             # print("data is empty")
 
-cv2.namedWindow("window", cv2.WINDOW_NORMAL)
+# cv2.namedWindow("window", cv2.WINDOW_NORMAL)
 
 cnt = 0
 
@@ -45,8 +45,8 @@ while True:
         print("recv success")
     else:
         print("error")
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+    # if cv2.waitKey(1) & 0xFF == ord('q'):
+    #     break
 
-cv2.destroyAllWindows()
+# cv2.destroyAllWindows()
 sock.close()

@@ -3,6 +3,8 @@
 <Project>
     <Template>FPGA</Template>
     <Version>5</Version>
-    <Device name="" pn="">gw2a18c-011</Device>
-    <FileList/>
+    <Device name="GW2A-18C" pn="GW2A-LV18PG256C8/I7">gw2a18c-011</Device>
+    <FileList>
+        <File path="src/mac.sv" type="file.verilog" enable="1"/>
+    </FileList>
 </Project>
