@@ -1,5 +1,7 @@
 module mac#(
     parameter bit [31:0] ip_adr = 32'd0,
+    parameter bit [47:0] udp_my_port = 16'd0,
+    parameter bit [47:0] udp_port = 16'd0,
     parameter bit [47:0] mac_adr = 48'd0,
     parameter bit [47:0] mac_my_adr = 48'd0
 )(
@@ -17,7 +19,7 @@ module mac#(
 
 typedef enum logic [7:0] { 
     MAC_IDLE, MAC_SYNC, MAC_FRAME, MAC_ADR, MAC_MYADR, MAC_LEN,
-    MAC_UDP_MYPORT, MAC_UDP_PORT, MAC_UDP_LEN, MAC_UDP_CRC, MAC_UDP_DATA,
+    MAC_UDP_PORT, MAC_UDP_LENCRC, MAC_UDP_DATA,
     MAC_CRC, MAC_END
 } state_typedef;
 state_typedef state;
@@ -26,46 +28,44 @@ state_typedef state;
  logic [7:0] bit_cnt;
  logic [7:0] buffer_data;
  logic isSaveFlag;
+ logic tx_en;
  logic [47:0] mac_adr_buf;
 
  task variableRST();
-        state <= MAC_IDLE;
-        O_busy <= 0;
-        O_isLoadData <= 0;
-        O_txd <= 0;
-        O_txen <= 0;
-        byte_cnt <= 0;
-        buffer_data <= 0;
-        bit_cnt <= 0;
-        mac_adr_buf <= 0;
- endtask
-
- task updateTxd(
-    input [7:0] data,
-    output logic isSaveData
- );
-    if(bit_cnt == 8'd0)begin
-        buffer_data <= {2'bXX,data[7:2]};
-        O_txd <= data[1:0];
-        O_txen <= 1'b1;
-        isSaveData <= 1;
-    end
-    else begin
-        buffer_data <= {2'bXX,buffer_data[7:2]};
-        isSaveData <= 0;
-        O_txd <= buffer_data[1:0];
-    end
-    if(bit_cnt == 8'd3)begin
-        bit_cnt <= 0;
-    end
-    else begin
-        bit_cnt <= bit_cnt + 8'd1;
-    end
+    state <= MAC_IDLE;
+    O_busy <= 0;
+    O_isLoadData <= 0;
+    byte_cnt <= 0;
+    buffer_data <= 0;
+    bit_cnt <= 0;
+    mac_adr_buf <= 0;
+    tx_en <= 0;
  endtask
 
  initial begin
     variableRST();
  end
+
+ task bufPush(
+    input [7:0] target_state,
+    input [47:0] buf_val,
+    input [15:0] target_cnt
+ );
+    tx_en <= 1;
+    buffer_data <= mac_adr_buf[8:0];
+    if(isSaveFlag == 1'd1)begin
+        if(byte_cnt == target_cnt - 16'd1)begin
+            byte_cnt <= 0;
+            state <= target_state;
+            mac_adr_buf <= {mac_my_adr[7:0],  mac_my_adr[15:8], mac_my_adr[23:16],
+                            mac_my_adr[31:24],mac_my_adr[39:32],mac_my_adr[47:40]};
+        end
+        else begin
+            mac_adr_buf <= mac_adr_buf >> 8;
+            byte_cnt <= byte_cnt + 16'd1;
+        end
+    end
+ endtask
 
 always_ff@(posedge I_clk50m or negedge I_rst)begin
     if(!I_rst)begin
@@ -83,10 +83,8 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
             end
         end
         MAC_SYNC:begin
-            updateTxd(
-                .data(8'h55),
-                .isSaveData(isSaveFlag)
-            );
+            tx_en <= 1;
+            buffer_data <= 8'b10101010;
             if(isSaveFlag == 1'd1)begin
                 if(byte_cnt == 16'd6)begin
                     byte_cnt <= 0;
@@ -99,20 +97,80 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
             end
         end
         MAC_FRAME:begin
-            updateTxd(
-                .data(8'h55),
-                .isSaveData(isSaveFlag)
-            );
+            tx_en <= 1;
+            buffer_data <= 8'b10101011;
             if(isSaveFlag == 1'd1)begin
                 state <= MAC_ADR;
-                mac_adr_buf <= mac_adr;
+                mac_adr_buf <= {mac_adr[7:0],  mac_adr[15:8], mac_adr[23:16],
+                                mac_adr[31:24],mac_adr[39:32],mac_adr[47:40]};
             end
             else begin
                 state <= MAC_FRAME;
             end
         end
+        MAC_ADR:begin
+            tx_en <= 1;
+            buffer_data <= mac_adr_buf[8:0];
+            if(isSaveFlag == 1'd1)begin
+                if(byte_cnt == 16'd5)begin
+                    byte_cnt <= 0;
+                    state <= MAC_MYADR;
+                    mac_adr_buf <= {mac_my_adr[7:0],  mac_my_adr[15:8], mac_my_adr[23:16],
+                                    mac_my_adr[31:24],mac_my_adr[39:32],mac_my_adr[47:40]};
+                end
+                else begin
+                    mac_adr_buf <= mac_adr_buf >> 8;
+                    byte_cnt <= byte_cnt + 16'd1;
+                    state <= MAC_ADR;
+                end
+            end
+        end
+        MAC_MYADR:begin
+            tx_en <= 1;
+            buffer_data <= mac_adr_buf[8:0];
+            if(isSaveFlag == 1'd1)begin
+                if(byte_cnt == 16'd5)begin
+                    byte_cnt <= 0;
+                    state <= MAC_LEN;
+                    mac_adr_buf <= {32'h0,8'h00,8'h08}
+                end
+                else begin
+                    mac_adr_buf <= mac_adr_buf >> 8;
+                    byte_cnt <= byte_cnt + 16'd1;
+                    state <= MAC_MYADR;
+                end
+            end
+        end
+        MAC_LEN:begin
+            tx_en <= 1;
+            buffer_data <= mac_adr_buf[8:0];
+            if(isSaveFlag == 1'd1)begin
+                if(byte_cnt == 16'd2 - 16'd1)begin
+                    byte_cnt <= 0;
+                    state <= MAC_UDP_PORT;
+                    mac_adr_buf <= {16'h00,udp_port[15:8],udp_port[7:0],
+                                        udp_my_port[15:8],udp_my_port[7:0]}
+                end
+                else begin
+                    mac_adr_buf <= mac_adr_buf >> 8;
+                    byte_cnt <= byte_cnt + 16'd1;
+                    state <= MAC_LEN;
+                end
+            end
+        end
+        MAC_UDP_PORT:begin
+        end
         endcase
     end
 end
+
+rmii_txd rmii_txd0(
+    .I_clk50m(I_clk50m),
+    .I_txen(tx_en),
+    .I_data(buffer_data),
+    .O_txd(O_txd),
+    .O_txen(O_txen),
+    .isSaveData(isSaveFlag)
+);
 
 endmodule
