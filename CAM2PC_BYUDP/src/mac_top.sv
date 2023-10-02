@@ -22,6 +22,8 @@ end
 mac #(
     .udp_my_port(16'd11451),
     .udp_port(16'd11452),
+    .src_ip_adr({8'd192,8'd168,8'd15,8'd14}),
+    .dst_ip_adr({8'd192,8'd168,8'd15,8'd15}),
     .mac_adr({8'h06,8'h00,8'hAA,8'hBB,8'h0C,8'hDD}),
     .mac_my_adr({8'he8,8'h6a,8'h64,8'hfa,8'hd1,8'h7b})
 )mac0(
@@ -30,6 +32,7 @@ mac #(
     .I_en(en),
     .I_data(8'hff),
     .I_udpLen(16'h01ff),
+    .I_ipv4sign(16'h0123),
     
     .O_txd(netrmii.txd),
     .O_txen(netrmii.txen),

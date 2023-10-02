@@ -1,5 +1,6 @@
 module mac#(
-    parameter bit [31:0] ip_adr = 32'd0,
+    parameter bit [31:0] src_ip_adr = 32'd0,
+    parameter bit [31:0] dst_ip_adr = 32'd0,
     parameter bit [15:0] udp_my_port = 16'd0,
     parameter bit [15:0] udp_port = 16'd0,
     parameter bit [47:0] mac_adr = 48'd0,
@@ -10,6 +11,7 @@ module mac#(
     input I_en,
     input [7:0]  I_data,
     input [15:0] I_udpLen,
+    input [15:0] I_ipv4sign,
     
     output logic [1:0] O_txd,
     output logic O_txen,
@@ -19,6 +21,8 @@ module mac#(
 
 typedef enum logic [7:0] { 
     MAC_IDLE, MAC_SYNC, MAC_FRAME, MAC_ADR, MAC_MYADR, MAC_LEN,
+    MAC_IPV4_VHS, MAC_IPV4_TOTALLEN, MAC_IPV4_SIGN, MAC_IPV4_4BYTE,
+    MAC_IPV4_CHECKSUM, MAC_IPV4_SRCIP, MAC_IPV4_DSTIP,
     MAC_UDP_PORT, MAC_UDP_LENCRC, MAC_UDP_DATA,
     MAC_CRC, MAC_END
 } state_typedef;
@@ -30,6 +34,9 @@ state_typedef state;
  logic isSaveFlag;
  logic tx_en;
  logic [47:0] mac_adr_buf;
+
+ logic [15:0] total_len;
+ assign total_len = I_udpLen + 16'd20;
 
 /*********** crc logic************/
  logic [31:0] crc_data_buf;
@@ -88,7 +95,6 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
             if(I_en)begin
                 O_busy <= 1;
                 state <= MAC_SYNC;
-                crc_rst <= 1;
             end
             else begin
                 variableRST();
@@ -96,7 +102,7 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
         end
         MAC_SYNC:begin
             tx_en <= 1;
-            buffer_data <= 8'b10101010;
+            buffer_data <= 8'b01010101;
             if(isSaveFlag == 1'd1)begin
                 if(byte_cnt == 16'd6)begin
                     byte_cnt <= 0;
@@ -110,8 +116,9 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
         end
         MAC_FRAME:begin
             tx_en <= 1;
-            buffer_data <= 8'b10101011;
+            buffer_data <= 8'b11010101;
             if(isSaveFlag == 1'd1)begin
+                crc_rst <= 1;
                 state <= MAC_ADR;
                 mac_adr_buf <= {mac_adr[7:0],  mac_adr[15:8], mac_adr[23:16],
                                 mac_adr[31:24],mac_adr[39:32],mac_adr[47:40]};
@@ -166,10 +173,9 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
         end
         MAC_LEN:begin
             bufPush(
-                .target_state(MAC_UDP_PORT),
+                .target_state(MAC_IPV4_VHS),
                 .target_cnt(16'd2),
-                .buf_val({16'h00,udp_port[15:8],udp_port[7:0],
-                                        udp_my_port[15:8],udp_my_port[7:0]})
+                .buf_val({16'h00,16'h00,8'h00,8'h45})
             );
             // tx_en <= 1;
             // buffer_data <= mac_adr_buf[8:0];
@@ -187,17 +193,69 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
             //     end
             // end
         end
+        MAC_IPV4_VHS:begin
+            bufPush(
+                .target_state(MAC_IPV4_TOTALLEN),
+                .target_cnt(16'd2),
+                .buf_val({16'h00,16'h00,total_len[7:0],total_len[15:8]})
+            );
+        end
+        MAC_IPV4_TOTALLEN:begin
+            bufPush(
+                .target_state(MAC_IPV4_SIGN),
+                .target_cnt(16'd2),
+                .buf_val({16'h00,16'h00,I_ipv4sign[7:0],I_ipv4sign[15:8]})
+            );
+        end
+        MAC_IPV4_SIGN:begin
+            bufPush(
+                .target_state(MAC_IPV4_4BYTE),
+                .target_cnt(16'd2),
+                .buf_val({16'h00,16'h1140,8'h00,8'h40})
+            );
+        end
+        MAC_IPV4_4BYTE:begin
+            bufPush(
+                .target_state(MAC_IPV4_CHECKSUM),
+                .target_cnt(16'd4),
+                .buf_val({16'h00,16'h00,16'h00})
+            );
+        end
+        MAC_IPV4_CHECKSUM:begin
+            bufPush(
+                .target_state(MAC_IPV4_SRCIP),
+                .target_cnt(16'd2),
+                .buf_val({16'h00,src_ip_adr[7:0],src_ip_adr[15:8],
+                                        src_ip_adr[23:16],src_ip_adr[31:24]})
+            );
+        end
+        MAC_IPV4_SRCIP:begin
+            bufPush(
+                .target_state(MAC_IPV4_DSTIP),
+                .target_cnt(16'd4),
+                .buf_val({16'h00,dst_ip_adr[7:0],dst_ip_adr[15:8],
+                                        dst_ip_adr[23:16],dst_ip_adr[31:24]})
+            );
+        end
+        MAC_IPV4_DSTIP:begin
+            bufPush(
+                .target_state(MAC_UDP_PORT),
+                .target_cnt(16'd4),
+                .buf_val({16'h00,udp_port[7:0],udp_port[15:8],
+                                        udp_my_port[7:0],udp_my_port[15:8]})
+            );
+        end
         MAC_UDP_PORT:begin
             bufPush(
                 .target_state(MAC_UDP_LENCRC),
-                .target_cnt(16'd2),
-                .buf_val({16'h00,16'h00,I_udpLen[15:8],I_udpLen[7:0]})
+                .target_cnt(16'd4),
+                .buf_val({16'h00,16'h00,I_udpLen[7:0],I_udpLen[15:8]})
             );
         end
         MAC_UDP_LENCRC:begin
             bufPush(
                 .target_state(MAC_UDP_DATA),
-                .target_cnt(16'd6),
+                .target_cnt(16'd2),
                 .buf_val(48'h00)
             );
         end
@@ -219,11 +277,18 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
         MAC_CRC:begin
             crc_forcr_en <= 0;
             case(byte_cnt)
-            16'd0:begin buffer_data <= crc_out[31:24]; end
-            16'd1:begin buffer_data <= crc_out[23:16]; end
-            16'd2:begin buffer_data <= crc_out[15:8]; end
-            16'd3:begin buffer_data <= crc_out[7:0]; end
+            16'd0:begin buffer_data <= mac_adr_buf[31:24]; end
+            16'd1:begin buffer_data <= mac_adr_buf[23:16]; end
+            16'd2:begin buffer_data <= mac_adr_buf[15:8];  end
+            16'd3:begin buffer_data <= mac_adr_buf[7:0];   end
             endcase
+            if(byte_cnt == 16'd0)begin
+                mac_adr_buf <= {16'd0,
+                        {crc_out[24], crc_out[25], crc_out[26], crc_out[27], crc_out[28], crc_out[29], crc_out[30], crc_out[31]},
+                        {crc_out[16], crc_out[17], crc_out[18], crc_out[19], crc_out[20], crc_out[21], crc_out[22], crc_out[23]},
+                        {crc_out[ 8], crc_out[ 9], crc_out[10], crc_out[11], crc_out[12], crc_out[13], crc_out[14], crc_out[15]},
+                        {crc_out[ 0], crc_out[ 1], crc_out[ 2], crc_out[ 3], crc_out[ 4], crc_out[ 5], crc_out[ 6], crc_out[ 7]}};
+            end
             if(isSaveFlag == 1'd1)begin
                 if(byte_cnt == 16'd4 - 16'd1)begin
                     byte_cnt <= 0;
@@ -231,7 +296,7 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
                     tx_en <= 0;
                 end
                 else begin
-                    mac_adr_buf <= mac_adr_buf >> 8;
+                    // mac_adr_buf <= mac_adr_buf >> 8;
                     byte_cnt <= byte_cnt + 16'd1;
                 end
             end
@@ -296,11 +361,19 @@ end
 logic crc_en_wire;
 assign crc_en_wire = crc_en|crc_forcr_en;
 
-crc32 crc_tx(
+// crc32 crc_tx(
+//     .clk(I_clk50m),
+//     .rst(crc_rst),
+//     .en(crc_en_wire),
+//     .data_in(crc_data_buf),
+//     .crc_out(crc_out)
+// );
+
+crc8 crc_tx(
     .clk(I_clk50m),
     .rst(crc_rst),
-    .en(crc_en_wire),
-    .data_in(crc_data_buf),
+    .en(isSaveFlag),
+    .data_in(buffer_data),
     .crc_out(crc_out)
 );
 
@@ -354,8 +427,74 @@ end
 // always @ (posedge clk) begin
 //     if(en_flag)
 //         data <= data_in;
-// end
+// en
 
 assign crc_out = ~crc;
 
+endmodule
+
+// module crc (Clk, Reset, data_in, Enable, Crc,CrcNext);
+module crc8(
+    input clk,
+    input rst,
+    input en,
+    input [31:0] data_in,
+    output wire [31:0] crc_out
+);
+ 
+reg [31:0] Crc;
+wire [31:0] CrcNext;
+wire [7:0] Data;
+ 
+assign Data={data_in[0],data_in[1],data_in[2],data_in[3],data_in[4],data_in[5],data_in[6],data_in[7]};
+ 
+assign CrcNext[0] = Crc[24] ^ Crc[30] ^ Data[0] ^ Data[6];
+assign CrcNext[1] = Crc[24] ^ Crc[25] ^ Crc[30] ^ Crc[31] ^ Data[0] ^ Data[1] ^ Data[6] ^ Data[7];
+assign CrcNext[2] = Crc[24] ^ Crc[25] ^ Crc[26] ^ Crc[30] ^ Crc[31] ^ Data[0] ^ Data[1] ^ Data[2] ^ Data[6] ^ Data[7];
+assign CrcNext[3] = Crc[25] ^ Crc[26] ^ Crc[27] ^ Crc[31] ^ Data[1] ^ Data[2] ^ Data[3] ^ Data[7];
+assign CrcNext[4] = Crc[24] ^ Crc[26] ^ Crc[27] ^ Crc[28] ^ Crc[30] ^ Data[0] ^ Data[2] ^ Data[3] ^ Data[4] ^ Data[6];
+assign CrcNext[5] = Crc[24] ^ Crc[25] ^ Crc[27] ^ Crc[28] ^ Crc[29] ^ Crc[30] ^ Crc[31] ^ Data[0] ^ Data[1] ^ Data[3] ^ Data[4] ^ Data[5] ^ Data[6] ^ Data[7];
+assign CrcNext[6] = Crc[25] ^ Crc[26] ^ Crc[28] ^ Crc[29] ^ Crc[30] ^ Crc[31] ^ Data[1] ^ Data[2] ^ Data[4] ^ Data[5] ^ Data[6] ^ Data[7];
+assign CrcNext[7] = Crc[24] ^ Crc[26] ^ Crc[27] ^ Crc[29] ^ Crc[31] ^ Data[0] ^ Data[2] ^ Data[3] ^ Data[5] ^ Data[7];
+assign CrcNext[8] = Crc[0] ^ Crc[24] ^ Crc[25] ^ Crc[27] ^ Crc[28] ^ Data[0] ^ Data[1] ^ Data[3] ^ Data[4];
+assign CrcNext[9] = Crc[1] ^ Crc[25] ^ Crc[26] ^ Crc[28] ^ Crc[29] ^ Data[1] ^ Data[2] ^ Data[4] ^ Data[5];
+assign CrcNext[10] = Crc[2] ^ Crc[24] ^ Crc[26] ^ Crc[27] ^ Crc[29] ^ Data[0] ^ Data[2] ^ Data[3] ^ Data[5];
+assign CrcNext[11] = Crc[3] ^ Crc[24] ^ Crc[25] ^ Crc[27] ^ Crc[28] ^ Data[0] ^ Data[1] ^ Data[3] ^ Data[4];
+assign CrcNext[12] = Crc[4] ^ Crc[24] ^ Crc[25] ^ Crc[26] ^ Crc[28] ^ Crc[29] ^ Crc[30] ^ Data[0] ^ Data[1] ^ Data[2] ^ Data[4] ^ Data[5] ^ Data[6];
+assign CrcNext[13] = Crc[5] ^ Crc[25] ^ Crc[26] ^ Crc[27] ^ Crc[29] ^ Crc[30] ^ Crc[31] ^ Data[1] ^ Data[2] ^ Data[3] ^ Data[5] ^ Data[6] ^ Data[7];
+assign CrcNext[14] = Crc[6] ^ Crc[26] ^ Crc[27] ^ Crc[28] ^ Crc[30] ^ Crc[31] ^ Data[2] ^ Data[3] ^ Data[4] ^ Data[6] ^ Data[7];
+assign CrcNext[15] =  Crc[7] ^ Crc[27] ^ Crc[28] ^ Crc[29] ^ Crc[31] ^ Data[3] ^ Data[4] ^ Data[5] ^ Data[7];
+assign CrcNext[16] = Crc[8] ^ Crc[24] ^ Crc[28] ^ Crc[29] ^ Data[0] ^ Data[4] ^ Data[5];
+assign CrcNext[17] = Crc[9] ^ Crc[25] ^ Crc[29] ^ Crc[30] ^ Data[1] ^ Data[5] ^ Data[6];
+assign CrcNext[18] = Crc[10] ^ Crc[26] ^ Crc[30] ^ Crc[31] ^ Data[2] ^ Data[6] ^ Data[7];
+assign CrcNext[19] = Crc[11] ^ Crc[27] ^ Crc[31] ^ Data[3] ^ Data[7];
+assign CrcNext[20] = Crc[12] ^ Crc[28] ^ Data[4];
+assign CrcNext[21] = Crc[13] ^ Crc[29] ^ Data[5];
+assign CrcNext[22] = Crc[14] ^ Crc[24] ^ Data[0];
+assign CrcNext[23] = Crc[15] ^ Crc[24] ^ Crc[25] ^ Crc[30] ^ Data[0] ^ Data[1] ^ Data[6];
+assign CrcNext[24] = Crc[16] ^ Crc[25] ^ Crc[26] ^ Crc[31] ^ Data[1] ^ Data[2] ^ Data[7];
+assign CrcNext[25] = Crc[17] ^ Crc[26] ^ Crc[27] ^ Data[2] ^ Data[3];
+assign CrcNext[26] = Crc[18] ^ Crc[24] ^ Crc[27] ^ Crc[28] ^ Crc[30] ^ Data[0] ^ Data[3] ^ Data[4] ^ Data[6];
+assign CrcNext[27] = Crc[19] ^ Crc[25] ^ Crc[28] ^ Crc[29] ^ Crc[31] ^ Data[1] ^ Data[4] ^ Data[5] ^ Data[7];
+assign CrcNext[28] = Crc[20] ^ Crc[26] ^ Crc[29] ^ Crc[30] ^ Data[2] ^ Data[5] ^ Data[6];
+assign CrcNext[29] = Crc[21] ^ Crc[27] ^ Crc[30] ^ Crc[31] ^ Data[3] ^ Data[6] ^ Data[7];
+assign CrcNext[30] = Crc[22] ^ Crc[28] ^ Crc[31] ^ Data[4] ^ Data[7];
+assign CrcNext[31] = Crc[23] ^ Crc[29] ^ Data[5];
+ 
+reg en_bef;
+wire en_flag;
+assign en_flag = (~en_bef)&en;
+assign crc_out = ~Crc;
+
+always @ (posedge clk or negedge rst) begin
+    if (!rst) begin
+        Crc <={32{1'b1}};
+        en_bef <= 0;
+    end
+    else begin
+        en_bef <= en;
+        if(en_flag)
+            Crc <=CrcNext;
+    end
+ end
 endmodule
