@@ -10,7 +10,7 @@ module mac#(
     input I_rst,
     input I_en,
     input [7:0]  I_data,
-    input [15:0] I_udpLen,
+    input [15:0] I_dataLen,
     input [15:0] I_ipv4sign,
     
     output logic [1:0] O_txd,
@@ -36,7 +36,9 @@ state_typedef state;
  logic [47:0] mac_adr_buf;
 
  logic [15:0] total_len;
+ logic [15:0] I_udpLen;
  assign total_len = I_udpLen + 16'd20;
+ assign I_udpLen = I_dataLen + 16'd8;
 
 /*********** crc logic************/
  logic [31:0] crc_data_buf;
@@ -52,6 +54,7 @@ state_typedef state;
     bit_cnt <= 0;
     mac_adr_buf <= 0;
     tx_en <= 0;
+    O_txen<= 0;
 
     crc_rst <= 0;
     crc_forcr_en <= 0;
@@ -101,6 +104,7 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
             end
         end
         MAC_SYNC:begin
+            O_txen <= 1;
             tx_en <= 1;
             buffer_data <= 8'b01010101;
             if(isSaveFlag == 1'd1)begin
@@ -120,8 +124,8 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
             if(isSaveFlag == 1'd1)begin
                 crc_rst <= 1;
                 state <= MAC_ADR;
-                mac_adr_buf <= {mac_adr[7:0],  mac_adr[15:8], mac_adr[23:16],
-                                mac_adr[31:24],mac_adr[39:32],mac_adr[47:40]};
+                mac_adr_buf <= {mac_my_adr[7:0],  mac_my_adr[15:8], mac_my_adr[23:16],
+                                    mac_my_adr[31:24],mac_my_adr[39:32],mac_my_adr[47:40]};
             end
             else begin
                 state <= MAC_FRAME;
@@ -131,8 +135,8 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
             bufPush(
                 .target_state(MAC_MYADR),
                 .target_cnt(16'd6),
-                .buf_val({mac_my_adr[7:0],  mac_my_adr[15:8], mac_my_adr[23:16],
-                                    mac_my_adr[31:24],mac_my_adr[39:32],mac_my_adr[47:40]})
+                .buf_val({mac_adr[7:0],  mac_adr[15:8], mac_adr[23:16],
+                                mac_adr[31:24],mac_adr[39:32],mac_adr[47:40]})
             );
             // tx_en <= 1;
             // buffer_data <= mac_adr_buf[8:0];
@@ -218,7 +222,7 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
             bufPush(
                 .target_state(MAC_IPV4_CHECKSUM),
                 .target_cnt(16'd4),
-                .buf_val({16'h00,16'h00,16'h00})
+                .buf_val({32'h00,8'h3d,8'h99})
             );
         end
         MAC_IPV4_CHECKSUM:begin
@@ -255,7 +259,7 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
         MAC_UDP_LENCRC:begin
             bufPush(
                 .target_state(MAC_UDP_DATA),
-                .target_cnt(16'd2),
+                .target_cnt(16'd4),
                 .buf_val(48'h00)
             );
         end
@@ -263,7 +267,7 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
             tx_en <= 1;
             buffer_data <= I_data;
             if(isSaveFlag == 1'd1)begin
-                if(byte_cnt == I_udpLen - 16'd9)begin
+                if(byte_cnt == I_dataLen - 16'd1)begin
                     byte_cnt <= 0;
                     state <= MAC_CRC;
                     mac_adr_buf <= 48'd0;
@@ -302,8 +306,14 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
             end
         end
         MAC_END:begin
-            variableRST();
-            state <= MAC_IDLE;
+            byte_cnt <= byte_cnt + 16'd1;
+            if(byte_cnt == 16'd3 - 16'd1)begin
+                O_txen <= 0;
+            end
+            if(byte_cnt == 16'd6 - 16'd1)begin
+                state <= MAC_IDLE;
+                variableRST();
+            end
         end
         endcase
     end
@@ -314,7 +324,6 @@ rmii_txd rmii_txd0(
     .I_txen(tx_en),
     .I_data(buffer_data),
     .O_txd(O_txd),
-    .O_txen(O_txen),
     .isSaveData(isSaveFlag)
 );
 
@@ -383,7 +392,7 @@ module crc32 (
     input clk,
     input rst,
     input en,
-    input [31:0] data_in,
+    input [7:0] data_in,
     output reg [31:0] crc_out
 );
 

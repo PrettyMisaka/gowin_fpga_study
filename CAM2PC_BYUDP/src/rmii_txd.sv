@@ -3,7 +3,6 @@ module rmii_txd(
     input I_txen,
     input [7:0] I_data,
     output logic [1:0] O_txd,
-    output logic O_txen,
     output logic isSaveData
 );
  logic [7:0] bit_cnt;
@@ -15,7 +14,7 @@ module rmii_txd(
  initial begin
     bit_cnt <= 0;
     working <= 0;
-    O_txen  <= 0;
+    // O_txen  <= 0;
     O_txd   <= 0;
  end
  assign I_txen_flag = (~I_txen_bef)&I_txen;
@@ -29,7 +28,6 @@ module rmii_txd(
         if(bit_cnt == 8'd0)begin
             buffer_data <= {2'bXX,I_data[7:2]};
             O_txd <= I_data[1:0];
-            O_txen <= 1'b1;
             isSaveData <= 1;
         end
         else begin
@@ -48,7 +46,6 @@ module rmii_txd(
     end
     else begin
         bit_cnt <= 0;
-        O_txen  <= 0;
     end
  end
 
