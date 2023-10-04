@@ -46,6 +46,10 @@ state_typedef state;
  logic [31:0] crc_out;
  logic crc_forcr_en;
 
+/*************** checksum ****************/
+ logic [17:0] checksum;
+ logic [15:0] checksum_16b;
+
  task variableRST();
     state <= MAC_IDLE;
     O_busy <= 0;
@@ -104,7 +108,7 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
             end
         end
         MAC_SYNC:begin
-            O_txen <= 1;
+            O_txen <= tx_en;
             tx_en <= 1;
             buffer_data <= 8'b01010101;
             if(isSaveFlag == 1'd1)begin
@@ -203,6 +207,7 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
                 .target_cnt(16'd2),
                 .buf_val({16'h00,16'h00,total_len[7:0],total_len[15:8]})
             );
+            checksum <= 18'h4500 + 18'h8011/*4011 4000*/ + {2'd0,total_len} + {2'd0,I_ipv4sign} + {2'd0,src_ip_adr[31:16]+src_ip_adr[15:0]} + {2'd0,dst_ip_adr[31:16]+dst_ip_adr[15:0]};
         end
         MAC_IPV4_TOTALLEN:begin
             bufPush(
@@ -210,6 +215,9 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
                 .target_cnt(16'd2),
                 .buf_val({16'h00,16'h00,I_ipv4sign[7:0],I_ipv4sign[15:8]})
             );
+            if(checksum[17:16] != 2'd0)begin
+                checksum <= {2'd0,checksum[15:0]+{14'd0,checksum[17:16]}};
+            end
         end
         MAC_IPV4_SIGN:begin
             bufPush(
@@ -217,12 +225,13 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
                 .target_cnt(16'd2),
                 .buf_val({16'h00,16'h1140,8'h00,8'h40})
             );
+            checksum_16b <= 16'hffff - checksum[15:0];
         end
         MAC_IPV4_4BYTE:begin
             bufPush(
                 .target_state(MAC_IPV4_CHECKSUM),
                 .target_cnt(16'd4),
-                .buf_val({32'h00,8'h3d,8'h99})
+                .buf_val({32'h00,checksum_16b[7:0],checksum_16b[15:8]})
             );
         end
         MAC_IPV4_CHECKSUM:begin
@@ -310,7 +319,7 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
             if(byte_cnt == 16'd3 - 16'd1)begin
                 O_txen <= 0;
             end
-            if(byte_cnt == 16'd6 - 16'd1)begin
+            if(byte_cnt == 16'd48 - 16'd1)begin
                 state <= MAC_IDLE;
                 variableRST();
             end
@@ -387,7 +396,7 @@ crc8 crc_tx(
 );
 
 endmodule
-
+/*
 module crc32 (
     input clk,
     input rst,
@@ -441,7 +450,7 @@ end
 assign crc_out = ~crc;
 
 endmodule
-
+*/
 // module crc (Clk, Reset, data_in, Enable, Crc,CrcNext);
 module crc8(
     input clk,

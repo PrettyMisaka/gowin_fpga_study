@@ -11,18 +11,24 @@ module top(
     output logic [5:0] led
 );
 
+logic clk1m, clk6m;//clk
+
 logic [31:0] led_flash;
 logic en;
 logic [15:0] ipv4_sign ;
 
-assign phyrst = 1;
-assign led[4] = en;
-assign en = ~en_key;
+logic smi_ready;
+
 initial begin
     led[3] = 0;
     led_flash = 0;
     ipv4_sign = 16'h0123;
 end
+
+assign phyrst = 1;
+assign led[4] = en;
+assign en = ~en_key;
+assign led[5] = smi_ready;
 
 mac #(
     .udp_my_port(16'd11451),
@@ -36,7 +42,8 @@ mac #(
     .I_rst(phyrst),
     .I_en(en),
     .I_data(8'haa),
-    .I_dataLen(16'd222),
+    // .I_dataLen(16'd222),
+    .I_dataLen(16'd1200),
     .I_ipv4sign(16'd328),
     
     .O_txd(netrmii.txd),
@@ -58,5 +65,22 @@ always@(posedge netrmii.clk50m)begin
         led_flash <= led_flash + 32'd1;
     end
 end
+
+smi mac_smi(
+    .clk1m(clk1m),
+    .rst(rst),
+    
+    .phyrst(phyrst),
+    .ready(smi_ready),
+    .mdc(netrmii.mdc),
+    
+    .mdio(netrmii.mdio)
+);
+
+Gowin_rPLL_6M rpll_6m(
+    .clkout(clk6m),
+    .clkoutd(clk1m),
+    .clkin(clk)
+);
 
 endmodule
