@@ -43,7 +43,7 @@ mac #(
     .I_en(en),
     .I_data(8'haa),
     // .I_dataLen(16'd222),
-    .I_dataLen(16'd1200),
+    .I_dataLen(16'd1145),
     .I_ipv4sign(16'd328),
     
     .O_txd(netrmii.txd),

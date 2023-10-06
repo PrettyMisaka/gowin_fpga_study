@@ -19,7 +19,7 @@ print(1)
 # sock.close()
 # while True:
 try:
-    data, addr = sock.recvfrom(1400)
+    data, addr = sock.recvfrom(65535)
     print(data," ",addr, " ", len(data))
     # break
 except:
