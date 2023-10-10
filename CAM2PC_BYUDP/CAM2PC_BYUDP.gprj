@@ -5,16 +5,24 @@
     <Version>5</Version>
     <Device name="GW2A-18C" pn="GW2A-LV18PG256C8/I7">gw2a18c-011</Device>
     <FileList>
+        <File path="src/cam/lut_ov5640_rgb565_1024_768.v" type="file.verilog" enable="1"/>
         <File path="src/ddr3_memory_interface/DDR3MI.v" type="file.verilog" enable="1"/>
         <File path="src/fifo_hs/video_fifo.v" type="file.verilog" enable="1"/>
         <File path="src/gowin_rpll/TMDS_rPLL.v" type="file.verilog" enable="1"/>
         <File path="src/gowin_rpll/cmos_pll.v" type="file.verilog" enable="1"/>
         <File path="src/gowin_rpll/gowin_rpll_6M.v" type="file.verilog" enable="1"/>
         <File path="src/gowin_rpll/mem_pll.v" type="file.verilog" enable="1"/>
+        <File path="src/i2c_master/i2c_config.v" type="file.verilog" enable="1"/>
+        <File path="src/i2c_master/i2c_master_bit_ctrl.v" type="file.verilog" enable="1"/>
+        <File path="src/i2c_master/i2c_master_byte_ctrl.v" type="file.verilog" enable="1"/>
+        <File path="src/i2c_master/i2c_master_defines.v" type="file.verilog" enable="1"/>
+        <File path="src/i2c_master/i2c_master_top.v" type="file.verilog" enable="1"/>
+        <File path="src/i2c_master/timescale.v" type="file.verilog" enable="1"/>
         <File path="src/mac.sv" type="file.verilog" enable="1"/>
         <File path="src/mac_top.sv" type="file.verilog" enable="1"/>
         <File path="src/rmii_txd.sv" type="file.verilog" enable="1"/>
         <File path="src/smi.sv" type="file.verilog" enable="1"/>
+        <File path="src/top.sv" type="file.verilog" enable="1"/>
         <File path="src/video_frame_buffer/Video_Frame_Buffer_Top.v" type="file.verilog" enable="1"/>
         <File path="src/CAM2PC_UDP.cst" type="file.cst" enable="1"/>
         <File path="src/rmii.svh" type="file.other" enable="1"/>

@@ -103,7 +103,7 @@ assign state_led[1] = rst_n; //复位指示灯
 assign state_led[0] = init_calib_complete; //DDR3初始化指示灯
 
 reg [4:0] lcd_vs_cnt;
-always@(posedge lcd_vs) lcd_vs_cnt <= lcd_vs_cnt + 1;
+always@(posedge lcd_vs) lcd_vs_cnt <= lcd_vs_cnt + 5'd1;
 
 //generate the CMOS sensor clock and the SDRAM controller clock
 cmos_pll cmos_pll_m0(
