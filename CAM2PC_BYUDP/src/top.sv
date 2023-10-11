@@ -346,32 +346,32 @@ CLKDIV u_clkdiv
 defparam u_clkdiv.DIV_MODE="5";
 defparam u_clkdiv.GSREN="false";
 
-DVI_TX_Top DVI_TX_Top_inst
-(
-    .I_rst_n       (hdmi4_rst_n   ),  //asynchronous reset, low active
-    .I_serial_clk  (serial_clk    ),
+// DVI_TX_Top DVI_TX_Top_inst
+// (
+//     .I_rst_n       (hdmi4_rst_n   ),  //asynchronous reset, low active
+//     .I_serial_clk  (serial_clk    ),
 
-    .I_rgb_clk     (lcd_dclk       ),  //pixel clock
-    .I_rgb_vs      (lcd_vs        ), 
-    .I_rgb_hs      (lcd_hs        ),    
-    .I_rgb_de      (lcd_de        ), 
-    .I_rgb_r       ( {lcd_r,3'd0} ),  //tp0_data_r
-    .I_rgb_g       ( {lcd_g,2'd0} ),  
-    .I_rgb_b       ( {lcd_b,3'd0} ),  
+//     .I_rgb_clk     (lcd_dclk       ),  //pixel clock
+//     .I_rgb_vs      (lcd_vs        ), 
+//     .I_rgb_hs      (lcd_hs        ),    
+//     .I_rgb_de      (lcd_de        ), 
+//     .I_rgb_r       ( {lcd_r,3'd0} ),  //tp0_data_r
+//     .I_rgb_g       ( {lcd_g,2'd0} ),  
+//     .I_rgb_b       ( {lcd_b,3'd0} ),  
 
-    //测试图
-    // .I_rgb_clk     (video_clk       ),  //pixel clock
-    // .I_rgb_vs      (tp0_vs_in  ), 
-    // .I_rgb_hs      (tp0_hs_in  ),   
-    // .I_rgb_de      (tp0_de_in  ), 
-    // .I_rgb_r       (tp0_data_r  ), 
-    // .I_rgb_g       (tp0_data_g  ), 
-    // .I_rgb_b       (tp0_data_b  ), 
+//     //测试图
+//     // .I_rgb_clk     (video_clk       ),  //pixel clock
+//     // .I_rgb_vs      (tp0_vs_in  ), 
+//     // .I_rgb_hs      (tp0_hs_in  ),   
+//     // .I_rgb_de      (tp0_de_in  ), 
+//     // .I_rgb_r       (tp0_data_r  ), 
+//     // .I_rgb_g       (tp0_data_g  ), 
+//     // .I_rgb_b       (tp0_data_b  ), 
 
-    .O_tmds_clk_p  (O_tmds_clk_p  ),
-    .O_tmds_clk_n  (O_tmds_clk_n  ),
-    .O_tmds_data_p (O_tmds_data_p ),  //{r,g,b}
-    .O_tmds_data_n (O_tmds_data_n )
-);
+//     .O_tmds_clk_p  (O_tmds_clk_p  ),
+//     .O_tmds_clk_n  (O_tmds_clk_n  ),
+//     .O_tmds_data_p (O_tmds_data_p ),  //{r,g,b}
+//     .O_tmds_data_n (O_tmds_data_n )
+// );
 
 endmodule

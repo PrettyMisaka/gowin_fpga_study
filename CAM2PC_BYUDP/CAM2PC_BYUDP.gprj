@@ -6,6 +6,7 @@
     <Device name="GW2A-18C" pn="GW2A-LV18PG256C8/I7">gw2a18c-011</Device>
     <FileList>
         <File path="src/cam/lut_ov5640_rgb565_1024_768.v" type="file.verilog" enable="1"/>
+        <File path="src/cmos_8_16bit.v" type="file.verilog" enable="1"/>
         <File path="src/ddr3_memory_interface/DDR3MI.v" type="file.verilog" enable="1"/>
         <File path="src/fifo_hs/video_fifo.v" type="file.verilog" enable="1"/>
         <File path="src/gowin_rpll/TMDS_rPLL.v" type="file.verilog" enable="1"/>
@@ -20,9 +21,11 @@
         <File path="src/i2c_master/timescale.v" type="file.verilog" enable="1"/>
         <File path="src/mac.sv" type="file.verilog" enable="1"/>
         <File path="src/mac_top.sv" type="file.verilog" enable="1"/>
+        <File path="src/mjpeg_encoder/mjpeg_encoder.v" type="file.verilog" enable="0"/>
         <File path="src/rmii_txd.sv" type="file.verilog" enable="1"/>
         <File path="src/smi.sv" type="file.verilog" enable="1"/>
         <File path="src/top.sv" type="file.verilog" enable="1"/>
+        <File path="src/vga_timing.v" type="file.verilog" enable="1"/>
         <File path="src/video_frame_buffer/Video_Frame_Buffer_Top.v" type="file.verilog" enable="1"/>
         <File path="src/CAM2PC_UDP.cst" type="file.cst" enable="1"/>
         <File path="src/rmii.svh" type="file.other" enable="1"/>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE gowin-synthesis-project>
+<Project>
+    <Version>beta</Version>
+    <Device id="GW2A-18C" package="PBGA256" speed="8" partNumber="GW2A-LV18PG256C8/I7"/>
+    <FileList>
+        <File path="F:/Gowin/Gowin_V1.9.9Beta-5/IDE/ipcore/MJPEG_ENCODER/data/mjpeg_encoder_top.v" type="verilog"/>
+        <File path="F:/Gowin/Gowin_V1.9.9Beta-5/IDE/ipcore/MJPEG_ENCODER/data/mjpeg_encoder_top_wrap.v" type="verilog"/>
+    </FileList>
+    <OptionList>
+        <Option type="disable_insert_pad" value="1"/>
+        <Option type="include_path" value="F:/Gowin/Gowin_V1.9.9Beta-5/IDE/ipcore/MJPEG_ENCODER/data"/>
+        <Option type="include_path" value="F:/Github/gowin/CAM2PC_BYUDP/src/mjpeg_encoder/temp/MJPEG_Encoder"/>
+        <Option type="output_file" value="mjpeg_encoder.vg"/>
+        <Option type="output_template" value="mjpeg_encoder_tmp.v"/>
+        <Option type="ram_balance" value="1"/>
+        <Option type="ram_rw_check" value="1"/>
+        <Option type="verilog_language" value="sysv-2017"/>
+    </OptionList>
+</Project>
