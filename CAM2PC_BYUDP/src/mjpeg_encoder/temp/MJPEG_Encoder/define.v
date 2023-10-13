@@ -1,3 +1,3 @@
 `define MODULE_NAME MJPEG_Encoder_Top
-`define IMAGE_WIDTH 800
-`define IMAGE_HEIGHT 600
+`define IMAGE_WIDTH 1024
+`define IMAGE_HEIGHT 768

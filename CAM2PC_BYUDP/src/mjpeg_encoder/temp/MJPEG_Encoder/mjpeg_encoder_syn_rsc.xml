@@ -1,2 +1,2 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Module name="MJPEG_Encoder_Top" Register="5224" Alu="3533" Lut="1517" Dsp="4" Bsram="39" Ssram="9"/>
+<Module name="MJPEG_Encoder_Top" Register="5218" Alu="3487" Lut="1479" Dsp="3" Bsram="39" Ssram="9"/>
