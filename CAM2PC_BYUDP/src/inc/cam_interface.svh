@@ -14,8 +14,8 @@ interface cam_phy_interface_typedef(
 endinterface 
 interface cam_user_interface_typedef(
     output logic cam_init_done,
-    output logic data_vsync,
-    output logic data_de,
+    output logic vsync,
+    output logic de,
     output logic [15:0] data_rgb565,
 );
 endinterface //rmii

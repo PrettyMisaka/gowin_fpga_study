@@ -1,55 +1,29 @@
-module cmos_8_16bit(
-	input              rst,
-	input              pclk,
-	input [7:0]        pdata_i,
-	input              de_i,
-	output reg[15:0]   pdata_o,
-	output reg	       hblank,
-	output reg         de_o
+module my_cmos_8_16bit(
+	input              i_pclk,
+	input [7:0]        i_pdata,
+	input              i_de,
+	output wire[23:0]   o_pdata_rgb888,
+	output reg	       o_half_pclk,
+	output wire        o_de
 );
-reg[7:0] pdata_i_d0;
-reg x_cnt;
-always@(posedge pclk)
-begin
-	pdata_i_d0 <= pdata_i;
+reg [7:0] pdata_o;
+wire [15:0] pdata_rgb565;
+assign o_pdata_rgb888 = i_de ? {pdata_o[7:3],3'd0,pdata_o[2:0],i_pdata[7:5],2'd0,i_pdata[4:0],3'd0} : 24'h0000;//{r,g,b}
+assign pdata_rgb565 = i_de ? { pdata_o, i_pdata} : 16'h0000;
+
+reg i_de_bef;
+always@(posedge i_pclk) i_de_bef <= i_de;
+wire i_de_pos, i_de_neg;
+assign i_de_pos = (~i_de_bef)&i_de;
+assign i_de_neg = (~i_de)&i_de_bef;
+
+assign o_de = i_de;
+
+always@(posedge i_pclk) pdata_o <= i_pdata;
+always@(posedge i_pclk)begin
+	if(i_de_pos || i_de_neg) o_half_pclk <= 0;
+	else if(i_de) begin
+		o_half_pclk <= ~o_half_pclk;
+	end
 end
-
-always@(posedge pclk)
-begin
-	if(de_i & !de_d1)
-		x_cnt <= 1;
-	else
-		x_cnt <= ~x_cnt ;
-
-end
-
-always@(posedge pclk or posedge rst)
-begin
-	if(rst)
-		de_o <= 1'b0;
-	else if(x_cnt)
-		de_o <= 1'b1;
-	else
-		de_o <= 1'b0;
-end
-
-reg de_d1,de_d2;
-always@(posedge pclk)begin 
-	de_d1 <= de_i;
-	de_d2 <= de_d1;
-
- 	hblank <= de_d2;
-end 
-
-
-always@(posedge pclk or posedge rst)
-begin
-	if(rst)
-		pdata_o <= 16'd0;
-	else if(de_i && x_cnt)
-		pdata_o <= {pdata_i_d0,pdata_i};
-	else
-		pdata_o <= pdata_o;
-end
-
 endmodule 
