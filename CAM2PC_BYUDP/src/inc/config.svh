@@ -4,5 +4,6 @@
 `include "rmii.svh"
 `include "udp_interface.svh"
 `include "cam_interface.svh"
+`include "ddr3_interface.svh"
 
 `endif

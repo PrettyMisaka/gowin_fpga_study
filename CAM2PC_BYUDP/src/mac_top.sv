@@ -1,14 +1,25 @@
-`include "rmii.svh"
-`include "udp_interface.svh"
+`include "inc/rmii.svh"
+`include "inc/udp_interface.svh"
 
 module mac_top(
     input clk,
     input rst,
 
     rmii netrmii,
-    udp_interface udp_port,
+    
+    output logic mdc ,
+    inout  mdio,
+    
+    input I_udp_tx_en,
+    input [7:0] I_udp_data,
+    input [15:0] I_udp_data_len,
+    input [15:0] I_ipv4_sign,
+    output logic O_mac_init_ready,
+    output logic O_udp_busy,
+    output logic O_udp_isLoadData,
 
     output logic phyrst,
+    output logic init_down,
 
     output logic [5:0] led
 );
@@ -28,7 +39,7 @@ initial begin
 end
 
 assign phyrst = rst;
-assign O_mac_init_ready = smi_ready;
+assign init_down = smi_ready;
 // assign led[4] = en;
 // assign en = udp_port.I_udp_tx_en;
 // assign led[5] = smi_ready;
@@ -44,20 +55,20 @@ mac #(
     .I_clk50m(netrmii.clk50m),
     .I_rst(phyrst),
 
-    .I_en(udp_port.I_udp_tx_en),
-    .I_data(udp_port.I_udp_data),
+    .I_en(I_udp_tx_en),
+    .I_data(I_udp_data),
     // .I_dataLen(16'd222),
-    .I_dataLen(udp_port.I_udp_data_len),
-    .I_ipv4sign(udp_port.I_ipv4_sign),
+    .I_dataLen(I_udp_data_len),
+    .I_ipv4sign(I_ipv4_sign),
     
     .O_txd(netrmii.txd),
     .O_txen(netrmii.txen),
 
-    .O_busy(udp_port.O_udp_busy),
-    .O_isLoadData(udp_port.O_udp_isLoadData)
+    .O_busy(O_udp_busy),
+    .O_isLoadData(O_udp_isLoadData)
 );
 
-always@(negedge udp_port.O_udp_busy)begin
+always@(negedge O_udp_busy)begin
     ipv4_sign <= ipv4_sign + 16'd1;
 end
 
@@ -77,9 +88,9 @@ smi mac_smi(
     
     .phyrst(phyrst),
     .ready(smi_ready),
-    .mdc(netrmii.mdc),
-    
-    .mdio(netrmii.mdio)
+
+    .mdc(mdc),
+    .mdio(mdio)
 );
 
 Gowin_rPLL_6M rpll_6m(
