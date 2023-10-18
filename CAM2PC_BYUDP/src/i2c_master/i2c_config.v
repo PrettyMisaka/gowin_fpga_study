@@ -10,7 +10,10 @@ module i2c_config(
 	output reg         error,
 	output             done,
 	inout              i2c_scl,
-	inout              i2c_sda
+	// inout              i2c_sda
+    input sda_i,
+    output logic sda_o,
+    output logic sda_out_en
 );
 wire scl_pad_i;
 wire scl_pad_o;
@@ -20,8 +23,12 @@ wire sda_pad_i;
 wire sda_pad_o;
 wire sda_padoen_o;
 
-assign sda_pad_i = i2c_sda;
-assign i2c_sda = ~sda_padoen_o ? sda_pad_o : 1'bz;
+assign sda_pad_i = sda_i;
+assign sda_out_en = ~sda_padoen_o;
+assign sda_o = sda_pad_o;
+// assign i2c_sda = ~sda_padoen_o ? sda_pad_o : 1'bz;
+// assign sda_pad_i = i2c_sda;
+// assign i2c_sda = ~sda_padoen_o ? sda_pad_o : 1'bz;
 assign scl_pad_i = i2c_scl;
 assign i2c_scl = ~scl_padoen_o ? scl_pad_o : 1'bz;
 

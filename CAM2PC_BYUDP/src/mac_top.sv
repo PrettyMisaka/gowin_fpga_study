@@ -1,5 +1,6 @@
 `include "inc/rmii.svh"
 `include "inc/udp_interface.svh"
+`include "inc/inout_interface.svh"
 
 module mac_top(
     input clk,
@@ -7,6 +8,10 @@ module mac_top(
 
     rmii netrmii,
     
+    input mdio_i,
+    output logic mdio_o,
+    output logic mdio_out_en,
+
     output logic mdc ,
     inout  mdio,
     
@@ -91,7 +96,11 @@ smi mac_smi(
     .ready(smi_ready),
 
     .mdc(mdc),
-    .mdio(mdio)
+//    .mdio(mdio),
+
+    .mdio_i(mdio_i),
+    .mdio_o(mdio_o),
+    .mdio_out_en(mdio_out_en)
 );
 
 Gowin_rPLL_6M rpll_6m(

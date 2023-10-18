@@ -36,7 +36,14 @@ struct {
     logic [23:0] data_bgr888;
 } cam_user;
 
+typedef struct{
+    logic out_en;
+    logic out;
+    logic in;
+} inout_typedef;
+
 wire cmos_scl, cmos_sda;
+inout_typedef cam_inout;
 cam_top cam_top0(
 	.clk        (clk        ),//27mhz 
 	.rst_n      (rst.cam    ),
@@ -50,7 +57,10 @@ cam_top cam_top0(
     .data_bgr888    (cam_user.data_bgr888  ),
     
 	.cmos_scl       (cmos_scl              ),          //cmos i2c clock
-	.cmos_sda       (cmos_sda              ) 
+	// .cmos_sda       (cmos_sda              ) 
+    .sda_i			(cam_inout.in		   ),
+    .sda_o			(cam_inout.out		   ),
+    .sda_out_en		(cam_inout.out_en	   )
 );
 
 struct {
@@ -65,6 +75,9 @@ struct {
 
 logic mac_init_down;
 wire mac_mdc, mac_mdio;
+// logic mac_mdio_i, mac_mdio_o, mac_out_en;
+inout_typedef mac_inout;
+// assign mac_mdio = mdio_out_en ? mac_mdio_o : mac_mdio_i;
 mac_top mac_top0(
     .clk      (clk          ),
     .rst      (rst.mac      ),
@@ -72,7 +85,7 @@ mac_top mac_top0(
     .netrmii  (netrmii      ),
 
     .mdc (mac_mdc ),//wire
-    .mdio(mac_mdio),//wire
+    // .mdio(mac_mdio),//wire
     
     .I_udp_tx_en        (udp_port.I_udp_tx_en      ),
     .I_udp_data         (udp_port.I_udp_data       ),
@@ -83,7 +96,11 @@ mac_top mac_top0(
     .O_udp_isLoadData   (udp_port.O_udp_isLoadData ),  
 
     .phyrst   (phyrst       ),
-    .init_down(mac_init_down)
+    .init_down(mac_init_down),
+    
+    .mdio_i(mac_inout.in),
+    .mdio_o(mac_inout.out),
+    .mdio_out_en(mac_inout.out_en)
 );
 
 MJPEG_Encoder_Top MJPEG_Encoder0(
@@ -177,10 +194,19 @@ enum logic[7:0] {
     IDLE, MAC_INIT, CAM_INIT, STATE_END
 } state;
 
+inout_typedef sda_mdio_inout;
+
 logic init_down;
 assign init_down = cam_user.cam_init_done & init_calib_complete & mac_init_down;
+assign sda_mdio = sda_mdio_inout.out_en ? sda_mdio_inout.out : 1'bz ;
+assign sda_mdio_inout.in = sda_mdio;
+
+assign mac_inout.in = sda_mdio_inout.in;
+assign cam_inout.in = sda_mdio_inout.in;
+assign sda_mdio_inout.out  = (state == IDLE || state == MAC_INIT) ? mac_inout.out  : cam_inout.out;
+assign sda_mdio_inout.out_en  = (state == IDLE || state == MAC_INIT) ? mac_inout.out_en  : cam_inout.out_en;
 // assign scl_mdc  = mac_mdc  ;
-assign sda_mdio = mac_mdio ;
+// assign sda_mdio = mac_mdio ;
 assign scl_mdc  = (state == IDLE || state == MAC_INIT) ? mac_mdc  : cmos_scl;
 // assign sda_mdio = (state == IDLE || state == MAC_INIT) ? mac_mdio : cmos_sda;
 // assign scl_mdc  = (state == IDLE || state == CAM_INIT) ? cmos_scl : mac_mdc ;
@@ -200,17 +226,17 @@ always@(posedge clk or negedge rst_n)begin
                 rst.ddr3 <= 1'd1;
                 led <= led << 1;
             end
-            CAM_INIT:begin
-                rst.cam <= 1'd1;
-                if(cam_user.cam_init_done) begin
-                    state <= STATE_END;
-                    led <= led << 1;
-                end
-            end
             MAC_INIT:begin
                 rst.mac <= 1'd1;
                 if(mac_init_down) begin
                     state <= CAM_INIT;
+                    led <= led << 1;
+                end
+            end
+            CAM_INIT:begin
+                rst.cam <= 1'd1;
+                if(cam_user.cam_init_done) begin
+                    state <= STATE_END;
                     led <= led << 1;
                 end
             end

@@ -12,7 +12,10 @@ module cam_top(
     output logic [23:0] data_bgr888,
 	
 	inout                       cmos_scl,          //cmos i2c clock
-	inout                       cmos_sda 
+	// inout                       cmos_sda 
+    input sda_i,
+    output logic sda_o,
+    output logic sda_out_en
 );
 
 assign cam_port.cmos_xclk = cmos_clk;
@@ -37,7 +40,11 @@ i2c_config i2c_config_m0(
 	.error                      (                         ),
 	.done                       ( cam_init_done   ),
 	.i2c_scl                    (cmos_scl         ),
-	.i2c_sda                    (cmos_sda         )
+	// .i2c_sda                    (cmos_sda         )
+    .sda_i						(sda_i					  ),
+    .sda_o						(sda_o					  ),
+    .sda_out_en					(sda_out_en				  )
+
 );
 //configure look-up table
 lut_ov5640_rgb565_1024_768 lut_ov5640_rgb565_1024_768_m0(

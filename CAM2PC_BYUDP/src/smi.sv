@@ -1,3 +1,4 @@
+`include "inc/inout_interface.svh"
 module smi(
     input clk1m,
     input rst,
@@ -6,7 +7,11 @@ module smi(
     output logic ready,
     output logic mdc,
     
-    inout logic mdio
+    // inout logic mdio,
+
+    input mdio_i,
+    output logic mdio_o,
+    output logic mdio_out_en
 );
 
 logic rphyrst;
@@ -87,7 +92,10 @@ SMI_ct ct(
     .phy_adr(5'd1), .reg_adr(SMI_adr),
     .data(SMI_wdata),
     .smi_data(SMI_data),
-    .mdio(mdio)
+    // .mdio(mdio),
+    .mdio_i(mdio_i),
+    .mdio_o(mdio_o),
+    .mdio_out_en(mdio_out_en)
 );
 
 endmodule
@@ -100,10 +108,11 @@ module SMI_ct(
     [15:0] data,
     output logic ready, ack,
     logic [15:0] smi_data,
-    inout logic mdio
+    // inout logic mdio,
 
     input mdio_i,
-    output logic mdio_o
+    output logic mdio_o,
+    output logic mdio_out_en
 );
 
     byte ct;
@@ -112,7 +121,12 @@ module SMI_ct(
     reg [31:0] tx_data;
     reg [15:0] rx_data;
 
-    assign mdio = rmdio?1'bZ:1'b0;
+    logic mdio;
+
+    assign mdio_out_en = ~rmdio;
+    assign mdio = rmdio ? mdio_i : mdio_o;
+
+    // assign mdio = rmdio?1'bZ:1'b0;
 
     always_comb begin
         smi_data <= rx_data;
