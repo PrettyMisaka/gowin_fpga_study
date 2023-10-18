@@ -22,6 +22,7 @@ assign cam_port.cmos_rst_n = 1'b1;
 assign  vsync = cam_port.cmos_vsync;
 
 logic [31:0] lut_data;
+logic [9:0]  lut_index;
 
 //I2C master controller
 i2c_config i2c_config_m0(

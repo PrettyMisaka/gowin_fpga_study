@@ -101,6 +101,9 @@ module SMI_ct(
     output logic ready, ack,
     logic [15:0] smi_data,
     inout logic mdio
+
+    input mdio_i,
+    output logic mdio_o
 );
 
     byte ct;

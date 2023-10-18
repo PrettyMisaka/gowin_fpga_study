@@ -6,8 +6,8 @@ module my_top(
     output logic                phyrst,
     output logic [5:0]          led,
 
-    inout                       scl_mdc,
-    inout                       sda_mdio,
+    inout logic                 scl_mdc,
+    inout logic                 sda_mdio,
 
     cam_phy_interface_typedef   cam_port,
     ddr3_phy_interface_typedef  ddr3_port,
@@ -51,6 +51,39 @@ cam_top cam_top0(
     
 	.cmos_scl       (cmos_scl              ),          //cmos i2c clock
 	.cmos_sda       (cmos_sda              ) 
+);
+
+struct {
+    logic I_udp_tx_en;
+    logic [7:0] I_udp_data;
+    logic [15:0] I_udp_data_len;
+    logic [15:0] I_ipv4_sign;
+    logic O_mac_init_ready;
+    logic O_udp_busy;
+    logic O_udp_isLoadData;
+} udp_port;
+
+logic mac_init_down;
+wire mac_mdc, mac_mdio;
+mac_top mac_top0(
+    .clk      (clk          ),
+    .rst      (rst.mac      ),
+
+    .netrmii  (netrmii      ),
+
+    .mdc (mac_mdc ),//wire
+    .mdio(mac_mdio),//wire
+    
+    .I_udp_tx_en        (udp_port.I_udp_tx_en      ),
+    .I_udp_data         (udp_port.I_udp_data       ),
+    .I_udp_data_len     (udp_port.I_udp_data_len   ),
+    .I_ipv4_sign        (udp_port.I_ipv4_sign      ),
+    .O_mac_init_ready   (udp_port.O_mac_init_ready ),
+    .O_udp_busy         (udp_port.O_udp_busy       ),
+    .O_udp_isLoadData   (udp_port.O_udp_isLoadData ),  
+
+    .phyrst   (phyrst       ),
+    .init_down(mac_init_down)
 );
 
 MJPEG_Encoder_Top MJPEG_Encoder0(
@@ -128,39 +161,6 @@ mem_pll mem_pll_m0(
 	.lock 					   (DDR_pll_lock 			   )
 	);
 
-struct {
-    logic I_udp_tx_en;
-    logic [7:0] I_udp_data;
-    logic [15:0] I_udp_data_len;
-    logic [15:0] I_ipv4_sign;
-    logic O_mac_init_ready;
-    logic O_udp_busy;
-    logic O_udp_isLoadData;
-} udp_port;
-
-logic mac_init_down;
-wire mac_mdc, mac_mdio;
-mac_top mac_top0(
-    .clk      (clk          ),
-    .rst      (rst.mac      ),
-
-    .netrmii  (netrmii      ),
-
-    .mdc (mac_mdc ),//wire
-    .mdio(mac_mdio),//wire
-    
-    .I_udp_tx_en        (udp_port.I_udp_tx_en      ),
-    .I_udp_data         (udp_port.I_udp_data       ),
-    .I_udp_data_len     (udp_port.I_udp_data_len   ),
-    .I_ipv4_sign        (udp_port.I_ipv4_sign      ),
-    .O_mac_init_ready   (udp_port.O_mac_init_ready ),
-    .O_udp_busy         (udp_port.O_udp_busy       ),
-    .O_udp_isLoadData   (udp_port.O_udp_isLoadData ),  
-
-    .phyrst   (phyrst       ),
-    .init_down(mac_init_down)
-);
-
 typedef struct{
     logic isempty;
     logic [2:0] addr;
@@ -179,8 +179,12 @@ enum logic[7:0] {
 
 logic init_down;
 assign init_down = cam_user.cam_init_done & init_calib_complete & mac_init_down;
+// assign scl_mdc  = mac_mdc  ;
+assign sda_mdio = mac_mdio ;
 assign scl_mdc  = (state == IDLE || state == MAC_INIT) ? mac_mdc  : cmos_scl;
-assign sda_mdio = (state == IDLE || state == MAC_INIT) ? mac_mdio : cmos_sda;
+// assign sda_mdio = (state == IDLE || state == MAC_INIT) ? mac_mdio : cmos_sda;
+// assign scl_mdc  = (state == IDLE || state == CAM_INIT) ? cmos_scl : mac_mdc ;
+// assign sda_mdio = (state == IDLE || state == CAM_INIT) ? cmos_sda : mac_mdio;
 always@(posedge clk or negedge rst_n)begin
     if(!rst_n)begin
         state <= IDLE;
@@ -196,22 +200,22 @@ always@(posedge clk or negedge rst_n)begin
                 rst.ddr3 <= 1'd1;
                 led <= led << 1;
             end
-            MAC_INIT:begin
-                rst.mac <= 1'd1;
-                if(mac_init_down) begin
-                    state <= CAM_INIT;
-                    rst.cam <= 1'd1;
-                    led <= led << 1;
-                end
-            end
             CAM_INIT:begin
-                if(init_down) begin
+                rst.cam <= 1'd1;
+                if(cam_user.cam_init_done) begin
                     state <= STATE_END;
                     led <= led << 1;
                 end
             end
+            MAC_INIT:begin
+                rst.mac <= 1'd1;
+                if(mac_init_down) begin
+                    state <= CAM_INIT;
+                    led <= led << 1;
+                end
+            end
             STATE_END:begin
-
+                rst.mjpeg = 1'd1;
             end
         endcase
     end

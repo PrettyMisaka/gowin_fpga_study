@@ -40,6 +40,7 @@ end
 
 assign phyrst = rst;
 assign init_down = smi_ready;
+assign O_mac_init_ready = smi_ready;
 // assign led[4] = en;
 // assign en = udp_port.I_udp_tx_en;
 // assign led[5] = smi_ready;
