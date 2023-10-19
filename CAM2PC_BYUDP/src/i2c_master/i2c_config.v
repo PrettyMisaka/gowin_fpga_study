@@ -9,8 +9,12 @@ module i2c_config(
 	input[7:0]         lut_reg_data,
 	output reg         error,
 	output             done,
-	inout              i2c_scl,
+	// inout              i2c_scl,
 	// inout              i2c_sda
+    input scl_i,
+    output logic scl_o,
+    output logic scl_out_en,
+
     input sda_i,
     output logic sda_o,
     output logic sda_out_en
@@ -29,8 +33,11 @@ assign sda_o = sda_pad_o;
 // assign i2c_sda = ~sda_padoen_o ? sda_pad_o : 1'bz;
 // assign sda_pad_i = i2c_sda;
 // assign i2c_sda = ~sda_padoen_o ? sda_pad_o : 1'bz;
-assign scl_pad_i = i2c_scl;
-assign i2c_scl = ~scl_padoen_o ? scl_pad_o : 1'bz;
+// assign scl_pad_i = i2c_scl;
+// assign i2c_scl = ~scl_padoen_o ? scl_pad_o : 1'bz;
+assign scl_pad_i = scl_i;
+assign scl_out_en = ~scl_padoen_o;
+assign scl_o = scl_pad_o;
 
 reg i2c_read_req;
 wire i2c_read_req_ack;

@@ -2,25 +2,21 @@
 <GAO_CONFIG>
     <Version>3.0</Version>
     <Mode>Standard</Mode>
-    <AoCore index="0" sample_clock="clk" trig_type="0" storage_depth="1024" window_num="1" capture_amount="1024" implementation="0" trigger_pos="0" module_name="my_top" force_trigger_by_falling_edge="true">
+    <AoCore index="0" sample_clock="cam_port.cmos_pclk" trig_type="0" storage_depth="1024" window_num="1" capture_amount="1024" implementation="0" trigger_pos="0" module_name="my_top" force_trigger_by_falling_edge="true">
         <SignalList>
-            <Bus name="state[7:0]">
-                <Signal>state[7]</Signal>
-                <Signal>state[6]</Signal>
-                <Signal>state[5]</Signal>
-                <Signal>state[4]</Signal>
-                <Signal>state[3]</Signal>
-                <Signal>state[2]</Signal>
-                <Signal>state[1]</Signal>
-                <Signal>state[0]</Signal>
+            <Signal>cam_port.cmos_pclk</Signal>
+            <Bus name="cam_port.cmos_db[7:0]">
+                <Signal>cam_port.cmos_db[7]</Signal>
+                <Signal>cam_port.cmos_db[6]</Signal>
+                <Signal>cam_port.cmos_db[5]</Signal>
+                <Signal>cam_port.cmos_db[4]</Signal>
+                <Signal>cam_port.cmos_db[3]</Signal>
+                <Signal>cam_port.cmos_db[2]</Signal>
+                <Signal>cam_port.cmos_db[1]</Signal>
+                <Signal>cam_port.cmos_db[0]</Signal>
             </Bus>
-            <Signal>rst_n</Signal>
-            <Signal>rst.mac</Signal>
-            <Signal>scl_mdc</Signal>
-            <Signal>sda_mdio</Signal>
-            <Signal>mac_mdc</Signal>
-            <Signal>mac_mdio</Signal>
-            <Signal>mac_top0/clk1m</Signal>
+            <Signal>cam_port.cmos_href</Signal>
+            <Signal>cam_port.cmos_vsync</Signal>
         </SignalList>
         <Triggers>
             <Trigger index="0">
@@ -66,5 +62,5 @@
             <Expression>M0</Expression>
         </Expressions>
     </AoCore>
-    <GAO_ID>0011001111000100</GAO_ID>
+    <GAO_ID>0101111101110111</GAO_ID>
 </GAO_CONFIG>

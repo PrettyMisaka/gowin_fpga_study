@@ -11,8 +11,12 @@ module cam_top(
     output logic [15:0] data_bgr565,
     output logic [23:0] data_bgr888,
 	
-	inout                       cmos_scl,          //cmos i2c clock
+	// inout                       cmos_scl,          //cmos i2c clock
 	// inout                       cmos_sda 
+    input scl_i,
+    output logic scl_o,
+    output logic scl_out_en,
+
     input sda_i,
     output logic sda_o,
     output logic sda_out_en
@@ -39,8 +43,13 @@ i2c_config i2c_config_m0(
 	.lut_reg_data               (lut_data[7:0]            ),
 	.error                      (                         ),
 	.done                       ( cam_init_done   ),
-	.i2c_scl                    (cmos_scl         ),
+	// .i2c_scl                    (cmos_scl         ),
 	// .i2c_sda                    (cmos_sda         )
+
+    .scl_i						(scl_i					  ),
+    .scl_o						(scl_o					  ),
+    .scl_out_en					(scl_out_en				  ),
+
     .sda_i						(sda_i					  ),
     .sda_o						(sda_o					  ),
     .sda_out_en					(sda_out_en				  )

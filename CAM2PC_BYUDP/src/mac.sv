@@ -9,6 +9,7 @@ module mac#(
     input I_clk50m,
     input I_rst,
     input I_en,
+    input I_de,//此时I_data数据线上的数据是否有效
     input [7:0]  I_data,
     input [15:0] I_dataLen,
     input [15:0] I_ipv4sign,
@@ -16,7 +17,8 @@ module mac#(
     output logic [1:0] O_txd,
     output logic O_txen,
     output logic O_busy,
-    output logic O_isLoadData
+    output logic O_isLoadData,
+    output logic O_1Byte_pass
 );
 
 typedef enum logic [7:0] { 

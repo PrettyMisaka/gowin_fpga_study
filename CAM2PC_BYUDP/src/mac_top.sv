@@ -11,9 +11,13 @@ module mac_top(
     input mdio_i,
     output logic mdio_o,
     output logic mdio_out_en,
+    
+    // input mdc_i,
+    output logic mdc_o,
+    // output logic mdc_out_en,
 
-    output logic mdc ,
-    inout  mdio,
+    // output logic mdc ,
+    // inout  mdio,
     
     input I_udp_tx_en,
     input [7:0] I_udp_data,
@@ -95,8 +99,12 @@ smi mac_smi(
     .phyrst(phyrst),
     .ready(smi_ready),
 
-    .mdc(mdc),
+    // .mdc(mdc),
 //    .mdio(mdio),
+
+    // .mdc_i(mdc_i),
+    .mdc_o(mdc_o),
+    // .mdc_out_en(mdc_out_en)
 
     .mdio_i(mdio_i),
     .mdio_o(mdio_o),

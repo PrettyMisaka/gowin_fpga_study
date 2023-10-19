@@ -1,73 +1,58 @@
 module ddr3_master(
     input clk,//27mhz
     input clk50m,
+
     input rst_n,
-    ddr3_phy_interface_typedef ddr3_port,
 
+    input           i_cam_rgb888_pclk   ,
+    input           i_cam_vsync         ,
+    input           i_cam_de            ,
+    input [23:0]    i_cam_data_rgb888   ,
+
+    output logic        o_mjpeg_rst     ,
+    output logic        o_mjpeg_de      ,
+    output logic [23:0] o_mjpeg_data    ,
+    input               i_mjpeg_de      ,
+    input               i_mjpeg_down    ,
+    input [7:0]         i_mjpeg_data    ,
+
+    output              o_udp_tx_en     ,
+    output [7:0]        o_udp_data      ,
+    output [15:0]       o_udp_datalen   ,
+    output [15:0]       o_ipv4_sign     ,
+    input               i_udp_tx_clk    ,
+    input               i_udp_busy      ,
+    input               i_udp_isLoadData,
+
+    output logic        o_ddr3_cmd         ,
+    output logic        o_ddr3_cmd_en      ,
+    output logic        o_ddr3_addr        ,
+    output logic [127:0]o_ddr3_wr_data     ,
+    output logic        o_ddr3_wr_data_en  ,
+    output logic        o_ddr3_wr_data_end ,
+    input               i_ddr3_clk         ,
+    input               i_ddr3_memory_clk  ,
+    input               i_ddr3_half_mem_clk,
+    input               i_ddr3_cmd_ready   ,
+    input               i_ddr3_addr        ,
+    input               i_ddr3_wr_data_rdy ,
+    input [127:0]       i_ddr3_rd_data     ,
+    input               i_ddr3_rd_data_de  ,
+    input               i_ddr3_rd_data_end 
 );
-
-logic memory_clk, DDR_pll_lock, half_memory_clk;
-logic init_calib_complete;
-
-DDR3MI DDR3_Memory_Interface_Top_inst 
-(
-    .clk                (clk50m             ),
-    .memory_clk         (memory_clk         ),
-    .pll_lock           (DDR_pll_lock       ),
-    .rst_n              (rst_n              ), //rst_n
-    .app_burst_number   (app_burst_number   ),
-    .cmd_ready          (cmd_ready          ),
-    .cmd                (cmd                ),
-    .cmd_en             (cmd_en             ),
-    .addr               (addr               ),
-    .wr_data_rdy        (wr_data_rdy        ),
-    .wr_data            (wr_data            ),
-    .wr_data_en         (wr_data_en         ),
-    .wr_data_end        (wr_data_end        ),
-    .wr_data_mask       (wr_data_mask       ),
-    .rd_data            (rd_data            ),
-    .rd_data_valid      (rd_data_valid      ),
-    .rd_data_end        (rd_data_end        ),
-    .sr_req             (1'b0               ),
-    .ref_req            (1'b0               ),
-    .sr_ack             (                   ),
-    .ref_ack            (                   ),
-    .init_calib_complete(init_calib_complete),
-    .clk_out            (half_memory_clk    ),
-    .burst              (1'b1               ),
-    // mem interface
-    .ddr_rst            (                           ),
-    .O_ddr_addr         (ddr3_port.ddr_addr         ),
-    .O_ddr_ba           (ddr3_port.ddr_bank         ),
-    .O_ddr_cs_n         (ddr3_port.ddr_cs           ),
-    .O_ddr_ras_n        (ddr3_port.ddr_ras          ),
-    .O_ddr_cas_n        (ddr3_port.ddr_cas          ),
-    .O_ddr_we_n         (ddr3_port.ddr_we           ),
-    .O_ddr_clk          (ddr3_port.ddr_ck           ),
-    .O_ddr_clk_n        (ddr3_port.ddr_ck_n         ),
-    .O_ddr_cke          (ddr3_port.ddr_cke          ),
-    .O_ddr_odt          (ddr3_port.ddr_odt          ),
-    .O_ddr_reset_n      (ddr3_port.ddr_reset_n      ),
-    .O_ddr_dqm          (ddr3_port.ddr_dm           ),
-    .IO_ddr_dq          (ddr3_port.ddr_dq           ),
-    .IO_ddr_dqs         (ddr3_port.ddr_dqs          ),
-    .IO_ddr_dqs_n       (ddr3_port.ddr_dqs_n        )
-);
-
-mem_pll mem_pll_m0(
-	.clkin                     (clk                        ),
-	.clkout                    (memory_clk 	              		),
-	.lock 					   (DDR_pll_lock 						)
-	);
-
-typedef struct{
-    logic isempty;
-    logic [2:0] addr;
-    logic [13:0] row_addr_end;
-    logic [9:0]  col_addr_end;
-} jpeg_bank_data_typedef;
-jpeg_bank_data_typedef jpeg_now, jpeg_wr;
-jpeg_now = '{isempty:1'd0,addr:3'd0,default:0};
-jpeg_wr =  '{isempty:1'd0,addr:3'd1,default:0};
+//----------------------------------
+//将rgb565数据输入mjpeg
+//----------------------------------
+logic mjpeg_busy;
+enum logic [7:0] {
+} state;
+always@(posedge i_cam_rgb888_pclk or negedge rst_n)begin
+    if(~rst_n)begin
+        mjpeg_busy  <= 0;
+        o_mjpeg_rst <= 0;
+    end
+    else begin
+    end
+end
 
 endmodule

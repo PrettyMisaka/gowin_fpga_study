@@ -5,9 +5,14 @@ module smi(
     
     output logic phyrst,
     output logic ready,
-    output logic mdc,
-    
+
+    // output logic mdc,
     // inout logic mdio,
+    
+    // input mdc_i,
+    output logic mdc_o,
+    // output logic mdc_out_en,
+
 
     input mdio_i,
     output logic mdio_o,
@@ -27,7 +32,8 @@ logic [15:0] SMI_wdata;
 
 byte SMI_status;
 
-assign mdc = clk1m;
+assign mdc_o = clk1m;
+// assign mdc = clk1m;
 assign ready = phy_rdy;
 
 always_ff@(posedge clk1m or negedge rst)begin
