@@ -264,6 +264,7 @@ begin
 		10'd249: lut_data <= {8'h78 , 24'h5001a3}; // SDE on, scale on, UV average off, color matrix on, AWB on
 		10'd250: lut_data <= {8'h78 , 24'h350300}; // AEC/AGC on 
 		10'd251: lut_data <= {8'h78 , 24'h303521};// PLL     input clock =24Mhz, PCLK =84Mhz
+		// 10'd251: lut_data <= {8'h78 , 24'h303511};// PLL     input clock =24Mhz, PCLK =84Mhzx2
 		10'd252: lut_data <= {8'h78 , 24'h303669};// PLL
 		10'd253: lut_data <= {8'h78 , 24'h3c0707}; // lightmeter 1 threshold[7:0]
 		10'd254: lut_data <= {8'h78 , 24'h382047}; // flip

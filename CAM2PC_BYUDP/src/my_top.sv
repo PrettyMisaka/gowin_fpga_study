@@ -21,7 +21,30 @@ assign led[3:0] = led_tmp[3:0];
 assign led[4] = ~cam_port.cmos_href;
 // assign led[5] = ;\
 initial led <= 6'b111111;
-always@(posedge cam_port.cmos_vsync) led[5] <= ~led[5];
+
+logic vsync_bef;
+logic [6:0] frame_cnt;
+logic [6:0] frame_cnt_save;
+logic [31:0] delay_1s_cnt_27mhz;
+initial begin
+    frame_cnt <= 6'd0;
+    delay_1s_cnt_27mhz <= 32'd0;
+end
+always@(posedge memory_clk_400m) begin 
+    vsync_bef <= cam_port.cmos_vsync;
+    if(delay_1s_cnt_27mhz == 32'd400000000 - 32'd1 )begin
+        delay_1s_cnt_27mhz <= 1'd0;
+        frame_cnt <= 7'd0;
+        frame_cnt_save <= frame_cnt;
+    end
+    else begin
+        delay_1s_cnt_27mhz <= delay_1s_cnt_27mhz + 1'd1;
+    end
+    if(vsync_bef == 0 && cam_port.cmos_vsync == 1'd1) begin
+        frame_cnt <= frame_cnt + 7'd1;
+        led[5] <= ~led[5]; 
+    end
+end
 logic clk50m;
 assign clk50m = netrmii.clk50m;
 

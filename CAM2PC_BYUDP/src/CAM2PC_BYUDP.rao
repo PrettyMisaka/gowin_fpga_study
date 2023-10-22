@@ -36,6 +36,14 @@
                 <Signal>cam_user.data_bgr565[1]</Signal>
                 <Signal>cam_user.data_bgr565[0]</Signal>
             </Bus>
+            <Bus name="frame_cnt_save[5:0]">
+                <Signal>frame_cnt_save[5]</Signal>
+                <Signal>frame_cnt_save[4]</Signal>
+                <Signal>frame_cnt_save[3]</Signal>
+                <Signal>frame_cnt_save[2]</Signal>
+                <Signal>frame_cnt_save[1]</Signal>
+                <Signal>frame_cnt_save[0]</Signal>
+            </Bus>
         </SignalList>
         <Triggers>
             <Trigger index="0">
@@ -48,8 +56,7 @@
                     <Signal>cam_port.cmos_vsync</Signal>
                 </SignalList>
             </Trigger>
-            <Trigger index="2">
-            </Trigger>
+            <Trigger index="2"/>
             <Trigger index="3"/>
             <Trigger index="4"/>
             <Trigger index="5"/>
@@ -86,5 +93,5 @@
             <Expression>M0</Expression>
         </Expressions>
     </AoCore>
-    <GAO_ID>0100000110101001</GAO_ID>
+    <GAO_ID>1111000010110011</GAO_ID>
 </GAO_CONFIG>
