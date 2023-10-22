@@ -20,12 +20,14 @@ module mac_top(
     // inout  mdio,
     
     input I_udp_tx_en,
+    input I_udp_tx_de,
     input [7:0] I_udp_data,
     input [15:0] I_udp_data_len,
     input [15:0] I_ipv4_sign,
     output logic O_mac_init_ready,
     output logic O_udp_busy,
     output logic O_udp_isLoadData,
+    output logic O_1Byte_pass,
 
     output logic phyrst,
     output logic init_down,
@@ -66,6 +68,7 @@ mac #(
     .I_rst(phyrst),
 
     .I_en(I_udp_tx_en),
+    .I_de(1'd1),
     .I_data(I_udp_data),
     // .I_dataLen(16'd222),
     .I_dataLen(I_udp_data_len),
@@ -75,7 +78,8 @@ mac #(
     .O_txen(netrmii.txen),
 
     .O_busy(O_udp_busy),
-    .O_isLoadData(O_udp_isLoadData)
+    .O_isLoadData(O_udp_isLoadData),
+    .O_1Byte_pass(O_1Byte_pass)
 );
 
 always@(negedge O_udp_busy)begin

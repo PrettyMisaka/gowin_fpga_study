@@ -3,13 +3,16 @@ module rmii_txd(
     input I_txen,
     input [7:0] I_data,
     output logic [1:0] O_txd,
-    output logic isSaveData
+    output logic isSaveData,
+    output logic last_bit
 );
  logic [7:0] bit_cnt;
  logic [7:0] buffer_data;
  logic working;
  logic I_txen_bef;
  logic I_txen_flag;
+
+assign last_bit = (bit_cnt == 8'd0) ? 1'd1 : 1'd0 ;
 
  initial begin
     bit_cnt <= 0;

@@ -13,9 +13,15 @@ module my_top(
     ddr3_phy_interface_typedef  ddr3_port,
     rmii                        netrmii
 );
+logic [5:0] led_tmp;
 initial begin
-    led <= 6'b111111;
+    led_tmp <= 6'b111111;
 end
+assign led[3:0] = led_tmp[3:0];
+assign led[4] = ~cam_port.cmos_href;
+// assign led[5] = ;\
+initial led <= 6'b111111;
+always@(posedge cam_port.cmos_vsync) led[5] <= ~led[5];
 logic clk50m;
 assign clk50m = netrmii.clk50m;
 
@@ -45,9 +51,12 @@ typedef struct{
 wire cmos_scl, cmos_sda;
 inout_typedef cam_inout;
 inout_typedef cam_scl_inout;
+// logic rst_n_pwd;
 cam_top cam_top0(
 	.clk        (clk        ),//27mhz 
 	.rst_n      (rst.cam    ),
+    // .rst_n_pwd  (rst_n_pwd  ),
+    // .rst_n_pll  (1'd1       ),
     .cam_port   (cam_port   ),
 	
     .cam_init_done  (cam_user.cam_init_done),
@@ -70,13 +79,13 @@ cam_top cam_top0(
 );
 
 struct {
-    logic I_udp_tx_en;
+    logic I_udp_tx_en , I_udp_tx_de;
     logic [7:0] I_udp_data;
     logic [15:0] I_udp_data_len;
     logic [15:0] I_ipv4_sign;
     logic O_mac_init_ready;
     logic O_udp_busy;
-    logic O_udp_isLoadData;
+    logic O_udp_isLoadData , O_1Byte_pass;
 } udp_port;
 
 logic mac_init_down;
@@ -94,12 +103,14 @@ mac_top mac_top0(
     // .mdio(mac_mdio),//wire
     
     .I_udp_tx_en        (udp_port.I_udp_tx_en      ),
+    .I_udp_tx_de        (udp_port.I_udp_tx_de      ),
     .I_udp_data         (udp_port.I_udp_data       ),
     .I_udp_data_len     (udp_port.I_udp_data_len   ),
     .I_ipv4_sign        (udp_port.I_ipv4_sign      ),
     .O_mac_init_ready   (udp_port.O_mac_init_ready ),
     .O_udp_busy         (udp_port.O_udp_busy       ),
-    .O_udp_isLoadData   (udp_port.O_udp_isLoadData ),  
+    .O_udp_isLoadData   (udp_port.O_udp_isLoadData ), 
+    .O_1Byte_pass       (udp_port.O_1Byte_pass), 
 
     .phyrst   (phyrst       ),
     .init_down(mac_init_down),
@@ -195,15 +206,16 @@ initial begin
     jpeg_now = '{isempty:1'd0,addr:3'd0,default:0};
     jpeg_wr =  '{isempty:1'd0,addr:3'd1,default:0};
 end
-
+logic [31:0] delay_cnt;
 enum logic[7:0] {
-    IDLE, MAC_INIT, CAM_INIT, INIT_DOWN,STATE_END
+    IDLE, MAC_INIT, MAC2CAM_DELAY , CAM_INIT, INIT_DOWN,STATE_END
 } state;
 
 inout_typedef sda_mdio_inout;
 inout_typedef scl_mdc_inout;
 
-logic init_down;
+logic init_down , cam_init_cancel;
+assign cam_init_cancel = 1'd0;
 assign init_down = cam_user.cam_init_done & init_calib_complete & mac_init_down;
 assign sda_mdio = sda_mdio_inout.out_en ? sda_mdio_inout.out : 1'bz ;
 assign sda_mdio_inout.in = sda_mdio;
@@ -213,51 +225,59 @@ assign scl_mdc_inout.in = scl_mdc;
 
 assign mac_inout.in = sda_mdio_inout.in;
 assign cam_inout.in = sda_mdio_inout.in;
-assign sda_mdio_inout.out  = (state == IDLE || state == MAC_INIT) ? mac_inout.out  : cam_inout.out;
-assign sda_mdio_inout.out_en  = (state == IDLE || state == MAC_INIT) ? mac_inout.out_en  : cam_inout.out_en;
+assign sda_mdio_inout.out = (state == IDLE || state == MAC_INIT) ? mac_inout.out  : (cam_init_cancel ? 1'd1 : cam_inout.out);
+assign sda_mdio_inout.out_en = (state == IDLE || state == MAC_INIT) ? mac_inout.out_en  : (cam_init_cancel ? 1'd1 : cam_inout.out_en);
 
 assign cam_scl_inout.in = scl_mdc_inout.in;
-assign scl_mdc_inout.out  = (state == IDLE || state == MAC_INIT) ? mac_mdc  : cam_scl_inout.out;
-assign scl_mdc_inout.out_en  = (state == IDLE || state == MAC_INIT) ? 1'd1  : cam_scl_inout.out_en;
+assign scl_mdc_inout.out = (state == IDLE || state == MAC_INIT) ? mac_mdc  : (cam_init_cancel ? 1'd1: cam_scl_inout.out);
+assign scl_mdc_inout.out_en = (state == IDLE || state == MAC_INIT) ? 1'd1  : (cam_init_cancel ? 1'd1: cam_scl_inout.out_en);
 // assign scl_mdc  = mac_mdc  ;
 // assign sda_mdio = mac_mdio ;
 // assign scl_mdc  = (state == IDLE || state == MAC_INIT) ? mac_mdc  : cmos_scl;
 // assign sda_mdio = (state == IDLE || state == MAC_INIT) ? mac_mdio : cmos_sda;
 // assign scl_mdc  = (state == IDLE || state == CAM_INIT) ? cmos_scl : mac_mdc ;
 // assign sda_mdio = (state == IDLE || state == CAM_INIT) ? cmos_sda : mac_mdio;
+task task_init_reg();
+    state <= IDLE;
+    delay_cnt<= 32'd0;
+    rst.mac  <= 1'd0;
+    rst.ddr3 <= 1'd0;
+    rst.cam  <= 1'd0;
+    // rst_n_pwd<= 1'd1;
+    led_tmp <= 6'b111111;
+endtask //automatic
+initial task_init_reg();
 always@(posedge clk or negedge rst_n)begin
     if(!rst_n)begin
-        state <= IDLE;
-        rst.mac  <= 1'd0;
-        rst.ddr3 <= 1'd0;
-        rst.cam  <= 1'd0;
-        led <= 6'b111111;
+        task_init_reg();
     end
     else begin
         case (state)
             IDLE:begin
                 state <= MAC_INIT;
                 rst.ddr3 <= 1'd1;
-                led <= led << 1;
+                // rst_n_pwd<= 1'd1;
+                led_tmp <= led_tmp << 1;
             end
             MAC_INIT:begin
                 rst.mac <= 1'd1;
+                delay_cnt <= 32'd0;
                 if(mac_init_down) begin
                     state <= CAM_INIT;
-                    led <= led << 1;
+                    led_tmp <= led_tmp << 1;
                 end
             end
             CAM_INIT:begin
                 rst.cam <= 1'd1;
                 if(cam_user.cam_init_done) begin
                     state <= INIT_DOWN;
-                    led <= led << 1;
+                    led_tmp <= led_tmp << 1;
                 end
             end
             INIT_DOWN:begin
                 if(init_down) begin
                     state <= STATE_END;
-                    led <= led << 1;
+                    led_tmp <= led_tmp << 1;
                 end
             end
             STATE_END:begin

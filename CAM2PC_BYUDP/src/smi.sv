@@ -131,6 +131,7 @@ module SMI_ct(
 
     assign mdio_out_en = ~rmdio;
     assign mdio = rmdio ? mdio_i : mdio_o;
+    assign mdio_o = 1'b0;
 
     // assign mdio = rmdio?1'bZ:1'b0;
 
@@ -146,39 +147,44 @@ module SMI_ct(
 
             rmdio <= 1'b1;
         end else begin
-            ct <= ct + 8'd1;
-            if(ct == 0 && trg == 1'b0)ct<=0;
-            if(ct == 0 && trg == 1'b1)begin
-                ready <= 1'b0;
-                ack <= 1'b0;
-            end
+            // if(ready == 1'b0)begin
+                ct <= ct + 8'd1;
+                if(ct == 0 && trg == 1'b0)ct<=0;
+                if(ct == 0 && trg == 1'b1)begin
+                    ready <= 1'b0;
+                    ack <= 1'b0;
+                end
 
-            if(ct == 64)begin
-                ready <= 1'b1;
-            end
+                if(ct == 64)begin
+                    ready <= 1'b1;
+                end
 
-            if(trg == 1'b1 && ready == 1'b1)begin
-                ready <= 1'b0;
-            end
+                if(trg == 1'b1 && ready == 1'b1)begin
+                    ready <= 1'b0;
+                end
 
-            rmdio <= 1'b1;
+                rmdio <= 1'b1;
 
-            if(ct == 4 && trg == 1'b1)begin
-                tx_data <= {2'b01, rw?2'b10:2'b01, phy_adr, reg_adr, rw?2'b11:2'b10, rw?16'hFFFF:data};
-            end
+                if(ct == 4 && trg == 1'b1)begin
+                    tx_data <= {2'b01, rw?2'b10:2'b01, phy_adr, reg_adr, rw?2'b11:2'b10, rw?16'hFFFF:data};
+                end
 
-            if(ct>31)begin
-                rmdio <= tx_data[31];
-                tx_data <= {tx_data[30:0], 1'b1};
-            end
+                if(ct>31)begin
+                    rmdio <= tx_data[31];
+                    tx_data <= {tx_data[30:0], 1'b1};
+                end
 
-            if(ct == 48 && mdio == 1'b0)begin
-                ack <= 1'b1;
-            end
-            
-            if(ct>48)begin
-                rx_data <= {rx_data[14:0], mdio};
-            end
+                if(ct == 48 && mdio == 1'b0)begin
+                    ack <= 1'b1;
+                end
+                
+                if(ct>48)begin
+                    rx_data <= {rx_data[14:0], mdio};
+                end
+            // end
+            // else begin
+            //     rmdio <= 1'b1;
+            // end
         end
     end
 endmodule

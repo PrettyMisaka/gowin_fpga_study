@@ -29,6 +29,10 @@ typedef enum logic [7:0] {
     MAC_CRC, MAC_END
 } state_typedef;
 state_typedef state;
+
+logic last_bit_flag;
+logic last_o_txen_state;
+assign O_1Byte_pass = last_bit_flag;
     
  logic [15:0] byte_cnt;
  logic [7:0] bit_cnt;
@@ -61,6 +65,7 @@ state_typedef state;
     mac_adr_buf <= 0;
     tx_en <= 0;
     O_txen<= 0;
+    last_o_txen_state <= 0;
 
     crc_rst <= 0;
     crc_forcr_en <= 0;
@@ -123,6 +128,7 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
                     state <= MAC_SYNC;
                 end
             end
+            last_o_txen_state <= O_txen;
         end
         MAC_FRAME:begin
             tx_en <= 1;
@@ -277,6 +283,10 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
         MAC_UDP_DATA:begin
             tx_en <= 1;
             buffer_data <= I_data;
+            if(last_bit_flag == 1'd1)begin
+                O_txen <= I_de;
+                last_o_txen_state <= O_txen;
+            end
             if(isSaveFlag == 1'd1)begin
                 if(byte_cnt == I_dataLen - 16'd1)begin
                     byte_cnt <= 0;
@@ -285,7 +295,10 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
                     crc_forcr_en <= 1;
                 end
                 else begin
-                    byte_cnt <= byte_cnt + 16'd1;
+                    if(last_o_txen_state)begin
+                        byte_cnt <= byte_cnt + 16'd1;
+                    end
+                    else  byte_cnt <= byte_cnt;
                 end
             end
         end
@@ -335,7 +348,8 @@ rmii_txd rmii_txd0(
     .I_txen(tx_en),
     .I_data(buffer_data),
     .O_txd(O_txd),
-    .isSaveData(isSaveFlag)
+    .isSaveData(isSaveFlag),
+    .last_bit(last_bit_flag)
 );
 
 logic [1:0] crc_byte_cnt;//4byte 1circle

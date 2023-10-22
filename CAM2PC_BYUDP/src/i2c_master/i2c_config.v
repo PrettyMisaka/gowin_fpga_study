@@ -35,7 +35,7 @@ assign sda_o = sda_pad_o;
 // assign i2c_sda = ~sda_padoen_o ? sda_pad_o : 1'bz;
 // assign scl_pad_i = i2c_scl;
 // assign i2c_scl = ~scl_padoen_o ? scl_pad_o : 1'bz;
-assign scl_pad_i = scl_i;
+assign scl_pad_i = ~scl_padoen_o ? scl_pad_o : scl_i;
 assign scl_out_en = ~scl_padoen_o;
 assign scl_o = scl_pad_o;
 
