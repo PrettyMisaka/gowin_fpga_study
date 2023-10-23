@@ -18,7 +18,7 @@ initial begin
     led_tmp <= 6'b111111;
 end
 assign led[3:0] = led_tmp[3:0];
-assign led[4] = ~cam_port.cmos_href;
+// assign led[4] = ~cam_port.cmos_href;
 // assign led[5] = ;\
 initial led <= 6'b111111;
 
@@ -30,9 +30,9 @@ initial begin
     frame_cnt <= 6'd0;
     delay_1s_cnt_27mhz <= 32'd0;
 end
-always@(posedge memory_clk_400m) begin 
+always@(posedge cam_port.cmos_pclk) begin 
     vsync_bef <= cam_port.cmos_vsync;
-    if(delay_1s_cnt_27mhz == 32'd400000000 - 32'd1 )begin
+    if(delay_1s_cnt_27mhz == 32'd84000000 - 32'd1 )begin
         delay_1s_cnt_27mhz <= 1'd0;
         frame_cnt <= 7'd0;
         frame_cnt_save <= frame_cnt;
@@ -133,7 +133,7 @@ mac_top mac_top0(
     .O_mac_init_ready   (udp_port.O_mac_init_ready ),
     .O_udp_busy         (udp_port.O_udp_busy       ),
     .O_udp_isLoadData   (udp_port.O_udp_isLoadData ), 
-    .O_1Byte_pass       (udp_port.O_1Byte_pass), 
+    .O_1Byte_pass       (udp_port.O_1Byte_pass     ), 
 
     .phyrst   (phyrst       ),
     .init_down(mac_init_down),
@@ -143,15 +143,24 @@ mac_top mac_top0(
     .mdio_out_en(mac_inout.out_en)
 );
 
+logic rst_mjpeg, mjpeg_clk, mjpeg_de, mjpeg_down, mjpeg_de_o;
+logic [23:0] mjpeg_data_in;
+logic [7:0] mjpeg_data_out;
 MJPEG_Encoder_Top MJPEG_Encoder0(
-    .clk        (cam_user.half_cmos_clk ), //input clk
-    .rstn       (rst.mjpeg              ), //input rstn
-    .DE         (cam_user.de            ), //input DE
-    .data_in    (cam_user.data_bgr888   ), //input [23:0] data_in
-    .img_out    (img_out_o              ), //output [7:0] img_out
-    .img_valid  (img_valid_o            ), //output img_valid
-    .img_done   (img_done_o             ) //output img_done
+    .clk        (mjpeg_clk              ), //input clk
+    .rstn       (rst_mjpeg              ), //input rstn
+    .DE         (mjpeg_de               ), //input DE
+    .data_in    (mjpeg_data_in          ), //input [23:0] data_in
+    .img_out    (mjpeg_data_out         ), //output [7:0] img_out
+    .img_valid  (mjpeg_de_o             ), //output img_valid
+    .img_done   (mjpeg_down             ) //output img_done
 );
+logic mjpeg_down_bef;
+always@(posedge cam_port.cmos_pclk) begin 
+    if(mjpeg_down_bef == 0 && mjpeg_down == 1'd1) begin
+        led[4] <= ~led[4]; 
+    end
+end
 
 logic memory_clk_400m, DDR_pll_lock, half_memory_clk;
 logic init_calib_complete;
@@ -309,5 +318,51 @@ always@(posedge clk or negedge rst_n)begin
         endcase
     end
 end
+
+ddr3_master ddr3_master0(
+    .clk                (clk   ),//27mhz
+    .clk50m             (clk50m),
+    .rst_n              (rst_n ),
+
+    .i_cam_pclk         (cam_port.cmos_pclk     ),
+    .i_cam_rgb888_pclk  (cam_user.half_cmos_clk ),
+    .i_cam_vsync        (cam_user.vsync         ),
+    .i_cam_de           (cam_user.de            ),
+    .i_cam_data_rgb888  (cam_user.data_bgr888   ),
+
+    .o_mjpeg_clk        (mjpeg_clk              ),
+    .o_mjpeg_rst        (rst_mjpeg              ),
+    .o_mjpeg_de         (mjpeg_de               ),
+    .o_mjpeg_data       (mjpeg_data_in          ),
+    .i_mjpeg_de         (mjpeg_de_o             ),
+    .i_mjpeg_down       (mjpeg_down             ),
+    .i_mjpeg_data       (mjpeg_data_out         ),
+
+    .o_udp_tx_en        (udp_port.I_udp_tx_en      ),
+    .o_udp_tx_de        (udp_port.I_udp_tx_de      ),
+    .o_udp_data         (udp_port.I_udp_data       ),
+    .o_udp_datalen      (udp_port.I_udp_data_len   ),
+    .o_ipv4_sign        (udp_port.I_ipv4_sign      ),
+    .i_udp_tx_clk       (udp_port.O_mac_init_ready ),
+    .i_udp_busy         (udp_port.O_udp_busy       ),
+    .i_udp_isLoadData   (udp_port.O_udp_isLoadData ),
+    .i_udp_1Byte_pass   (udp_port.O_1Byte_pass     ),
+
+    .o_ddr3_cmd         (cmd            ),
+    .o_ddr3_cmd_en      (cmd_en         ),
+    .o_ddr3_addr        (addr           ),
+    .o_ddr3_wr_data     (wr_data        ),
+    .o_ddr3_wr_data_en  (wr_data_en     ),
+    .o_ddr3_wr_data_end (wr_data_end    ),
+    .o_ddr3_wr_mask     (wr_data_mask   ),
+    .i_ddr3_clk         (clk50m         ),
+    .i_ddr3_memory_clk  (memory_clk_400m),
+    .i_ddr3_half_mem_clk(half_memory_clk),
+    .i_ddr3_cmd_ready   (cmd_ready      ),
+    .i_ddr3_wr_data_rdy (wr_data_rdy    ),
+    .i_ddr3_rd_data     (rd_data        ),
+    .i_ddr3_rd_data_de  (rd_data_valid  ),
+    .i_ddr3_rd_data_end (rd_data_end    )
+);
 
 endmodule

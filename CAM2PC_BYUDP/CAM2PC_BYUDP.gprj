@@ -8,6 +8,7 @@
         <File path="src/cam/lut_ov5640_rgb565_1024_768.v" type="file.verilog" enable="1"/>
         <File path="src/cam_top.sv" type="file.verilog" enable="1"/>
         <File path="src/cmos_8_16bit.v" type="file.verilog" enable="1"/>
+        <File path="src/ddr3_master.sv" type="file.verilog" enable="1"/>
         <File path="src/ddr3_memory_interface/DDR3MI.v" type="file.verilog" enable="1"/>
         <File path="src/fifo_hs/video_fifo.v" type="file.verilog" enable="0"/>
         <File path="src/gowin_rpll/TMDS_rPLL.v" type="file.verilog" enable="0"/>
@@ -33,7 +34,7 @@
         <File path="src/top.cst" type="file.cst" enable="0"/>
         <File path="src/ddr_18k.sdc" type="file.sdc" enable="0"/>
         <File path="src/lcd.sdc" type="file.sdc" enable="1"/>
-        <File path="src/CAM2PC_BYUDP.rao" type="file.gao" enable="1"/>
+        <File path="src/CAM2PC_BYUDP.rao" type="file.gao" enable="0"/>
         <File path="src/inc/cam_interface.svh" type="file.other" enable="1"/>
         <File path="src/inc/config.svh" type="file.other" enable="1"/>
         <File path="src/inc/ddr3_interface.svh" type="file.other" enable="1"/>
