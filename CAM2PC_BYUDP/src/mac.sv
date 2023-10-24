@@ -14,6 +14,7 @@ module mac#(
     input [15:0] I_dataLen,
     input [15:0] I_ipv4sign,
     
+    output logic O_head_down,
     output logic [1:0] O_txd,
     output logic O_txen,
     output logic O_busy,
@@ -33,6 +34,7 @@ state_typedef state;
 logic last_bit_flag;
 logic last_o_txen_state;
 assign O_1Byte_pass = last_bit_flag;
+assign O_head_down = (state == MAC_UDP_DATA || state == MAC_CRC || state == MAC_END )?1'd1:1'd0;
     
  logic [15:0] byte_cnt;
  logic [7:0] bit_cnt;

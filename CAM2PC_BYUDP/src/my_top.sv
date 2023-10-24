@@ -106,6 +106,7 @@ struct {
     logic [7:0] I_udp_data;
     logic [15:0] I_udp_data_len;
     logic [15:0] I_ipv4_sign;
+    logic O_head_down;
     logic O_mac_init_ready;
     logic O_udp_busy;
     logic O_udp_isLoadData , O_1Byte_pass;
@@ -130,6 +131,7 @@ mac_top mac_top0(
     .I_udp_data         (udp_port.I_udp_data       ),
     .I_udp_data_len     (udp_port.I_udp_data_len   ),
     .I_ipv4_sign        (udp_port.I_ipv4_sign      ),
+    .O_head_down        (udp_port.O_head_down      ),
     .O_mac_init_ready   (udp_port.O_mac_init_ready ),
     .O_udp_busy         (udp_port.O_udp_busy       ),
     .O_udp_isLoadData   (udp_port.O_udp_isLoadData ), 

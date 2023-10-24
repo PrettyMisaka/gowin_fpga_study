@@ -45,6 +45,15 @@ module ddr3_master(
     input               i_ddr3_rd_data_end 
 );
 //----------------------------------
+//addr
+//----------------------------------
+logic               addr_rank;
+logic [ 2:0]        addr_bank;
+logic [13:0]        addr_row;
+logic [ 9:0]        addr_col;
+assign addr_rank = 1'b0;
+assign o_ddr3_addr = {addr_rank,addr_bank,addr_row,addr_col};
+//----------------------------------
 //cam data
 //----------------------------------
 logic cam_vsync_bef , cam_vsync_pos_flag , cam_new_frame;
@@ -64,9 +73,9 @@ end
 //----------------------------------
 //mjpeg
 //----------------------------------
-logic mjpeg_busy;
+logic mjpeg_busy , mjpeg_data_de;
 assign o_mjpeg_clk = i_cam_pclk;
-assign o_mjpeg_de = (i_cam_rgb888_pclk&&i_cam_de&&mjpeg_busy)?1'd1:1'd0;
+assign o_mjpeg_de = (i_cam_rgb888_pclk&&i_cam_de&&mjpeg_data_de)?1'd1:1'd0;
 assign o_mjpeg_data = i_cam_data_rgb888;
 //----------------------------------
 //cam data
@@ -80,6 +89,7 @@ task task_rst();
     state_main <= MAIN_IDLE_HREFPOS;
     cam_new_frame <= 1'd0;
     o_mjpeg_rst <= 0;
+    mjpeg_data_de <= 1'd0;
 endtask
 always@(posedge i_cam_pclk or negedge rst_n)begin
     if(~rst_n)begin
@@ -88,6 +98,7 @@ always@(posedge i_cam_pclk or negedge rst_n)begin
     else begin
         if(cam_vsync_pos_flag == 1'd1)begin
             cam_new_frame <= 1'd1;
+            mjpeg_data_de <= 1'd0;
             // o_mjpeg_rst <= 1'd0;
         end
         case(state_main)
@@ -95,6 +106,7 @@ always@(posedge i_cam_pclk or negedge rst_n)begin
                 if(cam_de_pos_flag)begin
                     cam_new_frame <= 1'd0;
                     if(mjpeg_busy == 0 && cam_new_frame)begin
+                        mjpeg_data_de <= 1'd1;
                         mjpeg_busy <= 1'd1;
                         o_mjpeg_rst <= 1'd1;
                         state_main <= MAIN_MJPEG_DOWN;
@@ -109,6 +121,31 @@ always@(posedge i_cam_pclk or negedge rst_n)begin
                 end
             end
         endcase
+    end
+end
+
+logic [127:0] mjpeg_out_data_buf;
+logic [6:0] ddr3_in_wrdata_cnt;
+initial begin
+    mjpeg_out_data_buf <= 0;
+    ddr3_in_wrdata_cnt <= 0;
+end
+always@(posedge i_cam_pclk or negedge rst_n)begin
+    if(~rst_n)begin
+        mjpeg_out_data_buf <= 0;
+        ddr3_in_wrdata_cnt <= 0;
+    end
+    else begin
+        if(mjpeg_busy)begin
+            if(i_mjpeg_de)begin
+                mjpeg_out_data_buf <= {mjpeg_out_data_buf[119:0],i_mjpeg_data};
+                ddr3_in_wrdata_cnt <= ddr3_in_wrdata_cnt + 7'd1;
+            end
+        end
+        else begin
+            mjpeg_out_data_buf <= 0;
+            ddr3_in_wrdata_cnt <= 0;
+        end
     end
 end
 

@@ -21,9 +21,10 @@ module mac_top(
     
     input I_udp_tx_en,
     input I_udp_tx_de,
-    input [7:0] I_udp_data,
+    input [7:0]  I_udp_data,
     input [15:0] I_udp_data_len,
     input [15:0] I_ipv4_sign,
+    output logic O_head_down,
     output logic O_mac_init_ready,
     output logic O_udp_busy,
     output logic O_udp_isLoadData,
@@ -77,6 +78,7 @@ mac #(
     .O_txd(netrmii.txd),
     .O_txen(netrmii.txen),
 
+    .O_head_down(O_head_down),
     .O_busy(O_udp_busy),
     .O_isLoadData(O_udp_isLoadData),
     .O_1Byte_pass(O_1Byte_pass)
