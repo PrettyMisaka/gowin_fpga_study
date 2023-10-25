@@ -18,15 +18,16 @@ module ddr3_master(
     input               i_mjpeg_down       ,
     input [7:0]         i_mjpeg_data       ,
 
-    output              o_udp_tx_en        ,
-    output              o_udp_tx_de        ,
-    output [7:0]        o_udp_data         ,
-    output [15:0]       o_udp_datalen      ,
-    output [15:0]       o_ipv4_sign        ,
-    input               i_udp_tx_clk       ,
-    input               i_udp_busy         ,
-    input               i_udp_isLoadData   ,
-    input               i_udp_1Byte_pass   ,
+//-------module interface-----------//
+    output logic               o_udp128_en                    ,
+    output logic [127:0]       o_udp128_ddr3_udp_wrdata       ,
+    output logic               o_udp128_udp_last_frame_flag   ,
+    output logic [14:0]        o_udp128_mjpeg_frame_rank      ,
+    output logic [15:0]        o_udp128_udp_jpeg_len          ,
+    output logic [15:0]        o_udp128_udp_ipv4_sign         ,
+    input                      i_udp128_ddr3_data_upd_req     ,
+    input                      i_udp128_udp_frame_down        ,
+    input                      i_udp128_busy                  ,
 
     output logic [2:0]  o_ddr3_cmd         ,
     output logic        o_ddr3_cmd_en      ,
@@ -125,7 +126,7 @@ always@(posedge i_cam_pclk or negedge rst_n)begin
 end
 
 logic [127:0] mjpeg_out_data_buf;
-logic [6:0] ddr3_in_wrdata_cnt;
+logic [15:0] ddr3_in_wrdata_cnt;
 initial begin
     mjpeg_out_data_buf <= 0;
     ddr3_in_wrdata_cnt <= 0;

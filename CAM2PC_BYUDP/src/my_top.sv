@@ -145,6 +145,45 @@ mac_top mac_top0(
     .mdio_out_en(mac_inout.out_en)
 );
 
+logic               i_en;
+logic [127:0]       i_ddr3_udp_wrdata      ; 
+logic               i_udp_last_frame_flag  ; 
+logic [14:0]        i_mjpeg_frame_rank     ; 
+logic [15:0]        i_udp_jpeg_len         ; 
+logic               i_udp_writing_head     ; 
+logic [15:0]        i_udp_ipv4_sign        ; 
+logic               o_ddr3_data_upd_req;
+logic               o_udp_frame_down   ;
+logic               o_busy             ;
+udp_128bit_send udp_128bit_send0(
+    .i_udp_clk50m   (clk50m),
+    .i_rst_n        (1'd1  ),
+    .i_en           (i_en  ),
+
+//-------module interface-----------//
+    .i_ddr3_udp_wrdata      (i_ddr3_udp_wrdata    ),
+    .i_udp_last_frame_flag  (i_udp_last_frame_flag),
+    .i_mjpeg_frame_rank     (i_mjpeg_frame_rank   ),
+    .i_udp_jpeg_len         (i_udp_jpeg_len       ),
+    // .i_udp_writing_head     (i_udp_writing_head   ),
+    .i_udp_ipv4_sign        (i_udp_ipv4_sign      ),
+
+    .o_ddr3_data_upd_req    (o_ddr3_data_upd_req  ),
+    .o_udp_frame_down       (o_udp_frame_down     ),
+    .o_busy                 (o_busy               ),
+
+//-------udp interface---------------//
+    .o_udp_tx_en      (udp_port.I_udp_tx_en       ),
+    .o_udp_tx_de      (udp_port.I_udp_tx_de       ),
+    .o_udp_data       (udp_port.I_udp_data        ),
+    .o_udp_data_len   (udp_port.I_udp_data_len    ),
+    .o_ipv4_sign      (udp_port.I_ipv4_sign       ),
+    .i_udp_head_down  (udp_port.O_head_down       ),
+    .i_udp_busy       (udp_port.O_udp_busy        ),
+    .i_udp_isLoadData (udp_port.O_udp_isLoadData  ),
+    .i_1Byte_pass     (udp_port.O_1Byte_pass      )
+);
+
 logic rst_mjpeg, mjpeg_clk, mjpeg_de, mjpeg_down, mjpeg_de_o;
 logic [23:0] mjpeg_data_in;
 logic [7:0] mjpeg_data_out;
@@ -340,15 +379,16 @@ ddr3_master ddr3_master0(
     .i_mjpeg_down       (mjpeg_down             ),
     .i_mjpeg_data       (mjpeg_data_out         ),
 
-    .o_udp_tx_en        (udp_port.I_udp_tx_en      ),
-    .o_udp_tx_de        (udp_port.I_udp_tx_de      ),
-    .o_udp_data         (udp_port.I_udp_data       ),
-    .o_udp_datalen      (udp_port.I_udp_data_len   ),
-    .o_ipv4_sign        (udp_port.I_ipv4_sign      ),
-    .i_udp_tx_clk       (udp_port.O_mac_init_ready ),
-    .i_udp_busy         (udp_port.O_udp_busy       ),
-    .i_udp_isLoadData   (udp_port.O_udp_isLoadData ),
-    .i_udp_1Byte_pass   (udp_port.O_1Byte_pass     ),
+//-------module interface-----------//
+    .o_udp128_en                   (i_en                 ),
+    .o_udp128_ddr3_udp_wrdata      (i_ddr3_udp_wrdata    ),
+    .o_udp128_udp_last_frame_flag  (i_udp_last_frame_flag),
+    .o_udp128_mjpeg_frame_rank     (i_mjpeg_frame_rank   ),
+    .o_udp128_udp_jpeg_len         (i_udp_jpeg_len       ),
+    .o_udp128_udp_ipv4_sign        (i_udp_ipv4_sign      ),
+    .i_udp128_ddr3_data_upd_req    (o_ddr3_data_upd_req  ),
+    .i_udp128_udp_frame_down       (o_udp_frame_down     ),
+    .i_udp128_busy                 (o_busy               ),
 
     .o_ddr3_cmd         (cmd            ),
     .o_ddr3_cmd_en      (cmd_en         ),

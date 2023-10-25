@@ -69,7 +69,7 @@ mac #(
     .I_rst(phyrst),
 
     .I_en(I_udp_tx_en),
-    .I_de(1'd1),
+    .I_de(I_udp_tx_de),
     .I_data(I_udp_data),
     // .I_dataLen(16'd222),
     .I_dataLen(I_udp_data_len),
