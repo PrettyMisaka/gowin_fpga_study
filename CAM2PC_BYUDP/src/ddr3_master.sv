@@ -43,17 +43,21 @@ module ddr3_master(
     input               i_ddr3_wr_data_rdy ,
     input [127:0]       i_ddr3_rd_data     ,
     input               i_ddr3_rd_data_de  ,
-    input               i_ddr3_rd_data_end 
+    input               i_ddr3_rd_data_end ,
+
+    output logic        o_ddr3_master_error
 );
+localparam DDR3_CMD_WR = 3'd0;
+localparam DDR3_CMD_RD = 3'd1;
 //----------------------------------
 //addr
 //----------------------------------
 logic               addr_rank;
 logic [ 2:0]        addr_bank;
-logic [13:0]        addr_row;
-logic [ 9:0]        addr_col;
+logic [23:0]        addr_row_col;
 assign addr_rank = 1'b0;
-assign o_ddr3_addr = {addr_rank,addr_bank,addr_row,addr_col};
+assign o_ddr3_addr = {addr_rank,addr_bank,addr_row_col};
+assign o_ddr3_wr_mask = 16'd0;
 //----------------------------------
 //cam data
 //----------------------------------
@@ -125,28 +129,200 @@ always@(posedge i_cam_pclk or negedge rst_n)begin
     end
 end
 
-logic [127:0] mjpeg_out_data_buf;
-logic [15:0] ddr3_in_wrdata_cnt;
+enum logic[3:0] {
+    MJPEG_WR_IDLE, MJPEG_WR_TMP, MJPEG_WR_TMP2BUS, MJPEG_WR_DOWN
+} state_mjpeg_wr;
+logic mjpeg_wr_error;
+logic mjpeg_wr_wait;
+logic [7:0] mjpeg_out_data_buf[63:0];
+logic [5:0] mjpeg_out_data_head;
+logic [5:0] mjpeg_out_data_tail;
+
+logic [127:0] o_udp128_ddr3_udp_wrdata_tmp;
+logic [127:0] o_udp128_ddr3_udp_wrdata1;
+logic [7:0] mjpeg_out_data_buf128_byte_cnt;
+logic o_udp128_ddr3_udp_wrdata_req;
+logic o_udp128_ddr3_udp_wrdata_end;
+logic [1:0] o_udp128_ddr3_udp_wrdata_fullsign;
+
+logic mjped_frame_updata_flag;
+logic ddr3_mjpeg_wr_req_down, ddr3_mjpeg_wr_req_down_state;
+
 initial begin
-    mjpeg_out_data_buf <= 0;
-    ddr3_in_wrdata_cnt <= 0;
+    mjpeg_out_data_head <= 6'd0;
+    mjpeg_out_data_tail <= 6'd0;
+    mjpeg_out_data_buf128_byte_cnt <= 8'd0;
+    state_mjpeg_wr <= MJPEG_WR_IDLE;
+    o_udp128_ddr3_udp_wrdata_fullsign <= 2'd0
+    mjpeg_wr_error <= 1'd0;
+    mjpeg_wr_wait <= 1'd0;
 end
 always@(posedge i_cam_pclk or negedge rst_n)begin
     if(~rst_n)begin
-        mjpeg_out_data_buf <= 0;
-        ddr3_in_wrdata_cnt <= 0;
+        mjpeg_out_data_head <= 6'd0;
+        mjpeg_out_data_tail <= 6'd0;
+        mjpeg_out_data_buf128_byte_cnt <= 8'd0;
+        state_mjpeg_wr <= MJPEG_WR_IDLE;
+        o_udp128_ddr3_udp_wrdata_fullsign <= 2'd0
+        mjpeg_wr_error <= 1'd0;
+        mjpeg_wr_wait <= 1'd0;
+        o_udp128_ddr3_udp_wrdata_end <= 1'd0;
     end
     else begin
-        if(mjpeg_busy)begin
-            if(i_mjpeg_de)begin
-                mjpeg_out_data_buf <= {mjpeg_out_data_buf[119:0],i_mjpeg_data};
-                ddr3_in_wrdata_cnt <= ddr3_in_wrdata_cnt + 7'd1;
+        if(ddr3_mjpeg_wr_req_down) ddr3_mjpeg_wr_req_down_state <= 1'd1;
+        if(ddr3_mjpeg_wr_req_down && state_mjpeg_wr != MJPEG_WR_TMP2BUS)begin
+            case (o_udp128_ddr3_udp_wrdata_fullsign)
+                2'b10:begin
+                    o_udp128_ddr3_udp_wrdata_fullsign <= 2'b00;
+                end
+                2'b11:begin
+                    o_udp128_ddr3_udp_wrdata <= o_udp128_ddr3_udp_wrdata_tmp;
+                    o_udp128_ddr3_udp_wrdata_fullsign <= 2'b10;
+                    mjpeg_wr_wait <= 1'd1;
+                end
+                default:begin
+                    mjpeg_wr_error <= 1'd1;
+                end
+            endcase
+            ddr3_mjpeg_wr_req_down_state <= 1'd0;
+        end
+        if((ddr3_mjpeg_wr_req_down && state_mjpeg_wr != MJPEG_WR_TMP2BUS)||state_mjpeg_wr == MJPEG_WR_TMP2BUS||o_udp128_ddr3_udp_wrdata_fullsign!=2'd0)
+            o_udp128_ddr3_udp_wrdata_req <= 1'd1;
+        else o_udp128_ddr3_udp_wrdata_req <= 1'd0;
+        case (state_mjpeg_wr)
+            MJPEG_WR_IDLE: begin
+                if(cam_de_pos_flag&&mjpeg_busy == 0 && cam_new_frame)begin
+                    state_mjpeg_wr <= MJPEG_WR_TMP;
+                end
+                mjpeg_out_data_head <= 6'd0;
+                mjpeg_out_data_tail <= 6'd0;
+                mjpeg_out_data_buf128_byte_cnt <= 8'd0;
+                o_udp128_ddr3_udp_wrdata_fullsign <= 2'd0
+                mjpeg_wr_wait <= 1'd0;
+                o_udp128_ddr3_udp_wrdata_end <= 1'd0;
             end
+            MJPEG_WR_TMP: begin
+                if(mjpeg_wr_wait == 1'd0) begin
+                    if(mjpeg_out_data_tail != mjpeg_out_data_head)begin
+                        if(mjpeg_out_data_buf128_byte_cnt == 8'd15)begin
+                            mjpeg_out_data_buf128_byte_cnt == 8'd0;
+                            state_mjpeg_wr <= MJPEG_WR_TMP2BUS;
+                        end
+                        else begin
+                            o_udp128_ddr3_udp_wrdata_tmp <= {o_udp128_ddr3_udp_wrdata_tmp[119:0],mjpeg_out_data_buf[mjpeg_out_data_head]};
+                            mjpeg_out_data_buf128_byte_cnt <= mjpeg_out_data_buf128_byte_cnt + 8'd1;
+                        end
+                    end
+                    if(mjpeg_out_data_tail == mjpeg_out_data_head && mjpeg_busy == 1'd0)begin
+                        o_udp128_ddr3_udp_wrdata_end <= 1'd1;
+                        state_mjpeg_wr <= MJPEG_WR_TMP2BUS;
+                    end
+                end
+            end
+            MJPEG_WR_TMP2BUS:begin
+                case (o_udp128_ddr3_udp_wrdata_fullsign)
+                    2'b00:begin
+                        o_udp128_ddr3_udp_wrdata <= o_udp128_ddr3_udp_wrdata_tmp;
+                        o_udp128_ddr3_udp_wrdata_fullsign <= 2'b10;
+                    end
+                    2'b10:begin
+                        o_udp128_ddr3_udp_wrdata1 <= o_udp128_ddr3_udp_wrdata_tmp;
+                        o_udp128_ddr3_udp_wrdata_fullsign <= 2'b11;
+                        mjpeg_wr_wait <= 1'd1;
+                    end
+                    2'b11:begin
+                        mjpeg_wr_error <= 1'd1;
+                    end
+                endcase
+                if(o_udp128_ddr3_udp_wrdata_end == 1'd1)begin
+                    mjpeg_wr_wait <= 1'd1;
+                end
+                state_mjpeg_wr <= MJPEG_WR_TMP;
+            end
+        endcase
+        if(mjpeg_busy&&i_mjpeg_de)begin
+            mjpeg_out_data_buf[mjpeg_out_data_tail] <= i_mjpeg_data;
+            mjpeg_out_data_tail <= mjpeg_out_data_tail + 6'd1;
         end
-        else begin
-            mjpeg_out_data_buf <= 0;
-            ddr3_in_wrdata_cnt <= 0;
+    end
+end
+logic ddr3_jpeg_rd_req_down;
+
+struct {
+    logic [23:0] addr;
+    logic [2:0]  bank;
+} ddr3_mjpeg_wr_info, ddr3_jpeg_rd_info;
+initial begin
+    ddr3_mjpeg_wr_info.addr <= 0;
+    ddr3_mjpeg_wr_info.bank <= 3'd1;
+    ddr3_jpeg_rd_info.addr <= 0;
+    ddr3_jpeg_rd_info.bank <= 3'd0;
+
+    ddr3_mjpeg_wr_req_down <= 1'd0;
+    ddr3_jpeg_rd_req_down <= 1'd0;
+end
+logic ddr3_mjpeg_wr_req_bef, ddr3_mjpeg_wr_req_pos_flag, ddr3_mjpeg_wr_req_state;
+logic ddr3_jpeg_rd_req_bef, ddr3_jpeg_rd_req_pos_flag, ddr3_jpeg_rd_req_state;
+assign ddr3_mjpeg_wr_req_pos_flag = (~ddr3_mjpeg_wr_req_bef)&o_udp128_ddr3_udp_wrdata_req;
+assign ddr3_jpeg_rd_req_pos_flag = (~ddr3_jpeg_rd_req_bef)&ddr3_jpeg_rd_req;
+always@(posedge i_cam_pclk)begin
+    ddr3_mjpeg_wr_req_bef <= o_udp128_ddr3_udp_wrdata_req;
+    ddr3_jpeg_rd_req_bef <= ddr3_jpeg_rd_req;
+end
+enum logic[3:0] {
+    DDR3_REQ_IDLE, 
+    DDR3_HANDLE_RD_REQ, DDR3_HANDLE_RD_REQ_DOWN,
+    DDR3_HANDLE_WR_REQ, DDR3_HANDLE_WR_REQ_DWON
+} state_ddr3dispatch;
+always@(posedge i_cam_pclk or negedge rst_n)begin
+    if(~rst_n)begin
+        state_ddr3dispatch <= DDR3_REQ_IDLE;
+        ddr3_mjpeg_wr_req_state <= 1'd0;
+        ddr3_jpeg_rd_req_state <= 1'd0;
+    end
+    else begin
+        if(ddr3_mjpeg_wr_req_pos_flag) ddr3_mjpeg_wr_req_state = 1'd1;
+        if(ddr3_jpeg_rd_req_pos_flag) ddr3_jpeg_rd_req_state = 1'd1;
+        if(mjped_frame_updata_flag) begin
+            ddr3_jpeg_rd_info <= ddr3_mjpeg_wr_info;
+            ddr3_mjpeg_wr_info.addr <= 0;
+            ddr3_mjpeg_wr_info.bank <= ddr3_mjpeg_wr_info.bank + 3'd1;
         end
+        case (state_ddr3dispatch)
+            DDR3_REQ_IDLE: begin
+                if(i_ddr3_cmd_ready == 1'd1) begin
+                    if(ddr3_jpeg_rd_req_state == 1'd1) begin
+                        state <= DDR3_HANDLE_RD_REQ;
+                    end
+                    else if(ddr3_mjpeg_wr_req_state == 1'd1)begin
+                        state <= DDR3_HANDLE_WR_REQ;
+                    end
+                end
+                ddr3_mjpeg_wr_req_down <= 1'd0;
+                ddr3_jpeg_rd_req_down <= 1'd0;
+            end
+            DDR3_HANDLE_RD_REQ:begin
+            end
+            DDR3_HANDLE_WR_REQ:begin
+                state_ddr3dispatch <= DDR3_HANDLE_WR_REQ_DWON;
+                addr_row_col <= ddr3_mjpeg_wr_info.addr;
+                addr_bank <= ddr3_mjpeg_wr_info.bank;
+                o_ddr3_cmd_en <= 1'd1;
+                o_ddr3_cmd <= DDR3_CMD_WR;
+                o_ddr3_wr_data     <= o_udp128_ddr3_udp_wrdata;
+                o_ddr3_wr_data_en  <= 1'd1;
+                o_ddr3_wr_data_end <= 1'd1;
+                ddr3_mjpeg_wr_req_down <= 1'd0;
+            end
+            DDR3_HANDLE_WR_REQ_DWON:begin
+                o_ddr3_cmd_en <= 1'd0;
+                state_ddr3dispatch <= DDR3_REQ_IDLE;
+                o_ddr3_wr_data     <= o_udp128_ddr3_udp_wrdata;
+                o_ddr3_wr_data_en  <= 1'd0;
+                o_ddr3_wr_data_end <= 1'd0;
+                ddr3_mjpeg_wr_req_down <= 1'd1;
+            end
+        endcase
     end
 end
 
