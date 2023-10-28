@@ -139,6 +139,7 @@ logic [5:0] mjpeg_out_data_head;
 logic [5:0] mjpeg_out_data_tail;
 
 logic [127:0] o_udp128_ddr3_udp_wrdata_tmp;
+logic [127:0] o_udp128_ddr3_udp_wrdata0;
 logic [127:0] o_udp128_ddr3_udp_wrdata1;
 logic [7:0] mjpeg_out_data_buf128_byte_cnt;
 logic o_udp128_ddr3_udp_wrdata_req;
@@ -154,7 +155,7 @@ initial begin
     mjpeg_out_data_tail <= 6'd0;
     mjpeg_out_data_buf128_byte_cnt <= 8'd0;
     state_mjpeg_wr <= MJPEG_WR_IDLE;
-    o_udp128_ddr3_udp_wrdata_fullsign <= 2'd0
+    o_udp128_ddr3_udp_wrdata_fullsign <= 2'd0;
     mjpeg_wr_error <= 1'd0;
     mjpeg_wr_wait <= 1'd0;
 end
@@ -164,7 +165,7 @@ always@(posedge i_cam_pclk or negedge rst_n)begin
         mjpeg_out_data_tail <= 6'd0;
         mjpeg_out_data_buf128_byte_cnt <= 8'd0;
         state_mjpeg_wr <= MJPEG_WR_IDLE;
-        o_udp128_ddr3_udp_wrdata_fullsign <= 2'd0
+        o_udp128_ddr3_udp_wrdata_fullsign <= 2'd0;
         mjpeg_wr_error <= 1'd0;
         mjpeg_wr_wait <= 1'd0;
         o_udp128_ddr3_udp_wrdata_end <= 1'd0;
@@ -179,10 +180,10 @@ always@(posedge i_cam_pclk or negedge rst_n)begin
                     if(o_udp128_ddr3_udp_wrdata_end) state_mjpeg_wr <= MJPEG_WR_DOWN;
                 end
                 2'b11:begin
-                    o_udp128_ddr3_udp_wrdata <= o_udp128_ddr3_udp_wrdata_tmp;
+                    o_udp128_ddr3_udp_wrdata0 <= o_udp128_ddr3_udp_wrdata1;
                     o_udp128_ddr3_udp_wrdata_fullsign <= 2'b10;
                     o_udp128_ddr3_udp_wrdata_req <= 1'd1;
-                    if(o_udp128_ddr3_udp_wrdata_end == 1'd1)
+                    if(o_udp128_ddr3_udp_wrdata_end == 1'd0)
                         mjpeg_wr_wait <= 1'd0;
                 end
                 default:begin
@@ -200,7 +201,7 @@ always@(posedge i_cam_pclk or negedge rst_n)begin
                 mjpeg_out_data_head <= 6'd0;
                 mjpeg_out_data_tail <= 6'd0;
                 mjpeg_out_data_buf128_byte_cnt <= 8'd0;
-                o_udp128_ddr3_udp_wrdata_fullsign <= 2'd0
+                o_udp128_ddr3_udp_wrdata_fullsign <= 2'd0;
                 mjpeg_wr_wait <= 1'd0;
                 o_udp128_ddr3_udp_wrdata_end <= 1'd0;
                 mjped_frame_end_flag <= 1'd0;
@@ -223,7 +224,7 @@ always@(posedge i_cam_pclk or negedge rst_n)begin
             MJPEG_WR_TMP2BUS:begin
                 case (o_udp128_ddr3_udp_wrdata_fullsign)
                     2'b00:begin
-                        o_udp128_ddr3_udp_wrdata <= o_udp128_ddr3_udp_wrdata_tmp;
+                        o_udp128_ddr3_udp_wrdata0 <= o_udp128_ddr3_udp_wrdata_tmp;
                         o_udp128_ddr3_udp_wrdata_fullsign <= 2'b10;
                         o_udp128_ddr3_udp_wrdata_req <= 1'd1;
                     end
@@ -253,13 +254,41 @@ always@(posedge i_cam_pclk or negedge rst_n)begin
         end
     end
 end
-logic ddr3_jpeg_rd_req_down;
 
 struct {
     logic [23:0] addr;
     logic [2:0]  bank;
     logic [7:0]  byte_cnt;
 } ddr3_mjpeg_wr_info, ddr3_jpeg_rd_info;
+logic jpeg_rd_en, jpeg_rd_busy, jpeg_rd_err;
+assign jpeg_rd_en = mjpeg_busy;
+logic [127:0] jpeg_rd_data;
+logic jpeg_rd_down, jpeg_rd_req;
+ddr3_master_rd ddr3_master_rd0(
+    .i_pclk84m (i_cam_pclk  ),
+    .i_rst_n   (rst_n       ),
+    
+    .i_en            (jpeg_rd_en                ),
+    .i_addr          (ddr3_jpeg_rd_info.addr    ),
+    .i_over_byte_len (ddr3_jpeg_rd_info.byte_cnt),
+    .o_busy          (jpeg_rd_busy              ),
+    .o_error         (jpeg_rd_err               ),
+
+    .i_jpeg_rd_data  (jpeg_rd_data  ),
+    .i_jpeg_rd_down  (jpeg_rd_down  ),
+    .o_jpeg_rd_req   (jpeg_rd_req   ),
+    
+    .o_udp128_en                    (o_udp128_en                    ),
+    .o_udp128_ddr3_udp_wrdata       (o_udp128_ddr3_udp_wrdata       ),
+    .o_udp128_udp_last_frame_flag   (o_udp128_udp_last_frame_flag   ),
+    .o_udp128_mjpeg_frame_rank      (o_udp128_mjpeg_frame_rank      ),
+    .o_udp128_udp_jpeg_len          (o_udp128_udp_jpeg_len          ),
+    .o_udp128_udp_ipv4_sign         (o_udp128_udp_ipv4_sign         ),
+    .i_udp128_ddr3_data_upd_req     (i_udp128_ddr3_data_upd_req     ),
+    .i_udp128_udp_frame_down        (i_udp128_udp_frame_down        ),
+    .i_udp128_busy                  (i_udp128_busy                  )
+);
+
 initial begin
     ddr3_mjpeg_wr_info.addr <= 0;
     ddr3_mjpeg_wr_info.bank <= 3'd1;
@@ -267,8 +296,9 @@ initial begin
     ddr3_jpeg_rd_info.bank <= 3'd0;
 
     ddr3_mjpeg_wr_req_down <= 1'd0;
-    ddr3_jpeg_rd_req_down <= 1'd0;
 end
+logic ddr3_jpeg_rd_req;
+assign ddr3_jpeg_rd_req = jpeg_rd_req;
 logic ddr3_mjpeg_wr_req_bef, ddr3_mjpeg_wr_req_pos_flag, ddr3_mjpeg_wr_req_state;
 logic ddr3_jpeg_rd_req_bef, ddr3_jpeg_rd_req_pos_flag, ddr3_jpeg_rd_req_state;
 assign ddr3_mjpeg_wr_req_pos_flag = (~ddr3_mjpeg_wr_req_bef)&o_udp128_ddr3_udp_wrdata_req;
@@ -282,6 +312,7 @@ enum logic[3:0] {
     DDR3_HANDLE_RD_REQ, DDR3_HANDLE_RD_REQ_DOWN,
     DDR3_HANDLE_WR_REQ, DDR3_HANDLE_WR_REQ_DWON
 } state_ddr3dispatch;
+logic [23:0] jpeg_rd_addr_tmp;
 always@(posedge i_cam_pclk or negedge rst_n)begin
     if(~rst_n)begin
         state_ddr3dispatch <= DDR3_REQ_IDLE;
@@ -295,21 +326,38 @@ always@(posedge i_cam_pclk or negedge rst_n)begin
             ddr3_jpeg_rd_info <= ddr3_mjpeg_wr_info;
             ddr3_mjpeg_wr_info.addr <= 0;
             ddr3_mjpeg_wr_info.bank <= ddr3_mjpeg_wr_info.bank + 3'd1;
+            jpeg_rd_addr_tmp <= 24'd0;
         end
         case (state_ddr3dispatch)
             DDR3_REQ_IDLE: begin
                 if(i_ddr3_cmd_ready == 1'd1) begin
                     if(ddr3_jpeg_rd_req_state == 1'd1) begin
-                        state <= DDR3_HANDLE_RD_REQ;
+                        state_ddr3dispatch <= DDR3_HANDLE_RD_REQ;
                     end
-                    else if(ddr3_mjpeg_wr_req_state == 1'd1)begin
-                        state <= DDR3_HANDLE_WR_REQ;
+                    else if(ddr3_mjpeg_wr_req_state == 1'd1&&i_ddr3_wr_data_rdy)begin
+                        state_ddr3dispatch <= DDR3_HANDLE_WR_REQ;
                     end
                 end
                 ddr3_mjpeg_wr_req_down <= 1'd0;
-                ddr3_jpeg_rd_req_down <= 1'd0;
+                jpeg_rd_down <= 1'd0;
             end
             DDR3_HANDLE_RD_REQ:begin
+                o_ddr3_cmd_en <= 1'd1;
+                o_ddr3_cmd <= DDR3_CMD_RD;
+                addr_row_col <= jpeg_rd_addr_tmp;
+                addr_bank <= ddr3_jpeg_rd_info.bank;
+
+                jpeg_rd_down <= 1'd0;
+                state_ddr3dispatch <= DDR3_HANDLE_RD_REQ_DOWN;
+            end
+            DDR3_HANDLE_RD_REQ_DOWN:begin
+                if(i_ddr3_rd_data_de)begin
+                    jpeg_rd_data <= i_ddr3_rd_data;
+                    jpeg_rd_addr_tmp <= jpeg_rd_addr_tmp + 24'h8;
+                    state_ddr3dispatch <= DDR3_REQ_IDLE;
+                    jpeg_rd_down <= 1'd1;
+                end
+                o_ddr3_cmd_en <= 1'd0;
             end
             DDR3_HANDLE_WR_REQ:begin
                 state_ddr3dispatch <= DDR3_HANDLE_WR_REQ_DWON;
@@ -319,7 +367,7 @@ always@(posedge i_cam_pclk or negedge rst_n)begin
 
                 o_ddr3_cmd_en <= 1'd1;
                 o_ddr3_cmd <= DDR3_CMD_WR;
-                o_ddr3_wr_data     <= o_udp128_ddr3_udp_wrdata;
+                o_ddr3_wr_data     <= o_udp128_ddr3_udp_wrdata0;
                 o_ddr3_wr_data_en  <= 1'd1;
                 o_ddr3_wr_data_end <= 1'd1;
             end
@@ -334,8 +382,7 @@ always@(posedge i_cam_pclk or negedge rst_n)begin
                 state_ddr3dispatch <= DDR3_REQ_IDLE;
                 ddr3_mjpeg_wr_req_down <= 1'd1;
 
-                o_ddr3_cmd_en <= 1'd0;
-                o_ddr3_wr_data     <= o_udp128_ddr3_udp_wrdata;
+                o_ddr3_wr_data     <= o_udp128_ddr3_udp_wrdata0;
                 o_ddr3_wr_data_en  <= 1'd0;
                 o_ddr3_wr_data_end <= 1'd0;
             end

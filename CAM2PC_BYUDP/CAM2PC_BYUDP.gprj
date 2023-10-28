@@ -9,9 +9,8 @@
         <File path="src/cam_top.sv" type="file.verilog" enable="1"/>
         <File path="src/cmos_8_16bit.v" type="file.verilog" enable="1"/>
         <File path="src/ddr3_master.sv" type="file.verilog" enable="1"/>
+        <File path="src/ddr3_master_rd.sv" type="file.verilog" enable="1"/>
         <File path="src/ddr3_memory_interface/DDR3MI.v" type="file.verilog" enable="1"/>
-        <File path="src/fifo_hs/video_fifo.v" type="file.verilog" enable="0"/>
-        <File path="src/gowin_rpll/TMDS_rPLL.v" type="file.verilog" enable="0"/>
         <File path="src/gowin_rpll/cmos_pll.v" type="file.verilog" enable="1"/>
         <File path="src/gowin_rpll/gowin_rpll_6M.v" type="file.verilog" enable="1"/>
         <File path="src/gowin_rpll/mem_pll.v" type="file.verilog" enable="1"/>
@@ -20,16 +19,13 @@
         <File path="src/i2c_master/i2c_master_byte_ctrl.v" type="file.verilog" enable="1"/>
         <File path="src/i2c_master/i2c_master_defines.v" type="file.verilog" enable="1"/>
         <File path="src/i2c_master/i2c_master_top.v" type="file.verilog" enable="1"/>
-        <File path="src/i2c_master/timescale.v" type="file.verilog" enable="1"/>
         <File path="src/mac.sv" type="file.verilog" enable="1"/>
         <File path="src/mac_top.sv" type="file.verilog" enable="1"/>
         <File path="src/mjpeg_encoder/mjpeg_encoder.v" type="file.verilog" enable="1"/>
         <File path="src/my_top.sv" type="file.verilog" enable="1"/>
         <File path="src/rmii_txd.sv" type="file.verilog" enable="1"/>
         <File path="src/smi.sv" type="file.verilog" enable="1"/>
-        <File path="src/top.sv" type="file.verilog" enable="0"/>
-        <File path="src/vga_timing.v" type="file.verilog" enable="0"/>
-        <File path="src/video_frame_buffer/Video_Frame_Buffer_Top.v" type="file.verilog" enable="0"/>
+        <File path="src/udp_128bit_send.sv" type="file.verilog" enable="1"/>
         <File path="src/CAM2PC_UDP.cst" type="file.cst" enable="1"/>
         <File path="src/top.cst" type="file.cst" enable="0"/>
         <File path="src/ddr_18k.sdc" type="file.sdc" enable="0"/>
