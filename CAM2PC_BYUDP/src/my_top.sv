@@ -23,8 +23,8 @@ assign led[3:0] = led_tmp[3:0];
 initial led <= 6'b111111;
 
 logic vsync_bef;
-logic [6:0] frame_cnt;
-logic [6:0] frame_cnt_save;
+logic [7:0] frame_cnt;
+logic [7:0] frame_cnt_save;
 logic [31:0] delay_1s_cnt_27mhz;
 initial begin
     frame_cnt <= 6'd0;
@@ -34,14 +34,14 @@ always@(posedge cam_port.cmos_pclk) begin
     vsync_bef <= cam_port.cmos_vsync;
     if(delay_1s_cnt_27mhz == 32'd84000000 - 32'd1 )begin
         delay_1s_cnt_27mhz <= 1'd0;
-        frame_cnt <= 7'd0;
+        frame_cnt <= 8'd0;
         frame_cnt_save <= frame_cnt;
     end
     else begin
         delay_1s_cnt_27mhz <= delay_1s_cnt_27mhz + 1'd1;
     end
     if(vsync_bef == 0 && cam_port.cmos_vsync == 1'd1) begin
-        frame_cnt <= frame_cnt + 7'd1;
+        frame_cnt <= frame_cnt + 8'd1;
         led[5] <= ~led[5]; 
     end
 end
@@ -203,7 +203,8 @@ always@(posedge cam_port.cmos_pclk) begin
     end
 end
 
-logic memory_clk_400m, DDR_pll_lock, half_memory_clk;
+logic memory_clk_400m, DDR_pll_lock;
+wire half_memory_clk;
 logic init_calib_complete;
 
 logic cmd_ready , cmd_en;
@@ -219,7 +220,7 @@ logic rd_data_valid, rd_data_end;
 
 DDR3MI DDR3_Memory_Interface_Top_inst 
 (
-    .clk                (clk50m                 ),
+    .clk                (cam_port.cmos_pclk     ),
     .memory_clk         (memory_clk_400m        ),
     .pll_lock           (DDR_pll_lock           ),
     .rst_n              (rst.ddr3               ), //rst_n

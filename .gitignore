@@ -9,3 +9,12 @@
 
 /modelSimPrj
 *.user
+CAM2PC_BYUDP/simprj/mjpegSim/work/_vmake
+CAM2PC_BYUDP/simprj/mjpegSim/work/_lib1_0.qtl
+CAM2PC_BYUDP/simprj/mjpegSim/work/_lib1_0.qpg
+CAM2PC_BYUDP/simprj/mjpegSim/work/_lib1_0.qdb
+CAM2PC_BYUDP/simprj/mjpegSim/work/_lib.qdb
+CAM2PC_BYUDP/simprj/mjpegSim/work/_info
+CAM2PC_BYUDP/simprj/mjpegSim/mjpegSim.cr.mti
+CAM2PC_BYUDP/simprj/mjpegSim/mjpegSim.mpf
+CAM2PC_BYUDP/simprj/mjpegSim/vsim.wlf
