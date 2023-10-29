@@ -1,4 +1,6 @@
-module ddr3_master(
+module ddr3_master#(
+    parameter MJPEG_RST_DELAY_FRAME = 6'd30
+)(
     input clk,//27mhz
     input clk50m,
 
@@ -79,8 +81,12 @@ end
 //mjpeg
 //----------------------------------
 logic mjpeg_busy , mjpeg_data_de;
+logic [5:0] mjpeg_delay_cnt;
+logic mjpeg_delay_down;
 assign o_mjpeg_clk = i_cam_pclk;
+// assign o_mjpeg_clk = i_cam_rgb888_pclk;
 assign o_mjpeg_de = (i_cam_rgb888_pclk&&i_cam_de&&mjpeg_data_de)?1'd1:1'd0;
+// assign o_mjpeg_de = (i_cam_de&&mjpeg_data_de)?1'd1:1'd0;
 assign o_mjpeg_data = i_cam_data_rgb888;
 //----------------------------------
 //cam data
@@ -95,7 +101,10 @@ task task_rst();
     cam_new_frame <= 1'd0;
     o_mjpeg_rst <= 0;
     mjpeg_data_de <= 1'd0;
+    mjpeg_delay_cnt <= 6'd0;
+    mjpeg_delay_down <= 1'd0;
 endtask
+initial task_rst();
 always@(posedge i_cam_pclk or negedge rst_n)begin
     if(~rst_n)begin
         task_rst();
@@ -105,29 +114,45 @@ always@(posedge i_cam_pclk or negedge rst_n)begin
             cam_new_frame <= 1'd1;
             mjpeg_data_de <= 1'd0;
             // o_mjpeg_rst <= 1'd0;
+            if(mjpeg_delay_down == 1'd0)begin
+                if(mjpeg_delay_cnt == MJPEG_RST_DELAY_FRAME)
+                    mjpeg_delay_down <= 1'd1;
+                else
+                    mjpeg_delay_cnt <= mjpeg_delay_cnt + 6'd1;
+            end
         end
-        case(state_main)
-            MAIN_IDLE_HREFPOS:begin
-                if(cam_de_pos_flag)begin
-                    cam_new_frame <= 1'd0;
-                    if(mjpeg_busy == 0 && cam_new_frame)begin
-                        mjpeg_data_de <= 1'd1;
-                        mjpeg_busy <= 1'd1;
-                        o_mjpeg_rst <= 1'd1;
-                        state_main <= MAIN_MJPEG_DOWN;
+        if(mjpeg_delay_down)begin
+            case(state_main)
+                MAIN_IDLE_HREFPOS:begin
+                    if(cam_de_pos_flag)begin
+                        cam_new_frame <= 1'd0;
+                        if(mjpeg_busy == 0 && cam_new_frame )begin
+                            mjpeg_data_de <= 1'd1;
+                            mjpeg_busy <= 1'd1;
+                            o_mjpeg_rst <= 1'd1;
+                            state_main <= MAIN_MJPEG_DOWN;
+                        end
                     end
                 end
-            end
-            MAIN_MJPEG_DOWN:begin
-                if(i_mjpeg_down)begin
-                    state_main <= MAIN_IDLE_HREFPOS;
-                    o_mjpeg_rst <= 1'd0;
-                    mjpeg_busy <= 1'd0;
+                MAIN_MJPEG_DOWN:begin
+                    if(i_mjpeg_down)begin
+                        state_main <= MAIN_IDLE_HREFPOS;
+                        o_mjpeg_rst <= 1'd0;
+                        mjpeg_busy <= 1'd0;
+                    end
                 end
+            endcase
+        end
+        else begin
+            if(cam_de_pos_flag)begin
+                cam_new_frame <= 1'd0;
             end
-        endcase
+        end
     end
 end
+
+logic rst_n_delay;
+assign rst_n_delay = rst_n&mjpeg_delay_down;
 
 enum logic[3:0] {
     MJPEG_WR_IDLE, MJPEG_WR_TMP, MJPEG_WR_TMP2BUS, MJPEG_WR_DOWN
@@ -147,6 +172,7 @@ logic o_udp128_ddr3_udp_wrdata_end;
 logic [1:0] o_udp128_ddr3_udp_wrdata_fullsign;
 
 logic mjped_frame_updata_flag;
+assign mjped_frame_updata_flag = (state_mjpeg_wr==MJPEG_WR_DOWN)?1'd1:1'd0;
 logic mjped_frame_end_flag;
 logic ddr3_mjpeg_wr_req_down, ddr3_mjpeg_wr_req_down_state;
 
@@ -159,8 +185,8 @@ initial begin
     mjpeg_wr_error <= 1'd0;
     mjpeg_wr_wait <= 1'd0;
 end
-always@(posedge i_cam_pclk or negedge rst_n)begin
-    if(~rst_n)begin
+always@(posedge i_cam_pclk or negedge rst_n_delay)begin
+    if(~rst_n_delay)begin
         mjpeg_out_data_head <= 6'd0;
         mjpeg_out_data_tail <= 6'd0;
         mjpeg_out_data_buf128_byte_cnt <= 8'd0;
@@ -266,7 +292,7 @@ logic [127:0] jpeg_rd_data;
 logic jpeg_rd_down, jpeg_rd_req;
 ddr3_master_rd ddr3_master_rd0(
     .i_pclk84m (i_cam_pclk  ),
-    .i_rst_n   (rst_n       ),
+    .i_rst_n   (rst_n_delay       ),
     
     .i_en            (jpeg_rd_en                ),
     .i_addr          (ddr3_jpeg_rd_info.addr    ),
@@ -301,6 +327,7 @@ logic ddr3_jpeg_rd_req;
 assign ddr3_jpeg_rd_req = jpeg_rd_req;
 logic ddr3_mjpeg_wr_req_bef, ddr3_mjpeg_wr_req_pos_flag, ddr3_mjpeg_wr_req_state;
 logic ddr3_jpeg_rd_req_bef, ddr3_jpeg_rd_req_pos_flag, ddr3_jpeg_rd_req_state;
+logic mjped_frame_updata_state;
 assign ddr3_mjpeg_wr_req_pos_flag = (~ddr3_mjpeg_wr_req_bef)&o_udp128_ddr3_udp_wrdata_req;
 assign ddr3_jpeg_rd_req_pos_flag = (~ddr3_jpeg_rd_req_bef)&ddr3_jpeg_rd_req;
 always@(posedge i_cam_pclk)begin
@@ -313,16 +340,19 @@ enum logic[3:0] {
     DDR3_HANDLE_WR_REQ, DDR3_HANDLE_WR_REQ_DWON
 } state_ddr3dispatch;
 logic [23:0] jpeg_rd_addr_tmp;
-always@(posedge i_cam_pclk or negedge rst_n)begin
-    if(~rst_n)begin
+always@(posedge i_cam_pclk or negedge rst_n_delay)begin
+    if(~rst_n_delay)begin
         state_ddr3dispatch <= DDR3_REQ_IDLE;
         ddr3_mjpeg_wr_req_state <= 1'd0;
         ddr3_jpeg_rd_req_state <= 1'd0;
+        mjped_frame_updata_state <= 1'd0;
     end
     else begin
         if(ddr3_mjpeg_wr_req_pos_flag) ddr3_mjpeg_wr_req_state = 1'd1;
         if(ddr3_jpeg_rd_req_pos_flag) ddr3_jpeg_rd_req_state = 1'd1;
-        if(mjped_frame_updata_flag) begin
+        if(mjped_frame_updata_flag) 
+            mjped_frame_updata_state <= 1'd1;
+        if(mjped_frame_updata_state&&state_ddr3dispatch == DDR3_REQ_IDLE) begin
             ddr3_jpeg_rd_info <= ddr3_mjpeg_wr_info;
             ddr3_mjpeg_wr_info.addr <= 0;
             ddr3_mjpeg_wr_info.bank <= ddr3_mjpeg_wr_info.bank + 3'd1;

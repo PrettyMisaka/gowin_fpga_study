@@ -53,6 +53,7 @@ struct {
     logic mjpeg;
     logic ddr3;
     logic mac;
+    logic ddr3_master;
 } rst;
 initial rst = '{default:1'd0};
 
@@ -201,6 +202,7 @@ always@(posedge cam_port.cmos_pclk) begin
     if(mjpeg_down_bef == 0 && mjpeg_down == 1'd1) begin
         led[4] <= ~led[4]; 
     end
+    mjpeg_down_bef <= mjpeg_down;
 end
 
 logic memory_clk_400m, DDR_pll_lock;
@@ -317,6 +319,7 @@ task task_init_reg();
     rst.mac  <= 1'd0;
     rst.ddr3 <= 1'd0;
     rst.cam  <= 1'd0;
+    rst.ddr3_master <= 1'd0;
     // rst_n_pwd<= 1'd1;
     led_tmp <= 6'b111111;
 endtask //automatic
@@ -352,6 +355,7 @@ always@(posedge clk or negedge rst_n)begin
                 if(init_down) begin
                     state <= STATE_END;
                     led_tmp <= led_tmp << 1;
+                    rst.ddr3_master <= 1'd1;
                 end
             end
             STATE_END:begin

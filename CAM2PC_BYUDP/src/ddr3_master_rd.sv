@@ -28,10 +28,10 @@ module ddr3_master_rd#(
 //---------------------------------//
 logic i_en_bef, i_en_pos_flag;
 assign i_en_pos_flag = (~i_en_bef)&i_en;
-always@(i_pclk84m) i_en_bef <= i_en;
+always@(posedge i_pclk84m) i_en_bef <= i_en;
 logic i_udp_busy_bef, i_udp_busy_neg_flag;
 assign i_udp_busy_neg_flag = (~i_udp128_busy)&i_udp_busy_bef;
-always@(i_pclk84m) i_udp_busy_bef <= i_udp128_busy;
+always@(posedge i_pclk84m) i_udp_busy_bef <= i_udp128_busy;
 //---------------------------------//
 logic [24:0] jpeg_total_size_Byte;
 
@@ -76,7 +76,7 @@ always@(posedge i_pclk84m or negedge i_rst_n)begin
                     o_udp128_udp_last_frame_flag <= 1'd0;
                 end
                 else begin
-                    o_udp128_udp_jpeg_len <= jpeg_total_size_Byte;
+                    o_udp128_udp_jpeg_len <= jpeg_total_size_Byte[15:0];
                     state <= FINISH;
                     o_udp128_udp_last_frame_flag <= 1'd1;
                 end
@@ -100,11 +100,11 @@ logic o_jpeg_rd_req_val, o_jpeg_rd_req_bef, o_jpeg_rd_req_pos, o_jpeg_rd_req_ctr
 assign o_jpeg_rd_req = o_jpeg_rd_req_pos;
 assign o_jpeg_rd_req_pos = (~o_jpeg_rd_req_bef)&o_jpeg_rd_req_val;
 assign o_jpeg_rd_req_ctrl = o_jpeg_rd_req_val&(~jpeg_rd_frame_end);
-always@(i_pclk84m) o_jpeg_rd_req_bef <= o_jpeg_rd_req_val;
+always@(posedge i_pclk84m) o_jpeg_rd_req_bef <= o_jpeg_rd_req_val;
 
 logic i_udp128_ddr3_data_upd_req_bef, i_udp128_ddr3_data_upd_req_neg, i_udp128_ddr3_data_upd_req_neg_state;
 assign i_udp128_ddr3_data_upd_req_neg = (~i_udp128_ddr3_data_upd_req)&i_udp128_ddr3_data_upd_req_bef;
-always@(i_pclk84m) i_udp128_ddr3_data_upd_req_bef <= i_udp128_ddr3_data_upd_req;
+always@(posedge i_pclk84m) i_udp128_ddr3_data_upd_req_bef <= i_udp128_ddr3_data_upd_req;
 
 logic [24:0] jpeg_total_size_Byte_tmp;
 always@(posedge i_pclk84m or negedge i_rst_n)begin

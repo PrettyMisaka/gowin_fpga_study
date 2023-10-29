@@ -2,76 +2,8 @@
 <GAO_CONFIG>
     <Version>3.0</Version>
     <Mode>Standard</Mode>
-    <AoCore index="0" sample_clock="cam_port.cmos_pclk" trig_type="0" storage_depth="1024" window_num="1" capture_amount="1024" implementation="0" trigger_pos="0" module_name="my_top" force_trigger_by_falling_edge="true">
+    <AoCore index="0" sample_clock="cam_port.cmos_pclk" trig_type="0" storage_depth="2048" window_num="1" capture_amount="2048" implementation="0" trigger_pos="0" module_name="my_top" force_trigger_by_falling_edge="true">
         <SignalList>
-            <Signal>cam_user.half_cmos_clk</Signal>
-            <Bus name="cam_port.cmos_db[7:0]">
-                <Signal>cam_port.cmos_db[7]</Signal>
-                <Signal>cam_port.cmos_db[6]</Signal>
-                <Signal>cam_port.cmos_db[5]</Signal>
-                <Signal>cam_port.cmos_db[4]</Signal>
-                <Signal>cam_port.cmos_db[3]</Signal>
-                <Signal>cam_port.cmos_db[2]</Signal>
-                <Signal>cam_port.cmos_db[1]</Signal>
-                <Signal>cam_port.cmos_db[0]</Signal>
-            </Bus>
-            <Signal>cam_port.cmos_href</Signal>
-            <Signal>cam_port.cmos_vsync</Signal>
-            <Signal>netrmii.clk50m</Signal>
-            <Bus name="cam_user.data_bgr565[15:0]">
-                <Signal>cam_user.data_bgr565[15]</Signal>
-                <Signal>cam_user.data_bgr565[14]</Signal>
-                <Signal>cam_user.data_bgr565[13]</Signal>
-                <Signal>cam_user.data_bgr565[12]</Signal>
-                <Signal>cam_user.data_bgr565[11]</Signal>
-                <Signal>cam_user.data_bgr565[10]</Signal>
-                <Signal>cam_user.data_bgr565[9]</Signal>
-                <Signal>cam_user.data_bgr565[8]</Signal>
-                <Signal>cam_user.data_bgr565[7]</Signal>
-                <Signal>cam_user.data_bgr565[6]</Signal>
-                <Signal>cam_user.data_bgr565[5]</Signal>
-                <Signal>cam_user.data_bgr565[4]</Signal>
-                <Signal>cam_user.data_bgr565[3]</Signal>
-                <Signal>cam_user.data_bgr565[2]</Signal>
-                <Signal>cam_user.data_bgr565[1]</Signal>
-                <Signal>cam_user.data_bgr565[0]</Signal>
-            </Bus>
-            <Bus name="frame_cnt_save[7:0]">
-                <Signal>frame_cnt_save[7]</Signal>
-                <Signal>frame_cnt_save[6]</Signal>
-                <Signal>frame_cnt_save[5]</Signal>
-                <Signal>frame_cnt_save[4]</Signal>
-                <Signal>frame_cnt_save[3]</Signal>
-                <Signal>frame_cnt_save[2]</Signal>
-                <Signal>frame_cnt_save[1]</Signal>
-                <Signal>frame_cnt_save[0]</Signal>
-            </Bus>
-            <Bus name="MJPEG_Encoder0/data_in[23:0]">
-                <Signal>MJPEG_Encoder0/data_in[23]</Signal>
-                <Signal>MJPEG_Encoder0/data_in[22]</Signal>
-                <Signal>MJPEG_Encoder0/data_in[21]</Signal>
-                <Signal>MJPEG_Encoder0/data_in[20]</Signal>
-                <Signal>MJPEG_Encoder0/data_in[19]</Signal>
-                <Signal>MJPEG_Encoder0/data_in[18]</Signal>
-                <Signal>MJPEG_Encoder0/data_in[17]</Signal>
-                <Signal>MJPEG_Encoder0/data_in[16]</Signal>
-                <Signal>MJPEG_Encoder0/data_in[15]</Signal>
-                <Signal>MJPEG_Encoder0/data_in[14]</Signal>
-                <Signal>MJPEG_Encoder0/data_in[13]</Signal>
-                <Signal>MJPEG_Encoder0/data_in[12]</Signal>
-                <Signal>MJPEG_Encoder0/data_in[11]</Signal>
-                <Signal>MJPEG_Encoder0/data_in[10]</Signal>
-                <Signal>MJPEG_Encoder0/data_in[9]</Signal>
-                <Signal>MJPEG_Encoder0/data_in[8]</Signal>
-                <Signal>MJPEG_Encoder0/data_in[7]</Signal>
-                <Signal>MJPEG_Encoder0/data_in[6]</Signal>
-                <Signal>MJPEG_Encoder0/data_in[5]</Signal>
-                <Signal>MJPEG_Encoder0/data_in[4]</Signal>
-                <Signal>MJPEG_Encoder0/data_in[3]</Signal>
-                <Signal>MJPEG_Encoder0/data_in[2]</Signal>
-                <Signal>MJPEG_Encoder0/data_in[1]</Signal>
-                <Signal>MJPEG_Encoder0/data_in[0]</Signal>
-            </Bus>
             <Bus name="MJPEG_Encoder0/img_out[7:0]">
                 <Signal>MJPEG_Encoder0/img_out[7]</Signal>
                 <Signal>MJPEG_Encoder0/img_out[6]</Signal>
@@ -82,11 +14,77 @@
                 <Signal>MJPEG_Encoder0/img_out[1]</Signal>
                 <Signal>MJPEG_Encoder0/img_out[0]</Signal>
             </Bus>
-            <Signal>MJPEG_Encoder0/clk</Signal>
-            <Signal>MJPEG_Encoder0/rstn</Signal>
-            <Signal>MJPEG_Encoder0/DE</Signal>
             <Signal>MJPEG_Encoder0/img_valid</Signal>
             <Signal>MJPEG_Encoder0/img_done</Signal>
+            <Signal>ddr3_master0/i_ddr3_cmd_ready</Signal>
+            <Signal>ddr3_master0/i_ddr3_wr_data_rdy</Signal>
+            <Signal>ddr3_master0/i_ddr3_rd_data_de</Signal>
+            <Signal>ddr3_master0/i_ddr3_rd_data_end</Signal>
+            <Bus name="ddr3_master0/o_ddr3_cmd[2:0]">
+                <Signal>ddr3_master0/o_ddr3_cmd[2]</Signal>
+                <Signal>ddr3_master0/o_ddr3_cmd[1]</Signal>
+                <Signal>ddr3_master0/o_ddr3_cmd[0]</Signal>
+            </Bus>
+            <Bus name="ddr3_master0/o_ddr3_addr[27:0]">
+                <Signal>ddr3_master0/o_ddr3_addr[27]</Signal>
+                <Signal>ddr3_master0/o_ddr3_addr[26]</Signal>
+                <Signal>ddr3_master0/o_ddr3_addr[25]</Signal>
+                <Signal>ddr3_master0/o_ddr3_addr[24]</Signal>
+                <Signal>ddr3_master0/o_ddr3_addr[23]</Signal>
+                <Signal>ddr3_master0/o_ddr3_addr[22]</Signal>
+                <Signal>ddr3_master0/o_ddr3_addr[21]</Signal>
+                <Signal>ddr3_master0/o_ddr3_addr[20]</Signal>
+                <Signal>ddr3_master0/o_ddr3_addr[19]</Signal>
+                <Signal>ddr3_master0/o_ddr3_addr[18]</Signal>
+                <Signal>ddr3_master0/o_ddr3_addr[17]</Signal>
+                <Signal>ddr3_master0/o_ddr3_addr[16]</Signal>
+                <Signal>ddr3_master0/o_ddr3_addr[15]</Signal>
+                <Signal>ddr3_master0/o_ddr3_addr[14]</Signal>
+                <Signal>ddr3_master0/o_ddr3_addr[13]</Signal>
+                <Signal>ddr3_master0/o_ddr3_addr[12]</Signal>
+                <Signal>ddr3_master0/o_ddr3_addr[11]</Signal>
+                <Signal>ddr3_master0/o_ddr3_addr[10]</Signal>
+                <Signal>ddr3_master0/o_ddr3_addr[9]</Signal>
+                <Signal>ddr3_master0/o_ddr3_addr[8]</Signal>
+                <Signal>ddr3_master0/o_ddr3_addr[7]</Signal>
+                <Signal>ddr3_master0/o_ddr3_addr[6]</Signal>
+                <Signal>ddr3_master0/o_ddr3_addr[5]</Signal>
+                <Signal>ddr3_master0/o_ddr3_addr[4]</Signal>
+                <Signal>ddr3_master0/o_ddr3_addr[3]</Signal>
+                <Signal>ddr3_master0/o_ddr3_addr[2]</Signal>
+                <Signal>ddr3_master0/o_ddr3_addr[1]</Signal>
+                <Signal>ddr3_master0/o_ddr3_addr[0]</Signal>
+            </Bus>
+            <Signal>ddr3_master0/o_ddr3_cmd_en</Signal>
+            <Signal>ddr3_master0/o_ddr3_wr_data_en</Signal>
+            <Signal>ddr3_master0/o_ddr3_wr_data_end</Signal>
+            <Signal>ddr3_master0/o_ddr3_master_error</Signal>
+            <Bus name="frame_cnt_save[7:0]">
+                <Signal>frame_cnt_save[7]</Signal>
+                <Signal>frame_cnt_save[6]</Signal>
+                <Signal>frame_cnt_save[5]</Signal>
+                <Signal>frame_cnt_save[4]</Signal>
+                <Signal>frame_cnt_save[3]</Signal>
+                <Signal>frame_cnt_save[2]</Signal>
+                <Signal>frame_cnt_save[1]</Signal>
+                <Signal>frame_cnt_save[0]</Signal>
+            </Bus>
+            <Bus name="ddr3_master0/mjpeg_out_data_tail[5:0]">
+                <Signal>ddr3_master0/mjpeg_out_data_tail[5]</Signal>
+                <Signal>ddr3_master0/mjpeg_out_data_tail[4]</Signal>
+                <Signal>ddr3_master0/mjpeg_out_data_tail[3]</Signal>
+                <Signal>ddr3_master0/mjpeg_out_data_tail[2]</Signal>
+                <Signal>ddr3_master0/mjpeg_out_data_tail[1]</Signal>
+                <Signal>ddr3_master0/mjpeg_out_data_tail[0]</Signal>
+            </Bus>
+            <Bus name="ddr3_master0/mjpeg_out_data_head[5:0]">
+                <Signal>ddr3_master0/mjpeg_out_data_head[5]</Signal>
+                <Signal>ddr3_master0/mjpeg_out_data_head[4]</Signal>
+                <Signal>ddr3_master0/mjpeg_out_data_head[3]</Signal>
+                <Signal>ddr3_master0/mjpeg_out_data_head[2]</Signal>
+                <Signal>ddr3_master0/mjpeg_out_data_head[1]</Signal>
+                <Signal>ddr3_master0/mjpeg_out_data_head[0]</Signal>
+            </Bus>
         </SignalList>
         <Triggers>
             <Trigger index="0">
@@ -99,8 +97,21 @@
                     <Signal>cam_port.cmos_vsync</Signal>
                 </SignalList>
             </Trigger>
-            <Trigger index="2"/>
-            <Trigger index="3"/>
+            <Trigger index="2">
+                <SignalList>
+                    <Signal>ddr3_master0/mjpeg_busy</Signal>
+                </SignalList>
+            </Trigger>
+            <Trigger index="3">
+                <SignalList>
+                    <Bus restorename="ddr3_master0/state_mjpeg_wr[3:0]">
+                        <Signal>ddr3_master0/state_mjpeg_wr[3]</Signal>
+                        <Signal>ddr3_master0/state_mjpeg_wr[2]</Signal>
+                        <Signal>ddr3_master0/state_mjpeg_wr[1]</Signal>
+                        <Signal>ddr3_master0/state_mjpeg_wr[0]</Signal>
+                    </Bus>
+                </SignalList>
+            </Trigger>
             <Trigger index="4"/>
             <Trigger index="5"/>
             <Trigger index="6"/>
@@ -118,7 +129,7 @@
             <MatchUnit index="0" enabled="1" match_type="0" counter_enable="0" counter_width="2" counter="2" countinuous="0" func="0" value0="1" value1="0" trigger="0"/>
             <MatchUnit index="1" enabled="0" match_type="0" counter_enable="0" counter_width="2" counter="2" countinuous="0" func="0" value0="1" value1="0" trigger="1"/>
             <MatchUnit index="2" enabled="0" match_type="0" counter_enable="0" counter_width="2" counter="2" countinuous="0" func="0" value0="1" value1="0" trigger="2"/>
-            <MatchUnit index="3" enabled="0" match_type="0" counter_enable="0" counter_width="2" counter="2" countinuous="0" func="0" value0="" value1=""/>
+            <MatchUnit index="3" enabled="0" match_type="0" counter_enable="0" counter_width="2" counter="2" countinuous="0" func="0" value0="0001" value1="0000" trigger="3"/>
             <MatchUnit index="4" enabled="0" match_type="0" counter_enable="0" counter_width="2" counter="2" countinuous="0" func="0" value0="" value1=""/>
             <MatchUnit index="5" enabled="0" match_type="0" counter_enable="0" counter_width="2" counter="2" countinuous="0" func="0" value0="" value1=""/>
             <MatchUnit index="6" enabled="0" match_type="0" counter_enable="0" counter_width="2" counter="2" countinuous="0" func="0" value0="" value1=""/>
@@ -136,5 +147,5 @@
             <Expression>M0</Expression>
         </Expressions>
     </AoCore>
-    <GAO_ID>0000100101101101</GAO_ID>
+    <GAO_ID>0111011011111101</GAO_ID>
 </GAO_CONFIG>
