@@ -29,8 +29,8 @@
         <File path="src/CAM2PC_UDP.cst" type="file.cst" enable="1"/>
         <File path="src/top.cst" type="file.cst" enable="0"/>
         <File path="src/ddr_18k.sdc" type="file.sdc" enable="0"/>
-        <File path="src/lcd.sdc" type="file.sdc" enable="0"/>
-        <File path="src/my.sdc" type="file.sdc" enable="1"/>
+        <File path="src/lcd.sdc" type="file.sdc" enable="1"/>
+        <File path="src/my.sdc" type="file.sdc" enable="0"/>
         <File path="src/CAM2PC_BYUDP.rao" type="file.gao" enable="1"/>
         <File path="src/inc/cam_interface.svh" type="file.other" enable="1"/>
         <File path="src/inc/config.svh" type="file.other" enable="1"/>

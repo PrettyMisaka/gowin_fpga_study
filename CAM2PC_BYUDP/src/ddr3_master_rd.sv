@@ -137,6 +137,7 @@ always@(posedge i_pclk84m or negedge i_rst_n)begin
                         2'b11:begin
                             jpeg_rd_data0 <= jpeg_rd_data1;
                             o_jpeg_rd_req_val <= 1'd1;
+                            jpeg_rd_dataBuf_state <= 2'b10;
                         end
                         default:
                             o_error<=1'd1;

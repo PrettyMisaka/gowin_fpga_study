@@ -1,5 +1,6 @@
 module ddr3_master#(
-    parameter MJPEG_RST_DELAY_FRAME = 6'd30
+    parameter MJPEG_RST_DELAY_FRAME = 6'd30,
+    parameter DDR3_CMD_DELAY_MAX = 8'd32
 )(
     input clk,//27mhz
     input clk50m,
@@ -240,6 +241,7 @@ always@(posedge i_cam_pclk or negedge rst_n_delay)begin
                         end
                         mjpeg_out_data_buf128_byte_cnt <= mjpeg_out_data_buf128_byte_cnt + 8'd1;
                         o_udp128_ddr3_udp_wrdata_tmp <= {o_udp128_ddr3_udp_wrdata_tmp[119:0],mjpeg_out_data_buf[mjpeg_out_data_head]};
+                        mjpeg_out_data_head <= mjpeg_out_data_head + 6'd1;
                     end
                     if(mjpeg_out_data_tail == mjpeg_out_data_head && mjpeg_busy == 1'd0)begin
                         o_udp128_ddr3_udp_wrdata_end <= 1'd1;
@@ -287,7 +289,7 @@ struct {
     logic [7:0]  byte_cnt;
 } ddr3_mjpeg_wr_info, ddr3_jpeg_rd_info;
 logic jpeg_rd_en, jpeg_rd_busy, jpeg_rd_err;
-assign jpeg_rd_en = mjpeg_busy;
+assign jpeg_rd_en = mjpeg_busy&1'd0;
 logic [127:0] jpeg_rd_data;
 logic jpeg_rd_down, jpeg_rd_req;
 ddr3_master_rd ddr3_master_rd0(
@@ -340,14 +342,28 @@ enum logic[3:0] {
     DDR3_HANDLE_WR_REQ, DDR3_HANDLE_WR_REQ_DWON
 } state_ddr3dispatch;
 logic [23:0] jpeg_rd_addr_tmp;
+logic ddr3_cmd_rd_send_state;
+logic [7:0] ddr3_cmd_delay_cnt;
+initial begin
+    ddr3_cmd_rd_send_state <= 1'd0;
+    o_ddr3_cmd_en <= 1'd0;
+    ddr3_cmd_delay_cnt <= 8'd0;
+end
 always@(posedge i_cam_pclk or negedge rst_n_delay)begin
+// always@(posedge i_ddr3_memory_clk or negedge rst_n_delay)begin
     if(~rst_n_delay)begin
         state_ddr3dispatch <= DDR3_REQ_IDLE;
         ddr3_mjpeg_wr_req_state <= 1'd0;
         ddr3_jpeg_rd_req_state <= 1'd0;
         mjped_frame_updata_state <= 1'd0;
+        ddr3_cmd_rd_send_state <= 1'd0;
+        o_ddr3_cmd_en <= 1'd0;
+        jpeg_rd_addr_tmp <= 24'd0;
+        ddr3_cmd_delay_cnt <= 8'd0;
     end
     else begin
+        if(ddr3_cmd_delay_cnt < DDR3_CMD_DELAY_MAX)
+            ddr3_cmd_delay_cnt <= ddr3_cmd_delay_cnt + 8'd1;
         if(ddr3_mjpeg_wr_req_pos_flag) ddr3_mjpeg_wr_req_state = 1'd1;
         if(ddr3_jpeg_rd_req_pos_flag) ddr3_jpeg_rd_req_state = 1'd1;
         if(mjped_frame_updata_flag) 
@@ -357,11 +373,21 @@ always@(posedge i_cam_pclk or negedge rst_n_delay)begin
             ddr3_mjpeg_wr_info.addr <= 0;
             ddr3_mjpeg_wr_info.bank <= ddr3_mjpeg_wr_info.bank + 3'd1;
             jpeg_rd_addr_tmp <= 24'd0;
+            mjped_frame_updata_state <= 1'd0;
+        end
+        if(ddr3_cmd_rd_send_state == 1'd1)begin
+            if(i_ddr3_rd_data_de&&i_ddr3_rd_data_end)begin
+                jpeg_rd_data <= i_ddr3_rd_data;
+                jpeg_rd_addr_tmp <= jpeg_rd_addr_tmp + 24'h8;
+                jpeg_rd_down <= 1'd1;
+                ddr3_cmd_rd_send_state <= 1'd0;
+            end
         end
         case (state_ddr3dispatch)
             DDR3_REQ_IDLE: begin
+                // if(i_ddr3_cmd_ready == 1'd1&&ddr3_cmd_delay_cnt == DDR3_CMD_DELAY_MAX) begin
                 if(i_ddr3_cmd_ready == 1'd1) begin
-                    if(ddr3_jpeg_rd_req_state == 1'd1) begin
+                    if(ddr3_jpeg_rd_req_state == 1'd1&&ddr3_cmd_rd_send_state==1'd0) begin
                         state_ddr3dispatch <= DDR3_HANDLE_RD_REQ;
                     end
                     else if(ddr3_mjpeg_wr_req_state == 1'd1&&i_ddr3_wr_data_rdy)begin
@@ -370,6 +396,7 @@ always@(posedge i_cam_pclk or negedge rst_n_delay)begin
                 end
                 ddr3_mjpeg_wr_req_down <= 1'd0;
                 jpeg_rd_down <= 1'd0;
+                o_ddr3_cmd_en <= 1'd0;
             end
             DDR3_HANDLE_RD_REQ:begin
                 o_ddr3_cmd_en <= 1'd1;
@@ -379,27 +406,30 @@ always@(posedge i_cam_pclk or negedge rst_n_delay)begin
 
                 jpeg_rd_down <= 1'd0;
                 state_ddr3dispatch <= DDR3_HANDLE_RD_REQ_DOWN;
+                ddr3_cmd_rd_send_state <= 1'd1;
+                ddr3_cmd_delay_cnt <= 8'd0;
             end
             DDR3_HANDLE_RD_REQ_DOWN:begin
-                if(i_ddr3_rd_data_de)begin
-                    jpeg_rd_data <= i_ddr3_rd_data;
-                    jpeg_rd_addr_tmp <= jpeg_rd_addr_tmp + 24'h8;
-                    state_ddr3dispatch <= DDR3_REQ_IDLE;
-                    jpeg_rd_down <= 1'd1;
-                end
                 o_ddr3_cmd_en <= 1'd0;
+                state_ddr3dispatch <= DDR3_REQ_IDLE;
             end
             DDR3_HANDLE_WR_REQ:begin
-                state_ddr3dispatch <= DDR3_HANDLE_WR_REQ_DWON;
-                addr_row_col <= ddr3_mjpeg_wr_info.addr;
-                addr_bank <= ddr3_mjpeg_wr_info.bank;
-                ddr3_mjpeg_wr_req_down <= 1'd0;
+                if(ddr3_mjpeg_wr_req_state == 1'd1&&i_ddr3_wr_data_rdy == 1'd0)begin
+                    state_ddr3dispatch <= DDR3_REQ_IDLE;
+                end
+                else begin
+                    state_ddr3dispatch <= DDR3_HANDLE_WR_REQ_DWON;
+                    addr_row_col <= ddr3_mjpeg_wr_info.addr;
+                    addr_bank <= ddr3_mjpeg_wr_info.bank;
+                    ddr3_mjpeg_wr_req_down <= 1'd0;
 
-                o_ddr3_cmd_en <= 1'd1;
-                o_ddr3_cmd <= DDR3_CMD_WR;
-                o_ddr3_wr_data     <= o_udp128_ddr3_udp_wrdata0;
-                o_ddr3_wr_data_en  <= 1'd1;
-                o_ddr3_wr_data_end <= 1'd1;
+                    o_ddr3_cmd_en <= 1'd1;
+                    o_ddr3_cmd <= DDR3_CMD_WR;
+                    o_ddr3_wr_data     <= o_udp128_ddr3_udp_wrdata0;
+                    o_ddr3_wr_data_en  <= 1'd1;
+                    o_ddr3_wr_data_end <= 1'd1;
+                    ddr3_cmd_delay_cnt <= 8'd0;
+                end
             end
             DDR3_HANDLE_WR_REQ_DWON:begin
                 o_ddr3_cmd_en <= 1'd0;
