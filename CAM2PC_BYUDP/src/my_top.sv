@@ -364,8 +364,43 @@ always@(posedge clk or negedge rst_n)begin
         endcase
     end
 end
+//----------------dpb---------------//
+    wire [63:0]         o_dpb_wr_a_rd_data     ;
+    wire [63:0]         o_dpb_wr_a_wr_data     ;
+    wire [9:0]          o_dpb_wr_a_addr        ;
+    wire                o_dpb_wr_a_clk         ;
+    wire                o_dpb_wr_a_cea         ;
+    wire                o_dpb_wr_a_ocea        ;
+    wire                o_dpb_wr_a_rst_n       ;
+    wire                o_dpb_wr_a_wr_en       ;
+    
+    wire [63:0]         o_dpb_wr_b_rd_data     ;
+    wire [63:0]         o_dpb_wr_b_wr_data     ;
+    wire [9:0]          o_dpb_wr_b_addr        ;
+    wire                o_dpb_wr_b_clk         ;
+    wire                o_dpb_wr_b_cea         ;
+    wire                o_dpb_wr_b_ocea        ;
+    wire                o_dpb_wr_b_rst_n       ;
+    wire                o_dpb_wr_b_wr_en       ;
 
-ddr3_master ddr3_master0(
+    wire [63:0]         o_dpb_rd_a_rd_data     ;
+    wire [63:0]         o_dpb_rd_a_wr_data     ;
+    wire [9:0]          o_dpb_rd_a_addr        ;
+    wire                o_dpb_rd_a_clk         ;
+    wire                o_dpb_rd_a_cea         ;
+    wire                o_dpb_rd_a_ocea        ;
+    wire                o_dpb_rd_a_rst_n       ;
+    wire                o_dpb_rd_a_wr_en       ;
+    
+    wire [63:0]         o_dpb_rd_b_rd_data     ;
+    wire [63:0]         o_dpb_rd_b_wr_data     ;
+    wire [9:0]          o_dpb_rd_b_addr        ;
+    wire                o_dpb_rd_b_clk         ;
+    wire                o_dpb_rd_b_cea         ;
+    wire                o_dpb_rd_b_ocea        ;
+    wire                o_dpb_rd_b_rst_n       ;
+    wire                o_dpb_rd_b_wr_en       ;
+ddr3_master_top ddr3_master0(
     .clk                (clk   ),//27mhz
     .clk50m             (clk50m),
     .rst_n              (rst_n ),
@@ -394,6 +429,42 @@ ddr3_master ddr3_master0(
     .i_udp128_ddr3_data_upd_req    (o_ddr3_data_upd_req  ),
     .i_udp128_udp_frame_down       (o_udp_frame_down     ),
     .i_udp128_busy                 (o_busy               ),
+//----------------dpb---------------//
+    .o_dpb_wr_a_rd_data     (o_dpb_wr_a_rd_data  ),
+    .o_dpb_wr_a_wr_data     (o_dpb_wr_a_wr_data  ),
+    .o_dpb_wr_a_addr        (o_dpb_wr_a_addr     ),
+    .o_dpb_wr_a_clk         (o_dpb_wr_a_clk      ),
+    .o_dpb_wr_a_cea         (o_dpb_wr_a_cea      ),
+    .o_dpb_wr_a_ocea        (o_dpb_wr_a_ocea     ),
+    .o_dpb_wr_a_rst_n       (o_dpb_wr_a_rst_n    ),
+    .o_dpb_wr_a_wr_en       (o_dpb_wr_a_wr_en    ),
+    
+    .o_dpb_wr_b_rd_data     (o_dpb_wr_b_rd_data  ),
+    .o_dpb_wr_b_wr_data     (o_dpb_wr_b_wr_data  ),
+    .o_dpb_wr_b_addr        (o_dpb_wr_b_addr     ),
+    .o_dpb_wr_b_clk         (o_dpb_wr_b_clk      ),
+    .o_dpb_wr_b_cea         (o_dpb_wr_b_cea      ),
+    .o_dpb_wr_b_ocea        (o_dpb_wr_b_ocea     ),
+    .o_dpb_wr_b_rst_n       (o_dpb_wr_b_rst_n    ),
+    .o_dpb_wr_b_wr_en       (o_dpb_wr_b_wr_en    ),
+
+    .o_dpb_rd_a_rd_data     (o_dpb_rd_a_rd_data  ),
+    .o_dpb_rd_a_wr_data     (o_dpb_rd_a_wr_data  ),
+    .o_dpb_rd_a_addr        (o_dpb_rd_a_addr     ),
+    .o_dpb_rd_a_clk         (o_dpb_rd_a_clk      ),
+    .o_dpb_rd_a_cea         (o_dpb_rd_a_cea      ),
+    .o_dpb_rd_a_ocea        (o_dpb_rd_a_ocea     ),
+    .o_dpb_rd_a_rst_n       (o_dpb_rd_a_rst_n    ),
+    .o_dpb_rd_a_wr_en       (o_dpb_rd_a_wr_en    ),
+    
+    .o_dpb_rd_b_rd_data     (o_dpb_rd_b_rd_data  ),
+    .o_dpb_rd_b_wr_data     (o_dpb_rd_b_wr_data  ),
+    .o_dpb_rd_b_addr        (o_dpb_rd_b_addr     ),
+    .o_dpb_rd_b_clk         (o_dpb_rd_b_clk      ),
+    .o_dpb_rd_b_cea         (o_dpb_rd_b_cea      ),
+    .o_dpb_rd_b_ocea        (o_dpb_rd_b_ocea     ),
+    .o_dpb_rd_b_rst_n       (o_dpb_rd_b_rst_n    ),
+    .o_dpb_rd_b_wr_en       (o_dpb_rd_b_wr_en    ),
 
     .o_ddr3_cmd         (cmd            ),
     .o_ddr3_cmd_en      (cmd_en         ),
@@ -410,6 +481,47 @@ ddr3_master ddr3_master0(
     .i_ddr3_rd_data     (rd_data        ),
     .i_ddr3_rd_data_de  (rd_data_valid  ),
     .i_ddr3_rd_data_end (rd_data_end    )
+);
+
+
+Gowin_DPB_RD Gowin_DPB_RD0(
+    .douta  (o_dpb_rd_a_rd_data     ), //output [63:0] douta
+    .dina   (o_dpb_rd_a_wr_data     ), //input [63:0] dina
+    .ada    (o_dpb_rd_a_addr        ), //input [9:0] ada
+    .clka   (o_dpb_rd_a_clk         ), //input clka
+    .cea    (o_dpb_rd_a_cea         ), //input cea
+    .ocea   (o_dpb_rd_a_ocea        ), //input ocea
+    .reseta (o_dpb_rd_a_rst_n       ), //input reseta
+    .wrea   (o_dpb_rd_a_wr_en       ), //input wrea
+
+    .doutb  (o_dpb_rd_b_rd_data     ), //output [63:0] doutb
+    .dinb   (o_dpb_rd_b_wr_data     ), //input [63:0] dinb
+    .adb    (o_dpb_rd_b_addr        ), //input [9:0] adb
+    .clkb   (o_dpb_rd_b_clk         ), //input clkb
+    .oceb   (o_dpb_rd_b_cea         ), //input oceb
+    .ceb    (o_dpb_rd_b_ocea        ), //input ceb
+    .resetb (o_dpb_rd_b_rst_n       ), //input resetb
+    .wreb   (o_dpb_rd_b_wr_en       )  //input wreb
+);
+
+Gowin_DPB_WR Gowin_DPB_WR0(
+    .douta  (o_dpb_wr_a_rd_data     ), //output [63:0] douta
+    .dina   (o_dpb_wr_a_wr_data     ), //input [63:0] dina
+    .ada    (o_dpb_wr_a_addr        ), //input [9:0] ada
+    .clka   (o_dpb_wr_a_clk         ), //input clka
+    .cea    (o_dpb_wr_a_cea         ), //input cea
+    .ocea   (o_dpb_wr_a_ocea        ), //input ocea
+    .reseta (o_dpb_wr_a_rst_n       ), //input reseta
+    .wrea   (o_dpb_wr_a_wr_en       ), //input wrea
+
+    .doutb  (o_dpb_wr_b_rd_data     ), //output [63:0] doutb
+    .dinb   (o_dpb_wr_b_wr_data     ), //input [63:0] dinb
+    .adb    (o_dpb_wr_b_addr        ), //input [9:0] adb
+    .clkb   (o_dpb_wr_b_clk         ), //input clkb
+    .oceb   (o_dpb_wr_b_cea         ), //input oceb
+    .ceb    (o_dpb_wr_b_ocea        ), //input ceb
+    .resetb (o_dpb_wr_b_rst_n       ), //input resetb
+    .wreb   (o_dpb_wr_b_wr_en       )  //input wreb
 );
 
 endmodule
