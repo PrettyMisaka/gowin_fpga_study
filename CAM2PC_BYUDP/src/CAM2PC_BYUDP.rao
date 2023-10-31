@@ -6,45 +6,36 @@
         <SignalList>
             <Signal>MJPEG_Encoder0/img_valid</Signal>
             <Signal>MJPEG_Encoder0/img_done</Signal>
-            <Bus name="ddr3_master0/ddr3_master_wr0/o_dpb_wr_a_addr[9:0]">
-                <Signal>ddr3_master0/ddr3_master_wr0/o_dpb_wr_a_addr[9]</Signal>
-                <Signal>ddr3_master0/ddr3_master_wr0/o_dpb_wr_a_addr[8]</Signal>
-                <Signal>ddr3_master0/ddr3_master_wr0/o_dpb_wr_a_addr[7]</Signal>
-                <Signal>ddr3_master0/ddr3_master_wr0/o_dpb_wr_a_addr[6]</Signal>
-                <Signal>ddr3_master0/ddr3_master_wr0/o_dpb_wr_a_addr[5]</Signal>
-                <Signal>ddr3_master0/ddr3_master_wr0/o_dpb_wr_a_addr[4]</Signal>
-                <Signal>ddr3_master0/ddr3_master_wr0/o_dpb_wr_a_addr[3]</Signal>
-                <Signal>ddr3_master0/ddr3_master_wr0/o_dpb_wr_a_addr[2]</Signal>
-                <Signal>ddr3_master0/ddr3_master_wr0/o_dpb_wr_a_addr[1]</Signal>
-                <Signal>ddr3_master0/ddr3_master_wr0/o_dpb_wr_a_addr[0]</Signal>
-            </Bus>
-            <Bus name="ddr3_master0/ddr3_master_cmd0/o_dpb_wr_b_addr[9:0]">
-                <Signal>ddr3_master0/ddr3_master_cmd0/o_dpb_wr_b_addr[9]</Signal>
-                <Signal>ddr3_master0/ddr3_master_cmd0/o_dpb_wr_b_addr[8]</Signal>
-                <Signal>ddr3_master0/ddr3_master_cmd0/o_dpb_wr_b_addr[7]</Signal>
-                <Signal>ddr3_master0/ddr3_master_cmd0/o_dpb_wr_b_addr[6]</Signal>
-                <Signal>ddr3_master0/ddr3_master_cmd0/o_dpb_wr_b_addr[5]</Signal>
-                <Signal>ddr3_master0/ddr3_master_cmd0/o_dpb_wr_b_addr[4]</Signal>
-                <Signal>ddr3_master0/ddr3_master_cmd0/o_dpb_wr_b_addr[3]</Signal>
-                <Signal>ddr3_master0/ddr3_master_cmd0/o_dpb_wr_b_addr[2]</Signal>
-                <Signal>ddr3_master0/ddr3_master_cmd0/o_dpb_wr_b_addr[1]</Signal>
-                <Signal>ddr3_master0/ddr3_master_cmd0/o_dpb_wr_b_addr[0]</Signal>
-            </Bus>
             <Signal>ddr3_master0/o_ddr3_master_wr_req</Signal>
-            <Signal>ddr3_master0/o_ddr3_master_wr_frame_down</Signal>
-            <Signal>ddr3_master0/o_ddr3_master_wr_down</Signal>
-            <Signal>ddr3_master0/mjpeg_busy</Signal>
-            <Signal>ddr3_master0/i_ddr3_cmd_ready</Signal>
-            <Signal>ddr3_master0/i_ddr3_wr_data_rdy</Signal>
-            <Signal>ddr3_master0/i_ddr3_rd_data_de</Signal>
-            <Signal>ddr3_master0/i_ddr3_rd_data_end</Signal>
-            <Signal>ddr3_master0/o_ddr3_cmd_en</Signal>
-            <Signal>ddr3_master0/o_ddr3_wr_data_en</Signal>
-            <Signal>ddr3_master0/o_ddr3_wr_data_end</Signal>
-            <Bus name="ddr3_master0/o_ddr3_cmd[2:0]">
-                <Signal>ddr3_master0/o_ddr3_cmd[2]</Signal>
-                <Signal>ddr3_master0/o_ddr3_cmd[1]</Signal>
-                <Signal>ddr3_master0/o_ddr3_cmd[0]</Signal>
+            <Bus name="ddr3_master0/ddr3_master_wr0/wr_req_cnt_save[7:0]">
+                <Signal>ddr3_master0/ddr3_master_wr0/wr_req_cnt_save[7]</Signal>
+                <Signal>ddr3_master0/ddr3_master_wr0/wr_req_cnt_save[6]</Signal>
+                <Signal>ddr3_master0/ddr3_master_wr0/wr_req_cnt_save[5]</Signal>
+                <Signal>ddr3_master0/ddr3_master_wr0/wr_req_cnt_save[4]</Signal>
+                <Signal>ddr3_master0/ddr3_master_wr0/wr_req_cnt_save[3]</Signal>
+                <Signal>ddr3_master0/ddr3_master_wr0/wr_req_cnt_save[2]</Signal>
+                <Signal>ddr3_master0/ddr3_master_wr0/wr_req_cnt_save[1]</Signal>
+                <Signal>ddr3_master0/ddr3_master_wr0/wr_req_cnt_save[0]</Signal>
+            </Bus>
+            <Bus name="frame_cnt_save[7:0]">
+                <Signal>frame_cnt_save[7]</Signal>
+                <Signal>frame_cnt_save[6]</Signal>
+                <Signal>frame_cnt_save[5]</Signal>
+                <Signal>frame_cnt_save[4]</Signal>
+                <Signal>frame_cnt_save[3]</Signal>
+                <Signal>frame_cnt_save[2]</Signal>
+                <Signal>frame_cnt_save[1]</Signal>
+                <Signal>frame_cnt_save[0]</Signal>
+            </Bus>
+            <Bus name="mjpeg_cnt_save[7:0]">
+                <Signal>mjpeg_cnt_save[7]</Signal>
+                <Signal>mjpeg_cnt_save[6]</Signal>
+                <Signal>mjpeg_cnt_save[5]</Signal>
+                <Signal>mjpeg_cnt_save[4]</Signal>
+                <Signal>mjpeg_cnt_save[3]</Signal>
+                <Signal>mjpeg_cnt_save[2]</Signal>
+                <Signal>mjpeg_cnt_save[1]</Signal>
+                <Signal>mjpeg_cnt_save[0]</Signal>
             </Bus>
         </SignalList>
         <Triggers>
@@ -96,5 +87,5 @@
             <Expression>M1</Expression>
         </Expressions>
     </AoCore>
-    <GAO_ID>1010100000000011</GAO_ID>
+    <GAO_ID>1100000111011110</GAO_ID>
 </GAO_CONFIG>

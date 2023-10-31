@@ -25,6 +25,10 @@ module ddr3_master_wr#(
     output logic [5:0]  o_ddr3_master_wr_buf_Bytecnt    ,
     input               o_ddr3_master_wr_down             
 );
+
+logic [7:0] wr_req_cnt;
+logic [7:0] wr_req_cnt_save;
+
 assign o_dpb_wr_a_clk = i_pclk;
 assign o_dpb_wr_a_cea  = 1'd1;
 assign o_dpb_wr_a_ocea = 1'd1;
@@ -71,6 +75,8 @@ always@(posedge i_pclk or negedge i_rst_n)begin
         if(i_mjpeg_down_bef == 1'd1 && i_mjpeg_down== 1'd0) begin 
             frame_end_state     <= 1'd1;
             frame_end_task_state<= 1'd1;
+            wr_req_cnt          <= 1'd0;
+            wr_req_cnt_save <= wr_req_cnt;
         end
         if(i_mjpeg_busy&&i_mjpeg_de)begin
             wr_data_tmp <= {wr_data_tmp[119:0],i_mjpeg_data};
@@ -84,8 +90,8 @@ always@(posedge i_pclk or negedge i_rst_n)begin
             wr_data_tmp_updata_flag <= 1'd0;
         if(frame_end_state&&~frame_end_task_state&&state_mjpeg_wr ==MJPEG_WR_IDLE)
             frame_end_state<=1'd0;
-        if(o_ddr3_master_wr_req&&o_ddr3_master_wr_down) o_ddr3_master_wr_req<=1'd0;
-        // if(o_ddr3_master_wr_req) o_ddr3_master_wr_req<=1'd0;
+        // if(o_ddr3_master_wr_req&&o_ddr3_master_wr_down) o_ddr3_master_wr_req<=1'd0;
+        if(o_ddr3_master_wr_req) o_ddr3_master_wr_req<=1'd0;
         case(state_mjpeg_wr)
             MJPEG_WR_IDLE:begin
                 if(wr_data_byte_cnt == 8'd0&&wr_data_tmp_updata_flag)begin
@@ -121,6 +127,7 @@ always@(posedge i_pclk or negedge i_rst_n)begin
                     wr_data_byte_cnt    <= 8'd0;
 
                     o_ddr3_master_wr_req        <= 1'd1;
+                    wr_req_cnt <= wr_req_cnt + 1'd1;
                     o_ddr3_master_wr_buf_128cnt <= dpb_wr_addr_tmp[7:1];
 
                     if(frame_end_task_state)begin

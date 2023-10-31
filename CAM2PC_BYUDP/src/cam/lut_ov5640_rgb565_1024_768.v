@@ -262,7 +262,7 @@ begin
 		10'd247: lut_data <= {8'h78 , 24'h483722}; // DVP CLK divider
 		10'd248: lut_data <= {8'h78 , 24'h382402}; // DVP CLK divider 
 		10'd249: lut_data <= {8'h78 , 24'h5001a3}; // SDE on, scale on, UV average off, color matrix on, AWB on
-		10'd250: lut_data <= {8'h78 , 24'h350300}; // AEC/AGC on 
+		// 10'd250: lut_data <= {8'h78 , 24'h350300}; // AEC/AGC on 
 		10'd251: lut_data <= {8'h78 , 24'h303521};// PLL     input clock =24Mhz, PCLK =84Mhz
 		// 10'd251: lut_data <= {8'h78 , 24'h303511};// PLL     input clock =24Mhz, PCLK =84Mhzx2
 		10'd252: lut_data <= {8'h78 , 24'h303669};// PLL
@@ -283,10 +283,14 @@ begin
 		// 10'd263: lut_data <= {8'h78 , 24'h38053f}; // HW (HE)
 		// 10'd264: lut_data <= {8'h78 , 24'h380607}; // VH (VE)
 		// 10'd265: lut_data <= {8'h78 , 24'h38079f}; // VH (VE)
-		10'd262: lut_data <= {8'h78 , 24'h380407}; // HW (HE)
-		10'd263: lut_data <= {8'h78 , 24'h380580}; // HW (HE)
-		10'd264: lut_data <= {8'h78 , 24'h380604}; // VH (VE)
-		10'd265: lut_data <= {8'h78 , 24'h380738}; // VH (VE)
+		// 10'd262: lut_data <= {8'h78 , 24'h380407}; // HW (HE)
+		// 10'd263: lut_data <= {8'h78 , 24'h380580}; // HW (HE)
+		// 10'd264: lut_data <= {8'h78 , 24'h380604}; // VH (VE)
+		// 10'd265: lut_data <= {8'h78 , 24'h380738}; // VH (VE)
+		10'd262: lut_data <= {8'h78 , 24'h380405}; // HW (HE)
+		10'd263: lut_data <= {8'h78 , 24'h380500}; // HW (HE)
+		10'd264: lut_data <= {8'h78 , 24'h380603}; // VH (VE)
+		10'd265: lut_data <= {8'h78 , 24'h3807c0}; // VH (VE)
 		// 10'd266: lut_data <= {8'h78 , 24'h380804}; // DVPHO     (1280)->1024
 		// 10'd267: lut_data <= {8'h78 , 24'h380900}; // DVPHO     (1280)->1024
 		// 10'd268: lut_data <= {8'h78 , 24'h380a03}; // DVPVO     (720)->

@@ -229,7 +229,7 @@ ddr3_master_wr ddr3_master_wr0(
     .i_pclk        (i_cam_pclk  ),
     .i_rst_n       (rst_n_delay ),
     
-    .i_mjpeg_busy  (mjpeg_busy    ),
+    .i_mjpeg_busy  (mjpeg_busy  ),
     .i_mjpeg_de    (i_mjpeg_de    ),
     .i_mjpeg_down  (i_mjpeg_down  ),
     .i_mjpeg_data  (i_mjpeg_data  ),
