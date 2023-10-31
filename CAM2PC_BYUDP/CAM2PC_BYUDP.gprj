@@ -11,6 +11,9 @@
         <File path="src/ddr3_master.sv" type="file.verilog" enable="1"/>
         <File path="src/ddr3_master_rd.sv" type="file.verilog" enable="1"/>
         <File path="src/ddr3_memory_interface/DDR3MI.v" type="file.verilog" enable="1"/>
+        <File path="src/gowin_dpb/gowin_dpb.v" type="file.verilog" enable="1"/>
+        <File path="src/gowin_dpb/gowin_dpb_rd.v" type="file.verilog" enable="1"/>
+        <File path="src/gowin_dpb_wr/gowin_dpb_wr.v" type="file.verilog" enable="1"/>
         <File path="src/gowin_rpll/cmos_pll.v" type="file.verilog" enable="1"/>
         <File path="src/gowin_rpll/gowin_rpll_6M.v" type="file.verilog" enable="1"/>
         <File path="src/gowin_rpll/mem_pll.v" type="file.verilog" enable="1"/>
