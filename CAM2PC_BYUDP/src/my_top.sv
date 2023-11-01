@@ -10,7 +10,7 @@ module my_top(
     inout logic                 sda_mdio,
 
     cam_phy_interface_typedef   cam_port,
-    ddr3_phy_interface_typedef  ddr3_port,
+    // ddr3_phy_interface_typedef  ddr3_port,
     rmii                        netrmii
 );
 logic [5:0] led_tmp;
@@ -166,7 +166,7 @@ logic               o_udp_frame_down   ;
 logic               o_busy             ;
 udp_128bit_send udp_128bit_send0(
     .i_udp_clk50m   (clk50m),
-    .i_rst_n        (1'd1  ),
+    .i_rst_n        (rst.ddr3_master ),
     .i_en           (i_en  ),
 
 //-------module interface-----------//
@@ -213,9 +213,9 @@ always@(posedge cam_port.cmos_pclk) begin
     mjpeg_down_bef <= mjpeg_down;
 end
 
-logic memory_clk_400m, DDR_pll_lock;
+// logic memory_clk_400m, DDR_pll_lock;
 wire half_memory_clk;
-logic init_calib_complete;
+logic init_calib_complete = 1'd1;
 
 logic cmd_ready , cmd_en;
 logic [2:0] cmd;
@@ -228,56 +228,56 @@ logic [15:0] wr_data_mask;
 logic [127:0] rd_data;
 logic rd_data_valid, rd_data_end;
 
-DDR3MI DDR3_Memory_Interface_Top_inst 
-(
-    .clk                (cam_port.cmos_pclk     ),
-    .memory_clk         (memory_clk_400m        ),
-    .pll_lock           (DDR_pll_lock           ),
-    .rst_n              (rst.ddr3               ), //rst_n
-    .app_burst_number   (6'd7                   ),
-    .cmd_ready          (cmd_ready              ),
-    .cmd                (cmd                    ),
-    .cmd_en             (cmd_en                 ),
-    .addr               (addr                   ),
-    .wr_data_rdy        (wr_data_rdy            ),
-    .wr_data            (wr_data                ),
-    .wr_data_en         (wr_data_en             ),
-    .wr_data_end        (wr_data_end            ),
-    .wr_data_mask       (wr_data_mask           ),
-    .rd_data            (rd_data                ),
-    .rd_data_valid      (rd_data_valid          ),
-    .rd_data_end        (rd_data_end            ),
-    .sr_req             (1'b0                   ),
-    .ref_req            (1'b0                   ),
-    .sr_ack             (                       ),
-    .ref_ack            (                       ),
-    .init_calib_complete(init_calib_complete    ),
-    .clk_out            (half_memory_clk        ),
-    .burst              (1'b1                   ),
-    // mem interface
-    .ddr_rst            (                           ),
-    .O_ddr_addr         (ddr3_port.ddr_addr         ),
-    .O_ddr_ba           (ddr3_port.ddr_bank         ),
-    .O_ddr_cs_n         (ddr3_port.ddr_cs           ),
-    .O_ddr_ras_n        (ddr3_port.ddr_ras          ),
-    .O_ddr_cas_n        (ddr3_port.ddr_cas          ),
-    .O_ddr_we_n         (ddr3_port.ddr_we           ),
-    .O_ddr_clk          (ddr3_port.ddr_ck           ),
-    .O_ddr_clk_n        (ddr3_port.ddr_ck_n         ),
-    .O_ddr_cke          (ddr3_port.ddr_cke          ),
-    .O_ddr_odt          (ddr3_port.ddr_odt          ),
-    .O_ddr_reset_n      (ddr3_port.ddr_reset_n      ),
-    .O_ddr_dqm          (ddr3_port.ddr_dm           ),
-    .IO_ddr_dq          (ddr3_port.ddr_dq           ),
-    .IO_ddr_dqs         (ddr3_port.ddr_dqs          ),
-    .IO_ddr_dqs_n       (ddr3_port.ddr_dqs_n        )
-);
+// DDR3MI DDR3_Memory_Interface_Top_inst 
+// (
+//     .clk                (cam_port.cmos_pclk     ),
+//     .memory_clk         (memory_clk_400m        ),
+//     .pll_lock           (DDR_pll_lock           ),
+//     .rst_n              (rst.ddr3               ), //rst_n
+//     .app_burst_number   (6'd7                   ),
+//     .cmd_ready          (cmd_ready              ),
+//     .cmd                (cmd                    ),
+//     .cmd_en             (cmd_en                 ),
+//     .addr               (addr                   ),
+//     .wr_data_rdy        (wr_data_rdy            ),
+//     .wr_data            (wr_data                ),
+//     .wr_data_en         (wr_data_en             ),
+//     .wr_data_end        (wr_data_end            ),
+//     .wr_data_mask       (wr_data_mask           ),
+//     .rd_data            (rd_data                ),
+//     .rd_data_valid      (rd_data_valid          ),
+//     .rd_data_end        (rd_data_end            ),
+//     .sr_req             (1'b0                   ),
+//     .ref_req            (1'b0                   ),
+//     .sr_ack             (                       ),
+//     .ref_ack            (                       ),
+//     .init_calib_complete(init_calib_complete    ),
+//     .clk_out            (half_memory_clk        ),
+//     .burst              (1'b1                   ),
+//     // mem interface
+//     .ddr_rst            (                           ),
+//     .O_ddr_addr         (ddr3_port.ddr_addr         ),
+//     .O_ddr_ba           (ddr3_port.ddr_bank         ),
+//     .O_ddr_cs_n         (ddr3_port.ddr_cs           ),
+//     .O_ddr_ras_n        (ddr3_port.ddr_ras          ),
+//     .O_ddr_cas_n        (ddr3_port.ddr_cas          ),
+//     .O_ddr_we_n         (ddr3_port.ddr_we           ),
+//     .O_ddr_clk          (ddr3_port.ddr_ck           ),
+//     .O_ddr_clk_n        (ddr3_port.ddr_ck_n         ),
+//     .O_ddr_cke          (ddr3_port.ddr_cke          ),
+//     .O_ddr_odt          (ddr3_port.ddr_odt          ),
+//     .O_ddr_reset_n      (ddr3_port.ddr_reset_n      ),
+//     .O_ddr_dqm          (ddr3_port.ddr_dm           ),
+//     .IO_ddr_dq          (ddr3_port.ddr_dq           ),
+//     .IO_ddr_dqs         (ddr3_port.ddr_dqs          ),
+//     .IO_ddr_dqs_n       (ddr3_port.ddr_dqs_n        )
+// );
 
-mem_pll mem_pll_m0(
-	.clkin                     (clk                        ),
-	.clkout                    (memory_clk_400m 	       ),
-	.lock 					   (DDR_pll_lock 			   )
-	);
+// mem_pll mem_pll_m0(
+// 	.clkin                     (clk                        ),
+// 	.clkout                    (memory_clk_400m 	       ),
+// 	.lock 					   (DDR_pll_lock 			   )
+// 	);
 
 typedef struct{
     logic isempty;
@@ -373,45 +373,45 @@ always@(posedge clk or negedge rst_n)begin
     end
 end
 //----------------dpb---------------//
-    wire [63:0]         o_dpb_wr_a_rd_data     ;
-    wire [63:0]         o_dpb_wr_a_wr_data     ;
-    wire [9:0]          o_dpb_wr_a_addr        ;
+    wire [127:0]        o_dpb_wr_a_rd_data     ;
+    wire [127:0]        o_dpb_wr_a_wr_data     ;
+    wire [10:0]         o_dpb_wr_a_addr        ;
     wire                o_dpb_wr_a_clk         ;
     wire                o_dpb_wr_a_cea         ;
     wire                o_dpb_wr_a_ocea        ;
     wire                o_dpb_wr_a_rst_n       ;
     wire                o_dpb_wr_a_wr_en       ;
     
-    wire [63:0]         o_dpb_wr_b_rd_data     ;
-    wire [63:0]         o_dpb_wr_b_wr_data     ;
-    wire [9:0]          o_dpb_wr_b_addr        ;
+    wire [127:0]        o_dpb_wr_b_rd_data     ;
+    wire [127:0]        o_dpb_wr_b_wr_data     ;
+    wire [10:0]         o_dpb_wr_b_addr        ;
     wire                o_dpb_wr_b_clk         ;
     wire                o_dpb_wr_b_cea         ;
     wire                o_dpb_wr_b_ocea        ;
     wire                o_dpb_wr_b_rst_n       ;
     wire                o_dpb_wr_b_wr_en       ;
 
-    wire [63:0]         o_dpb_rd_a_rd_data     ;
-    wire [63:0]         o_dpb_rd_a_wr_data     ;
-    wire [9:0]          o_dpb_rd_a_addr        ;
-    wire                o_dpb_rd_a_clk         ;
-    wire                o_dpb_rd_a_cea         ;
-    wire                o_dpb_rd_a_ocea        ;
-    wire                o_dpb_rd_a_rst_n       ;
-    wire                o_dpb_rd_a_wr_en       ;
+    // wire [63:0]         o_dpb_rd_a_rd_data     ;
+    // wire [63:0]         o_dpb_rd_a_wr_data     ;
+    // wire [9:0]          o_dpb_rd_a_addr        ;
+    // wire                o_dpb_rd_a_clk         ;
+    // wire                o_dpb_rd_a_cea         ;
+    // wire                o_dpb_rd_a_ocea        ;
+    // wire                o_dpb_rd_a_rst_n       ;
+    // wire                o_dpb_rd_a_wr_en       ;
     
-    wire [63:0]         o_dpb_rd_b_rd_data     ;
-    wire [63:0]         o_dpb_rd_b_wr_data     ;
-    wire [9:0]          o_dpb_rd_b_addr        ;
-    wire                o_dpb_rd_b_clk         ;
-    wire                o_dpb_rd_b_cea         ;
-    wire                o_dpb_rd_b_ocea        ;
-    wire                o_dpb_rd_b_rst_n       ;
-    wire                o_dpb_rd_b_wr_en       ;
-ddr3_master_top ddr3_master0(
+    // wire [63:0]         o_dpb_rd_b_rd_data     ;
+    // wire [63:0]         o_dpb_rd_b_wr_data     ;
+    // wire [9:0]          o_dpb_rd_b_addr        ;
+    // wire                o_dpb_rd_b_clk         ;
+    // wire                o_dpb_rd_b_cea         ;
+    // wire                o_dpb_rd_b_ocea        ;
+    // wire                o_dpb_rd_b_rst_n       ;
+    // wire                o_dpb_rd_b_wr_en       ;
+dpb_master_top ddr3_master0(
     .clk                (clk   ),//27mhz
     .clk50m             (clk50m),
-    .rst_n              (rst_n ),
+    .rst_n              (rst.ddr3_master ),
 
     .i_cam_pclk         (cam_port.cmos_pclk     ),
     .i_cam_rgb888_pclk  (cam_user.half_cmos_clk ),
@@ -454,65 +454,65 @@ ddr3_master_top ddr3_master0(
     .o_dpb_wr_b_cea         (o_dpb_wr_b_cea      ),
     .o_dpb_wr_b_ocea        (o_dpb_wr_b_ocea     ),
     .o_dpb_wr_b_rst_n       (o_dpb_wr_b_rst_n    ),
-    .o_dpb_wr_b_wr_en       (o_dpb_wr_b_wr_en    ),
+    .o_dpb_wr_b_wr_en       (o_dpb_wr_b_wr_en    )
 
-    .o_dpb_rd_a_rd_data     (o_dpb_rd_a_rd_data  ),
-    .o_dpb_rd_a_wr_data     (o_dpb_rd_a_wr_data  ),
-    .o_dpb_rd_a_addr        (o_dpb_rd_a_addr     ),
-    .o_dpb_rd_a_clk         (o_dpb_rd_a_clk      ),
-    .o_dpb_rd_a_cea         (o_dpb_rd_a_cea      ),
-    .o_dpb_rd_a_ocea        (o_dpb_rd_a_ocea     ),
-    .o_dpb_rd_a_rst_n       (o_dpb_rd_a_rst_n    ),
-    .o_dpb_rd_a_wr_en       (o_dpb_rd_a_wr_en    ),
+    // .o_dpb_rd_a_rd_data     (o_dpb_rd_a_rd_data  ),
+    // .o_dpb_rd_a_wr_data     (o_dpb_rd_a_wr_data  ),
+    // .o_dpb_rd_a_addr        (o_dpb_rd_a_addr     ),
+    // .o_dpb_rd_a_clk         (o_dpb_rd_a_clk      ),
+    // .o_dpb_rd_a_cea         (o_dpb_rd_a_cea      ),
+    // .o_dpb_rd_a_ocea        (o_dpb_rd_a_ocea     ),
+    // .o_dpb_rd_a_rst_n       (o_dpb_rd_a_rst_n    ),
+    // .o_dpb_rd_a_wr_en       (o_dpb_rd_a_wr_en    ),
     
-    .o_dpb_rd_b_rd_data     (o_dpb_rd_b_rd_data  ),
-    .o_dpb_rd_b_wr_data     (o_dpb_rd_b_wr_data  ),
-    .o_dpb_rd_b_addr        (o_dpb_rd_b_addr     ),
-    .o_dpb_rd_b_clk         (o_dpb_rd_b_clk      ),
-    .o_dpb_rd_b_cea         (o_dpb_rd_b_cea      ),
-    .o_dpb_rd_b_ocea        (o_dpb_rd_b_ocea     ),
-    .o_dpb_rd_b_rst_n       (o_dpb_rd_b_rst_n    ),
-    .o_dpb_rd_b_wr_en       (o_dpb_rd_b_wr_en    ),
+    // .o_dpb_rd_b_rd_data     (o_dpb_rd_b_rd_data  ),
+    // .o_dpb_rd_b_wr_data     (o_dpb_rd_b_wr_data  ),
+    // .o_dpb_rd_b_addr        (o_dpb_rd_b_addr     ),
+    // .o_dpb_rd_b_clk         (o_dpb_rd_b_clk      ),
+    // .o_dpb_rd_b_cea         (o_dpb_rd_b_cea      ),
+    // .o_dpb_rd_b_ocea        (o_dpb_rd_b_ocea     ),
+    // .o_dpb_rd_b_rst_n       (o_dpb_rd_b_rst_n    ),
+    // .o_dpb_rd_b_wr_en       (o_dpb_rd_b_wr_en    ),
 
-    .o_ddr3_cmd         (cmd            ),
-    .o_ddr3_cmd_en      (cmd_en         ),
-    .o_ddr3_addr        (addr           ),
-    .o_ddr3_wr_data     (wr_data        ),
-    .o_ddr3_wr_data_en  (wr_data_en     ),
-    .o_ddr3_wr_data_end (wr_data_end    ),
-    .o_ddr3_wr_mask     (wr_data_mask   ),
-    .i_ddr3_clk         (clk50m         ),
-    .i_ddr3_memory_clk  (memory_clk_400m),
-    .i_ddr3_half_mem_clk(half_memory_clk),
-    .i_ddr3_cmd_ready   (cmd_ready      ),
-    .i_ddr3_wr_data_rdy (wr_data_rdy    ),
-    .i_ddr3_rd_data     (rd_data        ),
-    .i_ddr3_rd_data_de  (rd_data_valid  ),
-    .i_ddr3_rd_data_end (rd_data_end    )
+    // .o_ddr3_cmd         (cmd            ),
+    // .o_ddr3_cmd_en      (cmd_en         ),
+    // .o_ddr3_addr        (addr           ),
+    // .o_ddr3_wr_data     (wr_data        ),
+    // .o_ddr3_wr_data_en  (wr_data_en     ),
+    // .o_ddr3_wr_data_end (wr_data_end    ),
+    // .o_ddr3_wr_mask     (wr_data_mask   ),
+    // .i_ddr3_clk         (clk50m         ),
+    // .i_ddr3_memory_clk  (memory_clk_400m),
+    // .i_ddr3_half_mem_clk(half_memory_clk),
+    // .i_ddr3_cmd_ready   (cmd_ready      ),
+    // .i_ddr3_wr_data_rdy (wr_data_rdy    ),
+    // .i_ddr3_rd_data     (rd_data        ),
+    // .i_ddr3_rd_data_de  (rd_data_valid  ),
+    // .i_ddr3_rd_data_end (rd_data_end    )
 );
 
 
-Gowin_DPB_RD Gowin_DPB_RD0(
-    .douta  (o_dpb_rd_a_rd_data     ), //output [63:0] douta
-    .dina   (o_dpb_rd_a_wr_data     ), //input [63:0] dina
-    .ada    (o_dpb_rd_a_addr        ), //input [9:0] ada
-    .clka   (o_dpb_rd_a_clk         ), //input clka
-    .cea    (o_dpb_rd_a_cea         ), //input cea
-    .ocea   (o_dpb_rd_a_ocea        ), //input ocea
-    .reseta (o_dpb_rd_a_rst_n       ), //input reseta
-    .wrea   (o_dpb_rd_a_wr_en       ), //input wrea
+// Gowin_DPB_RD Gowin_DPB_RD0(
+//     .douta  (o_dpb_rd_a_rd_data     ), //output [63:0] douta
+//     .dina   (o_dpb_rd_a_wr_data     ), //input [63:0] dina
+//     .ada    (o_dpb_rd_a_addr        ), //input [9:0] ada
+//     .clka   (o_dpb_rd_a_clk         ), //input clka
+//     .cea    (o_dpb_rd_a_cea         ), //input cea
+//     .ocea   (o_dpb_rd_a_ocea        ), //input ocea
+//     .reseta (o_dpb_rd_a_rst_n       ), //input reseta
+//     .wrea   (o_dpb_rd_a_wr_en       ), //input wrea
 
-    .doutb  (o_dpb_rd_b_rd_data     ), //output [63:0] doutb
-    .dinb   (o_dpb_rd_b_wr_data     ), //input [63:0] dinb
-    .adb    (o_dpb_rd_b_addr        ), //input [9:0] adb
-    .clkb   (o_dpb_rd_b_clk         ), //input clkb
-    .oceb   (o_dpb_rd_b_cea         ), //input oceb
-    .ceb    (o_dpb_rd_b_ocea        ), //input ceb
-    .resetb (o_dpb_rd_b_rst_n       ), //input resetb
-    .wreb   (o_dpb_rd_b_wr_en       )  //input wreb
-);
+//     .doutb  (o_dpb_rd_b_rd_data     ), //output [63:0] doutb
+//     .dinb   (o_dpb_rd_b_wr_data     ), //input [63:0] dinb
+//     .adb    (o_dpb_rd_b_addr        ), //input [9:0] adb
+//     .clkb   (o_dpb_rd_b_clk         ), //input clkb
+//     .oceb   (o_dpb_rd_b_cea         ), //input oceb
+//     .ceb    (o_dpb_rd_b_ocea        ), //input ceb
+//     .resetb (o_dpb_rd_b_rst_n       ), //input resetb
+//     .wreb   (o_dpb_rd_b_wr_en       )  //input wreb
+// );
 
-Gowin_DPB_WR Gowin_DPB_WR0(
+Gowin_DPB_128_2048 Gowin_DPB_WR0(
     .douta  (o_dpb_wr_a_rd_data     ), //output [63:0] douta
     .dina   (o_dpb_wr_a_wr_data     ), //input [63:0] dina
     .ada    (o_dpb_wr_a_addr        ), //input [9:0] ada

@@ -145,6 +145,7 @@ always@(posedge i_udp_clk50m or negedge i_rst_n)begin
                     o_busy <= 1'd0;
                     state <= IDLE;
                 end
+                o_ddr3_data_upd_req_delay_val <= 1'd0;
             end
         endcase
     end

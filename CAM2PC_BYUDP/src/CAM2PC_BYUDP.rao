@@ -2,41 +2,12 @@
 <GAO_CONFIG>
     <Version>3.0</Version>
     <Mode>Standard</Mode>
-    <AoCore index="0" sample_clock="cam_port.cmos_pclk" trig_type="0" storage_depth="2048" window_num="1" capture_amount="2048" implementation="0" trigger_pos="0" module_name="my_top" force_trigger_by_falling_edge="true">
+    <AoCore index="0" sample_clock="cam_port.cmos_pclk" trig_type="0" storage_depth="8192" window_num="1" capture_amount="8192" implementation="0" trigger_pos="0" module_name="my_top" force_trigger_by_falling_edge="true">
         <SignalList>
-            <Signal>MJPEG_Encoder0/img_valid</Signal>
-            <Signal>MJPEG_Encoder0/img_done</Signal>
+            <Signal>ddr3_master0/i_udp128_ddr3_data_upd_req</Signal>
+            <Signal>mac_top0/mac0/state[0]</Signal>
+            <Signal>udp_128bit_send0/state[0]</Signal>
             <Signal>ddr3_master0/o_ddr3_master_wr_req</Signal>
-            <Bus name="ddr3_master0/ddr3_master_wr0/wr_req_cnt_save[7:0]">
-                <Signal>ddr3_master0/ddr3_master_wr0/wr_req_cnt_save[7]</Signal>
-                <Signal>ddr3_master0/ddr3_master_wr0/wr_req_cnt_save[6]</Signal>
-                <Signal>ddr3_master0/ddr3_master_wr0/wr_req_cnt_save[5]</Signal>
-                <Signal>ddr3_master0/ddr3_master_wr0/wr_req_cnt_save[4]</Signal>
-                <Signal>ddr3_master0/ddr3_master_wr0/wr_req_cnt_save[3]</Signal>
-                <Signal>ddr3_master0/ddr3_master_wr0/wr_req_cnt_save[2]</Signal>
-                <Signal>ddr3_master0/ddr3_master_wr0/wr_req_cnt_save[1]</Signal>
-                <Signal>ddr3_master0/ddr3_master_wr0/wr_req_cnt_save[0]</Signal>
-            </Bus>
-            <Bus name="frame_cnt_save[7:0]">
-                <Signal>frame_cnt_save[7]</Signal>
-                <Signal>frame_cnt_save[6]</Signal>
-                <Signal>frame_cnt_save[5]</Signal>
-                <Signal>frame_cnt_save[4]</Signal>
-                <Signal>frame_cnt_save[3]</Signal>
-                <Signal>frame_cnt_save[2]</Signal>
-                <Signal>frame_cnt_save[1]</Signal>
-                <Signal>frame_cnt_save[0]</Signal>
-            </Bus>
-            <Bus name="mjpeg_cnt_save[7:0]">
-                <Signal>mjpeg_cnt_save[7]</Signal>
-                <Signal>mjpeg_cnt_save[6]</Signal>
-                <Signal>mjpeg_cnt_save[5]</Signal>
-                <Signal>mjpeg_cnt_save[4]</Signal>
-                <Signal>mjpeg_cnt_save[3]</Signal>
-                <Signal>mjpeg_cnt_save[2]</Signal>
-                <Signal>mjpeg_cnt_save[1]</Signal>
-                <Signal>mjpeg_cnt_save[0]</Signal>
-            </Bus>
         </SignalList>
         <Triggers>
             <Trigger index="0">
@@ -46,7 +17,7 @@
             </Trigger>
             <Trigger index="1">
                 <SignalList>
-                    <Signal>ddr3_master0/ddr3_master_cmd0/o_ddr3_master_wr_req_state</Signal>
+                    <Signal>i_en</Signal>
                 </SignalList>
             </Trigger>
             <Trigger index="2"/>
@@ -87,5 +58,5 @@
             <Expression>M1</Expression>
         </Expressions>
     </AoCore>
-    <GAO_ID>1100000111011110</GAO_ID>
+    <GAO_ID>1111111001111110</GAO_ID>
 </GAO_CONFIG>
