@@ -10,6 +10,7 @@ module my_cmos_8_16bit(
 	output reg		   o_down			
 );
 reg working = 0;
+reg [15:0] byte2;
 
 reg [7:0] pdata_o;
 assign o_pdata_bgr888 = i_de ? {pdata_o[7:3],3'd0,pdata_o[2:0],i_pdata[7:5],2'd0,i_pdata[4:0],3'd0} : 24'h0000;//{r,g,b}
@@ -31,17 +32,20 @@ always@(posedge i_pclk )begin
 		working		<= 0;
 	end
 	else begin
+		byte2 <= {byte2[0], i_pdata};
 		if(working)begin
 			o_half_pclk <= ~o_half_pclk;
 			o_down 		<= 1;
+			if(i_de_neg)
+				working		<= 0;
 		end
 		else begin
 			if(i_de_pos) begin
-				o_half_pclk <= 0;
+				o_half_pclk <= 1'd1;
 				working		<= 1;
 			end
 			else
-				o_half_pclk <= o_half_pclk;
+				o_half_pclk <= 1'd0;
 		end
 	end
 end

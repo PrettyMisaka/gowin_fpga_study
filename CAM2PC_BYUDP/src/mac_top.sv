@@ -62,6 +62,8 @@ mac #(
     .udp_port(16'd11451),
     .src_ip_adr({8'd192,8'd168,8'd15,8'd14}),
     .dst_ip_adr({8'd192,8'd168,8'd15,8'd15}),
+    // .src_ip_adr({8'd169,8'd254,8'd201,8'd30}),
+    // .dst_ip_adr({8'd169,8'd254,8'd201,8'd29}),
     .mac_adr({8'h06,8'h00,8'hAA,8'hBB,8'h0C,8'hDD}),
     .mac_my_adr({8'he8,8'h6a,8'h64,8'hfa,8'hd1,8'h7b})
 )mac0(

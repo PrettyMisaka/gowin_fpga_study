@@ -15,18 +15,22 @@ cnt = 0
 # sock.close()
 time.sleep(0.1)
 
-print(1)
 # sock.close()
-# while True:
-try:
-    data, addr = sock.recvfrom(65535)
-    print(data," ",addr, " ", len(data))
-    # break
-except:
-    data = None
-    print("none")
-    time.sleep(0.1)
-    # break
-    pass
+while True:
+# if(1):
+    try:
+        data, addr = sock.recvfrom(65535)
+        # print(data[0],data[1],",",end="")
+        if(data[0] == 128):
+            print(data[1],",",end="\n")
+            # print(data," ",addr, " ", len(data))
+            # break
+        # break
+    except:
+        data = None
+        # print("none")
+        time.sleep(0.1)
+        # break
+        pass
 
 sock.close()

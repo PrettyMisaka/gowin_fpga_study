@@ -33,12 +33,12 @@ enum logic[3:0] {
 //delay logic
 //------------------
 //------------o_ddr3_data_upd_req
+logic i_udp_last_frame_buf;
 logic [2:0] o_ddr3_data_upd_req_delay_buf;
 logic o_ddr3_data_upd_req_delay_val;
 logic [2:0] o_udp_frame_down_buf;
 logic o_udp_frame_down_val;
-assign o_ddr3_data_upd_req = o_ddr3_data_upd_req_delay_buf[2]|o_ddr3_data_upd_req_delay_buf[1]|
-                            o_ddr3_data_upd_req_delay_buf[0]|o_ddr3_data_upd_req_delay_val;
+assign o_ddr3_data_upd_req = o_ddr3_data_upd_req_delay_buf[1]|o_ddr3_data_upd_req_delay_buf[0]|o_ddr3_data_upd_req_delay_val;
 assign o_udp_frame_down = o_udp_frame_down_buf[2]|o_udp_frame_down_buf[1]|
                             o_udp_frame_down_buf[0]|o_udp_frame_down_val;
 //------------i_udp_head_down
@@ -93,6 +93,7 @@ always@(posedge i_udp_clk50m or negedge i_rst_n)begin
                     state <= HEAD_DOWN;
                     o_udp_tx_en <= 1'd1;
                     o_busy <= 1'd1;
+                    // i_udp_last_frame_buf <= i_udp_last_frame_flag;
                 end
                     o_udp_tx_de <= 1'd1;
                     o_ddr3_data_upd_req_delay_val <= 1'd0;
@@ -101,6 +102,7 @@ always@(posedge i_udp_clk50m or negedge i_rst_n)begin
             HEAD_DOWN:begin
                 if(i_udp_head_down_pos_flag)begin
                     wrdata_buf <= {i_udp_last_frame_flag,i_mjpeg_frame_rank,112'd0};
+                    // wrdata_buf <= {i_udp_last_frame_buf,i_mjpeg_frame_rank,112'd0};
                     state <= SIGN_BYTE_2;
                     o_udp_tx_de <= 1'd1;
                     o_udp_tx_en <= 1'd0;
@@ -138,6 +140,11 @@ always@(posedge i_udp_clk50m or negedge i_rst_n)begin
                     end
                     else
                         udp_jpeg_data_cnt <= udp_jpeg_data_cnt + 16'd1;
+                end
+                if(i_udp_busy == 1'd0)begin
+                    o_busy <= 1'd0;
+                    state <= IDLE;
+                    o_ddr3_data_upd_req_delay_val <= 1'd0;
                 end
             end
             FINISH:begin

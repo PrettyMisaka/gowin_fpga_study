@@ -32,7 +32,7 @@ module dpb_master_cmd(
 );
 // localparam DDR3_CMD_WR = 3'd0;
 // localparam DDR3_CMD_RD = 3'd1;
-
+assign o_dpb_wr_b_wr_data = 128'd0;
 struct {
     logic [23:0] addr;
     logic [2:0]  bank;
@@ -54,26 +54,31 @@ assign o_udp128_ddr3_udp_wrdata = o_dpb_wr_b_rd_data;
 logic [6:0] dpb_wr_addr_tmp;
 logic [7:0] dpb_wr_128_cnt;
 assign o_dpb_wr_b_addr = {o_ddr3_master_wr_buf_rank,dpb_wr_addr_tmp};
-enum logic[3:0] {
-    DDR3_REQ_IDLE, 
-    DDR3_HANDLE_RD_REQ_WORK, DDR3_HANDLE_RD_REQ_DOWN,
-    DDR3_HANDLE_WR_REQ_WORK, DDR3_HANDLE_WR_REQ_DOWN
-} state;
+localparam DDR3_REQ_IDLE = 2'd0, 
+    DDR3_HANDLE_WR_REQ_WORK = 2'd1, DDR3_HANDLE_WR_REQ_DOWN = 2'd2;
+logic [2:0] state;
 
 logic o_ddr3_master_wr_req_bef, o_ddr3_master_wr_req_state;
 logic o_ddr3_master_wr_frame_down_bef, o_ddr3_master_wr_frame_down_state;
 logic i_udp128_udp_frame_down_bef, i_udp128_ddr3_data_upd_req_bef;
-logic [3:0] o_udp128_en_buf;
+logic [15:0] o_udp128_en_buf;
 logic o_udp128_en_val;
-assign o_udp128_en = o_udp128_en_buf[3]|o_udp128_en_buf[2]|o_udp128_en_buf[1]|o_udp128_en_buf[0]|o_udp128_en_val;
+assign o_udp128_en = (o_udp128_en_buf>16'd0||o_udp128_en_val)?1'd1:1'd0;
+initial begin
+    o_udp128_en_buf <= 16'd0;
+    {o_ddr3_master_wr_req_bef,o_ddr3_master_wr_req_state,o_ddr3_master_wr_frame_down_bef,o_ddr3_master_wr_frame_down_state}<=4'd0;
+    i_udp128_udp_frame_down_bef     <= 1'd0;
+    i_udp128_ddr3_data_upd_req_bef  <= 1'd0;
+end
 always@(posedge i_pclk)begin
     o_ddr3_master_wr_req_bef        <= o_ddr3_master_wr_req;
     o_ddr3_master_wr_frame_down_bef <= o_ddr3_master_wr_frame_down;
-    i_udp128_udp_frame_down_bef     <= i_udp128_udp_frame_down;
+    i_udp128_udp_frame_down_bef     <= i_udp128_busy;
     i_udp128_ddr3_data_upd_req_bef  <= i_udp128_ddr3_data_upd_req;
-    o_udp128_en_buf <= {o_udp128_en_buf[2:0],o_udp128_en_val};
+    o_udp128_en_buf <= {o_udp128_en_buf[14:0],o_udp128_en_val};
 end
-
+logic [15:0] delay_cnt84m;
+logic delay_en;
 task taskRst();
     ddr3_mjpeg_wr_info.addr <= 0;
     ddr3_mjpeg_wr_info.bank <= 3'd1;
@@ -83,13 +88,17 @@ task taskRst();
     o_ddr3_master_wr_down       <=1'd0;
     o_ddr3_master_wr_req_state  <=  1'd0;
     
-    dpb_wr_addr_tmp   <= 10'd0;
+    dpb_wr_addr_tmp   <= 7'd1;
     dpb_wr_128_cnt      <= 8'd0;
 
     o_udp128_en_val <= 1'd0;
     o_udp128_udp_ipv4_sign <= 16'd0;
 
-    state <= DDR3_REQ_IDLE;
+    // state <= DDR3_REQ_IDLE;
+    state <= 3'd0;
+    delay_en <= 1'd0;
+    delay_cnt84m <= 16'd0;
+    o_udp128_udp_last_frame_flag <= 1'd0;
 endtask
 initial taskRst();
 always@(posedge i_pclk or negedge i_rst_n)begin
@@ -97,40 +106,64 @@ always@(posedge i_pclk or negedge i_rst_n)begin
         taskRst();
     end
     else begin
-        if((~o_ddr3_master_wr_req_bef)&&o_ddr3_master_wr_req) o_ddr3_master_wr_req_state<= 1'd1;
-        if((~o_ddr3_master_wr_frame_down)&&o_ddr3_master_wr_frame_down_bef) o_ddr3_master_wr_frame_down_state<= 1'd1;
-        if(o_ddr3_master_wr_frame_down_state&&state == DDR3_REQ_IDLE&&o_ddr3_master_wr_down)begin
+        // if((o_ddr3_master_wr_req_bef == 1'd0)&&o_ddr3_master_wr_req == 1'd1) o_ddr3_master_wr_req_state<= 1'd1;
+        if((o_ddr3_master_wr_frame_down == 1'd1)&&o_ddr3_master_wr_frame_down_bef == 1'd0) o_ddr3_master_wr_frame_down_state<= 1'd1;
+        if(o_ddr3_master_wr_frame_down_state&&(state == 3'd0)&&o_ddr3_master_wr_down)begin
             o_ddr3_master_wr_frame_down_state <= 1'd0;
-            dpb_wr_addr_tmp   <= 7'd0;
+            dpb_wr_addr_tmp   <= 7'd1;
+        end
+        if(delay_en)begin
+            if(delay_cnt84m == 16'd100) delay_cnt84m <= delay_cnt84m;
+            else delay_cnt84m <= delay_cnt84m + 16'd1;
         end
         case (state)
-            DDR3_REQ_IDLE:begin
-                if(o_ddr3_master_wr_req_state == 1'd1) begin
-                    state <= DDR3_HANDLE_WR_REQ_WORK;
-                    dpb_wr_addr_tmp   <= 7'd0;
-                    o_ddr3_master_wr_req_state <= 1'd0;
+            3'd0:begin
+                if(o_ddr3_master_wr_req == 1'd1) begin
+                    state <= 3'd1;
+                    delay_en <= 1'd1;
+                    dpb_wr_addr_tmp   <= 7'd1;
+                    // o_ddr3_master_wr_req_state <= 1'd0;
                     o_udp128_mjpeg_frame_rank <= {7'd0,o_ddr3_master_wr_udp_rank};
                     o_udp128_udp_jpeg_len <= {9'd0,o_ddr3_master_wr_buf_128cnt}<<4+{10'd0,o_ddr3_master_wr_buf_Bytecnt};
                     o_udp128_en_val <= 1'd1;
-                    if(o_ddr3_master_wr_frame_down_state)o_udp128_udp_last_frame_flag<=1'd1;
-                    else o_ddr3_master_wr_frame_down_state <= 1'd0;
+                    // if(o_ddr3_master_wr_frame_down_state) o_udp128_udp_last_frame_flag<=1'd1;
+                    // else o_ddr3_master_wr_frame_down_state <= 1'd0;
+                    if(o_ddr3_master_wr_frame_down) o_udp128_udp_last_frame_flag<=1'd1;
+                    else o_udp128_udp_last_frame_flag <= 1'd0;
+                end
+                else begin
+                    delay_en <= 1'd0;
+                    delay_cnt84m <= 16'd0;
+                    o_udp128_en_val <= 1'd0;
+                    state                   <= 3'd0;
                 end
                 o_ddr3_master_wr_down       <=1'd0;
-                state                   <= DDR3_REQ_IDLE;
             end
-            DDR3_HANDLE_WR_REQ_WORK:begin
-                if((~i_udp128_ddr3_data_upd_req_bef)&&i_udp128_ddr3_data_upd_req)
+            3'd1:begin
+                if(o_ddr3_master_wr_frame_down) o_udp128_udp_last_frame_flag<=1'd1;
+                o_udp128_en_val <= 1'd0;
+                // if(updata_pos)begin
+                if((i_udp128_ddr3_data_upd_req_bef == 1'd0)&&(i_udp128_ddr3_data_upd_req == 1'd1))begin
                     dpb_wr_addr_tmp <= dpb_wr_addr_tmp + 7'd1;
-                if((~i_udp128_udp_frame_down_bef)&&i_udp128_udp_frame_down)begin
-                    state <= DDR3_HANDLE_WR_REQ_DOWN;
-                    o_udp128_en_val <= 1'd0;
+//                    updata_pos <= 1'd0;
+                end
+                if((delay_cnt84m == 16'd100&&~i_udp128_busy))begin
+                    state <= 3'd2;
+                    delay_en <= 1'd0;
+                    delay_cnt84m <= 16'd0;
+                end
+                else begin
+                    state <= 3'd1;
                 end
             end
-            DDR3_HANDLE_WR_REQ_DOWN:begin
-                dpb_wr_addr_tmp         <= 7'd0;
+            3'd2:begin
+                dpb_wr_addr_tmp         <= 7'd1;
                 o_ddr3_master_wr_down   <= 1'd1;
-                state                   <= DDR3_REQ_IDLE;
+                state                   <= 3'd0;
+                o_udp128_udp_last_frame_flag <= 1'd0;
             end
+            3'd3:
+                state                   <= 3'd0;
         endcase
     end
 end

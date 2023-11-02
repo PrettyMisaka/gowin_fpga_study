@@ -46,6 +46,14 @@ logic frame_end_state, frame_end_task_state;
 always@(posedge i_pclk) i_mjpeg_down_bef <= i_mjpeg_down;
 
 logic wr_data_tmp_updata_flag;
+logic [7:0]o_ddr3_master_wr_frame_down_delay;
+logic o_ddr3_master_wr_frame_down_val;
+assign o_ddr3_master_wr_frame_down = (o_ddr3_master_wr_frame_down_delay>8'd0||o_ddr3_master_wr_frame_down_val)?1'd1:1'd0;
+initial begin
+    o_ddr3_master_wr_frame_down_delay <= 8'd0;
+end
+always@(posedge i_pclk)
+        o_ddr3_master_wr_frame_down_delay <= {o_ddr3_master_wr_frame_down_delay[6:0],o_ddr3_master_wr_frame_down_val};
 
 logic [127:0] wr_data_tmp;
 logic [7:0]   wr_data_byte_cnt;
@@ -66,7 +74,7 @@ task taskRst();
 
     o_ddr3_master_wr_udp_rank <= 8'd0;
     o_ddr3_master_wr_req<= 1'd0;
-    o_ddr3_master_wr_frame_down <= 1'd0;
+    o_ddr3_master_wr_frame_down_val <= 1'd0;
     o_ddr3_master_wr_buf_128cnt     <= 7'd0;
     o_ddr3_master_wr_buf_Bytecnt    <= 6'd0;
 endtask
@@ -77,6 +85,7 @@ always@(posedge i_pclk or negedge i_rst_n)begin
     end
     else begin
         if(i_mjpeg_down_bef == 1'd1 && i_mjpeg_down== 1'd0) begin 
+        // if(i_mjpeg_busy== 1'd0&&wr_data_tmp_updata_flag_flag) begin 
             frame_end_state     <= 1'd1;
             frame_end_task_state<= 1'd1;
             wr_req_cnt          <= 1'd0;
@@ -95,9 +104,10 @@ always@(posedge i_pclk or negedge i_rst_n)begin
         if(frame_end_state&&~frame_end_task_state&&state_mjpeg_wr ==MJPEG_WR_IDLE)begin
             frame_end_state<=1'd0;
             o_ddr3_master_wr_udp_rank <= 8'd0;
+            o_ddr3_master_wr_req        <= 1'd1;
+            wr_data_byte_cnt <= 8'd0;
         end
         // if(o_ddr3_master_wr_req&&o_ddr3_master_wr_down) o_ddr3_master_wr_req<=1'd0;
-        if(o_ddr3_master_wr_req) o_ddr3_master_wr_req<=1'd0;
         case(state_mjpeg_wr)
             MJPEG_WR_IDLE:begin
                 if(wr_data_byte_cnt == 8'd0&&wr_data_tmp_updata_flag)begin
@@ -105,7 +115,7 @@ always@(posedge i_pclk or negedge i_rst_n)begin
                     state_mjpeg_wr                  <= MJPEG_WR_DOWN;
                     o_dpb_wr_a_wr_en                <= 1'd1;
                     dpb_wr_addr_tmp                 <= dpb_wr_addr_tmp + 7'd1;
-                    o_ddr3_master_wr_buf_Bytecnt    <= wr_data_byte_cnt;
+                    o_ddr3_master_wr_buf_Bytecnt    <= wr_data_byte_cnt[5:0];
                 end
                 else if(frame_end_task_state) begin
                     o_dpb_wr_a_wr_data              <= wr_data_tmp << ((8'd16 - wr_data_byte_cnt)<<3);
@@ -114,24 +124,35 @@ always@(posedge i_pclk or negedge i_rst_n)begin
                     dpb_wr_addr_tmp                 <= dpb_wr_addr_tmp + 7'd1;
                     o_ddr3_master_wr_buf_Bytecnt    <= wr_data_byte_cnt[5:0];
                 end
-                o_ddr3_master_wr_frame_down <= 1'd0;
+                else begin
+                    o_dpb_wr_a_wr_en                <= 1'd0;
+                end
+                o_ddr3_master_wr_frame_down_val <= 1'd0;
+                if(o_ddr3_master_wr_req) o_ddr3_master_wr_req<=1'd0;
             end
             MJPEG_WR_DOWN:begin
                 if(dpb_wr_addr_tmp == UDP_FRAME_MAX_SIZE_128||frame_end_task_state)begin
                     dpb_wr_rank_working <= dpb_wr_rank_working + 3'd1;
                     dpb_wr_rank_down    <= dpb_wr_rank_working;
                     dpb_wr_addr_tmp     <= 7'd0;
-                    wr_data_byte_cnt    <= 8'd0;
+                    // wr_data_byte_cnt    <= 8'd0;
                     if(o_ddr3_master_wr_req)    error <= 1'd1;
-                    o_ddr3_master_wr_req        <= 1'd1;
+                    if(frame_end_task_state)begin
+                        o_ddr3_master_wr_req        <= 1'd0;
+                    end
+                    else begin
+                        o_ddr3_master_wr_req        <= 1'd1;
+                    end
                     wr_req_cnt <= wr_req_cnt + 1'd1;
                     o_ddr3_master_wr_buf_128cnt <= dpb_wr_addr_tmp;
                     o_ddr3_master_wr_udp_rank <= o_ddr3_master_wr_udp_rank + 8'd1;
 
                     if(frame_end_task_state)begin
                         frame_end_task_state        <= 1'd0;
-                        o_ddr3_master_wr_frame_down <= 1'd1;
+                        o_ddr3_master_wr_frame_down_val <= 1'd1;
                     end
+                    else
+                        o_ddr3_master_wr_frame_down_val <= 1'd0;
                 end
                 o_dpb_wr_a_wr_en    <= 1'd0;
                 state_mjpeg_wr      <= MJPEG_WR_IDLE;
