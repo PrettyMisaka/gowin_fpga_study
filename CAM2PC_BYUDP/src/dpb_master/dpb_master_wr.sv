@@ -57,12 +57,17 @@ always@(posedge i_pclk)
 
 logic [127:0] wr_data_tmp;
 logic [7:0]   wr_data_byte_cnt;
+logic last_frame_flag;
+logic [31:0] delay_1s_cnt_27mhz;
+logic [7:0] frame_down_req_cnt;
+logic [7:0] frame_down_req_cnt_save;
 
 enum logic[3:0] {
     MJPEG_WR_IDLE, MJPEG_WR_HALF1, MJPEG_WR_HALF2, MJPEG_WR_DOWN
 } state_mjpeg_wr;
 task taskRst();
     error               <= 1'd1;
+    last_frame_flag     <= 1'd1;
 
     dpb_wr_rank_down    <= 2'd1;
     dpb_wr_rank_working <= 2'd0;
@@ -84,12 +89,23 @@ always@(posedge i_pclk or negedge i_rst_n)begin
         taskRst();
     end
     else begin
-        if(i_mjpeg_down_bef == 1'd1 && i_mjpeg_down== 1'd0) begin 
-        // if(i_mjpeg_busy== 1'd0&&wr_data_tmp_updata_flag_flag) begin 
+        // if(i_mjpeg_down_bef == 1'd1 && i_mjpeg_down== 1'd0) begin 
+        // if(i_mjpeg_down== 1'd1&&wr_data_tmp_updata_flag) begin 
+        if(delay_1s_cnt_27mhz == 32'd84000000 - 32'd1 )begin
+            delay_1s_cnt_27mhz <= 1'd0;
+            frame_down_req_cnt          <= 1'd0;
+            frame_down_req_cnt_save <= frame_down_req_cnt;
+        end
+        else begin
+            delay_1s_cnt_27mhz <= delay_1s_cnt_27mhz + 1'd1;
+        end
+        if( last_frame_flag && i_mjpeg_busy== 1'd0 && ~wr_data_tmp_updata_flag) begin 
             frame_end_state     <= 1'd1;
             frame_end_task_state<= 1'd1;
+            last_frame_flag     <= 1'd0;
             wr_req_cnt          <= 1'd0;
             wr_req_cnt_save <= wr_req_cnt;
+            frame_down_req_cnt <= frame_down_req_cnt + 8'd1;
         end
         if(i_mjpeg_busy&&i_mjpeg_de)begin
             wr_data_tmp <= {wr_data_tmp[119:0],i_mjpeg_data};
@@ -116,6 +132,7 @@ always@(posedge i_pclk or negedge i_rst_n)begin
                     o_dpb_wr_a_wr_en                <= 1'd1;
                     dpb_wr_addr_tmp                 <= dpb_wr_addr_tmp + 7'd1;
                     o_ddr3_master_wr_buf_Bytecnt    <= wr_data_byte_cnt[5:0];
+                    if(o_ddr3_master_wr_udp_rank > 8'd2) last_frame_flag <= 1'd1;
                 end
                 else if(frame_end_task_state) begin
                     o_dpb_wr_a_wr_data              <= wr_data_tmp << ((8'd16 - wr_data_byte_cnt)<<3);

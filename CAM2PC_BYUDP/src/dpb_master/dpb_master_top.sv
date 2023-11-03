@@ -31,6 +31,7 @@ module dpb_master_top#(
     input                      i_udp128_ddr3_data_upd_req     ,
     input                      i_udp128_udp_frame_down        ,
     input                      i_udp128_busy                  ,
+    input  [3:0]               i_udp_state                    ,
 //----------------dpb---------------//
     input        [127:0]        o_dpb_wr_a_rd_data     ,
     output logic [127:0]        o_dpb_wr_a_wr_data     ,

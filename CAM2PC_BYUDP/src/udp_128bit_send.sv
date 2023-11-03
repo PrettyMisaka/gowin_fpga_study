@@ -14,6 +14,7 @@ module udp_128bit_send(
     output logic        o_ddr3_data_upd_req     ,
     output logic        o_udp_frame_down        ,
     output logic        o_busy                  ,
+    output logic [3:0]  o_state                 ,
 
 //-------udp interface---------------//
     output logic        o_udp_tx_en      ,
@@ -29,6 +30,7 @@ module udp_128bit_send(
 enum logic[3:0] {
     IDLE, HEAD_DOWN, SIGN_BYTE_2, WAIT_BYTE_LOAD, WORKING, FINISH
 } state;
+assign o_state = state;
 //------------------
 //delay logic
 //------------------
@@ -67,6 +69,11 @@ logic [15:0] udp_jpeg_data_cnt;
 assign o_udp_data_len = i_udp_jpeg_len + 16'd2;
 assign o_ipv4_sign = i_udp_ipv4_sign;
 assign o_udp_data = wrdata_buf[127:120];
+logic [15:0] delay_cnt50m;
+logic delay_en;
+logic [31:0] delay_1s_cnt_27mhz;
+logic [7:0] frame_down_req_cnt;
+logic [7:0] frame_down_req_cnt_save;
 task task_rst();
     state <= IDLE;
     o_udp_tx_en <= 1'd0;
@@ -80,6 +87,9 @@ task task_rst();
     o_ddr3_data_upd_req_delay_val <= 1'd0;
     o_busy <= 1'd0;
     o_udp_frame_down_val <= 1'd0;
+
+    delay_cnt50m <= 0;
+    delay_en <= 0;
 endtask
 initial task_rst();
 always@(posedge i_udp_clk50m or negedge i_rst_n)begin
@@ -87,6 +97,18 @@ always@(posedge i_udp_clk50m or negedge i_rst_n)begin
         task_rst();
     end
     else begin
+        if(delay_en)begin
+            if(delay_cnt50m == 16'd100) delay_cnt50m <= delay_cnt50m;
+            else delay_cnt50m <= delay_cnt50m + 16'd1;
+        end
+        if(delay_1s_cnt_27mhz == 32'd50000000 - 32'd1 )begin
+            delay_1s_cnt_27mhz <= 1'd0;
+            frame_down_req_cnt          <= 1'd0;
+            frame_down_req_cnt_save <= frame_down_req_cnt;
+        end
+        else begin
+            delay_1s_cnt_27mhz <= delay_1s_cnt_27mhz + 1'd1;
+        end
         case (state)
             IDLE:begin
                 if(i_en)begin
@@ -94,19 +116,29 @@ always@(posedge i_udp_clk50m or negedge i_rst_n)begin
                     o_udp_tx_en <= 1'd1;
                     o_busy <= 1'd1;
                     // i_udp_last_frame_buf <= i_udp_last_frame_flag;
+                    delay_en <= 1'd1;
+                    delay_cnt50m <= 0;
                 end
                     o_udp_tx_de <= 1'd1;
                     o_ddr3_data_upd_req_delay_val <= 1'd0;
                     o_udp_frame_down_val <= 1'd0;
             end 
             HEAD_DOWN:begin
-                if(i_udp_head_down_pos_flag)begin
-                    wrdata_buf <= {i_udp_last_frame_flag,i_mjpeg_frame_rank,112'd0};
-                    // wrdata_buf <= {i_udp_last_frame_buf,i_mjpeg_frame_rank,112'd0};
+                    // wrdata_buf <= {i_udp_last_frame_flag,i_mjpeg_frame_rank,112'd0};
+                if(i_udp_head_down)begin
+                    wrdata_buf <= {i_udp_last_frame_buf,i_mjpeg_frame_rank,112'd0};
                     state <= SIGN_BYTE_2;
                     o_udp_tx_de <= 1'd1;
                     o_udp_tx_en <= 1'd0;
+                    if(i_udp_last_frame_flag)
+                        frame_down_req_cnt <= frame_down_req_cnt + 8'd1;
                 end
+                else begin
+                    o_udp_tx_de <= 1'd1;
+                    o_udp_tx_en <= 1'd1;
+                end
+                if(delay_cnt50m == 16'd100&&i_udp_busy == 1'd0) state <= FINISH;
+                delay_en <= 1'd1;
             end
             SIGN_BYTE_2:begin
                 if(i_udp_head_down && i_udp_isLoadData)begin
@@ -153,6 +185,8 @@ always@(posedge i_udp_clk50m or negedge i_rst_n)begin
                     state <= IDLE;
                 end
                 o_ddr3_data_upd_req_delay_val <= 1'd0;
+                delay_cnt50m <= 0;
+                delay_en <= 0;
             end
         endcase
     end

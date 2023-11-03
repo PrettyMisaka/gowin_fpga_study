@@ -164,6 +164,112 @@ logic [15:0]        i_udp_ipv4_sign        ;
 logic               o_ddr3_data_upd_req;
 logic               o_udp_frame_down   ;
 logic               o_busy             ;
+logic [3:0]         i_udp_state;
+
+logic rst_mjpeg, mjpeg_clk, mjpeg_de, mjpeg_de_o;
+logic [23:0] mjpeg_data_in;
+logic [7:0] mjpeg_data_out;
+//----------------dpb---------------//
+    wire [127:0]        o_dpb_wr_a_rd_data     ;
+    wire [127:0]        o_dpb_wr_a_wr_data     ;
+    wire [10:0]         o_dpb_wr_a_addr        ;
+    wire                o_dpb_wr_a_clk         ;
+    wire                o_dpb_wr_a_cea         ;
+    wire                o_dpb_wr_a_ocea        ;
+    wire                o_dpb_wr_a_rst_n       ;
+    wire                o_dpb_wr_a_wr_en       ;
+    
+    wire [127:0]        o_dpb_wr_b_rd_data     ;
+    wire [127:0]        o_dpb_wr_b_wr_data     ;
+    wire [10:0]         o_dpb_wr_b_addr        ;
+    wire                o_dpb_wr_b_clk         ;
+    wire                o_dpb_wr_b_cea         ;
+    wire                o_dpb_wr_b_ocea        ;
+    wire                o_dpb_wr_b_rst_n       ;
+    wire                o_dpb_wr_b_wr_en       ;
+dpb_master_top ddr3_master0(
+    .clk                (clk   ),//27mhz
+    .clk50m             (clk50m),
+    .rst_n              (rst.ddr3_master ),
+
+    .i_cam_pclk         (cam_port.cmos_pclk     ),
+    .i_cam_rgb888_pclk  (cam_user.half_cmos_clk ),
+    .i_cam_vsync        (cam_user.vsync         ),
+    .i_cam_de           (cam_user.de            ),
+    .i_cam_data_rgb888  (cam_user.data_bgr888   ),
+
+    .o_mjpeg_clk        (mjpeg_clk              ),
+    .o_mjpeg_rst        (rst_mjpeg              ),
+    .o_mjpeg_de         (mjpeg_de               ),
+    .o_mjpeg_data       (mjpeg_data_in          ),
+    .i_mjpeg_de         (mjpeg_de_o             ),
+    .i_mjpeg_down       (mjpeg_down             ),
+    .i_mjpeg_data       (mjpeg_data_out         ),
+
+//-------module interface-----------//
+    .o_udp128_en                   (i_en                 ),
+    .o_udp128_ddr3_udp_wrdata      (i_ddr3_udp_wrdata    ),
+    .o_udp128_udp_last_frame_flag  (i_udp_last_frame_flag),
+    .o_udp128_mjpeg_frame_rank     (i_mjpeg_frame_rank   ),
+    .o_udp128_udp_jpeg_len         (i_udp_jpeg_len       ),
+    .o_udp128_udp_ipv4_sign        (i_udp_ipv4_sign      ),
+    .i_udp128_ddr3_data_upd_req    (o_ddr3_data_upd_req  ),
+    .i_udp128_udp_frame_down       (o_udp_frame_down     ),
+    .i_udp128_busy                 (o_busy               ),
+    .i_udp_state                   (i_udp_state          ),
+//----------------dpb---------------//
+    .o_dpb_wr_a_rd_data     (o_dpb_wr_a_rd_data  ),
+    .o_dpb_wr_a_wr_data     (o_dpb_wr_a_wr_data  ),
+    .o_dpb_wr_a_addr        (o_dpb_wr_a_addr     ),
+    .o_dpb_wr_a_clk         (o_dpb_wr_a_clk      ),
+    .o_dpb_wr_a_cea         (o_dpb_wr_a_cea      ),
+    .o_dpb_wr_a_ocea        (o_dpb_wr_a_ocea     ),
+    .o_dpb_wr_a_rst_n       (o_dpb_wr_a_rst_n    ),
+    .o_dpb_wr_a_wr_en       (o_dpb_wr_a_wr_en    ),
+    
+    .o_dpb_wr_b_rd_data     (o_dpb_wr_b_rd_data  ),
+    .o_dpb_wr_b_wr_data     (o_dpb_wr_b_wr_data  ),
+    .o_dpb_wr_b_addr        (o_dpb_wr_b_addr     ),
+    .o_dpb_wr_b_clk         (o_dpb_wr_b_clk      ),
+    .o_dpb_wr_b_cea         (o_dpb_wr_b_cea      ),
+    .o_dpb_wr_b_ocea        (o_dpb_wr_b_ocea     ),
+    .o_dpb_wr_b_rst_n       (o_dpb_wr_b_rst_n    ),
+    .o_dpb_wr_b_wr_en       (o_dpb_wr_b_wr_en    )
+
+    // .o_dpb_rd_a_rd_data     (o_dpb_rd_a_rd_data  ),
+    // .o_dpb_rd_a_wr_data     (o_dpb_rd_a_wr_data  ),
+    // .o_dpb_rd_a_addr        (o_dpb_rd_a_addr     ),
+    // .o_dpb_rd_a_clk         (o_dpb_rd_a_clk      ),
+    // .o_dpb_rd_a_cea         (o_dpb_rd_a_cea      ),
+    // .o_dpb_rd_a_ocea        (o_dpb_rd_a_ocea     ),
+    // .o_dpb_rd_a_rst_n       (o_dpb_rd_a_rst_n    ),
+    // .o_dpb_rd_a_wr_en       (o_dpb_rd_a_wr_en    ),
+    
+    // .o_dpb_rd_b_rd_data     (o_dpb_rd_b_rd_data  ),
+    // .o_dpb_rd_b_wr_data     (o_dpb_rd_b_wr_data  ),
+    // .o_dpb_rd_b_addr        (o_dpb_rd_b_addr     ),
+    // .o_dpb_rd_b_clk         (o_dpb_rd_b_clk      ),
+    // .o_dpb_rd_b_cea         (o_dpb_rd_b_cea      ),
+    // .o_dpb_rd_b_ocea        (o_dpb_rd_b_ocea     ),
+    // .o_dpb_rd_b_rst_n       (o_dpb_rd_b_rst_n    ),
+    // .o_dpb_rd_b_wr_en       (o_dpb_rd_b_wr_en    ),
+
+    // .o_ddr3_cmd         (cmd            ),
+    // .o_ddr3_cmd_en      (cmd_en         ),
+    // .o_ddr3_addr        (addr           ),
+    // .o_ddr3_wr_data     (wr_data        ),
+    // .o_ddr3_wr_data_en  (wr_data_en     ),
+    // .o_ddr3_wr_data_end (wr_data_end    ),
+    // .o_ddr3_wr_mask     (wr_data_mask   ),
+    // .i_ddr3_clk         (clk50m         ),
+    // .i_ddr3_memory_clk  (memory_clk_400m),
+    // .i_ddr3_half_mem_clk(half_memory_clk),
+    // .i_ddr3_cmd_ready   (cmd_ready      ),
+    // .i_ddr3_wr_data_rdy (wr_data_rdy    ),
+    // .i_ddr3_rd_data     (rd_data        ),
+    // .i_ddr3_rd_data_de  (rd_data_valid  ),
+    // .i_ddr3_rd_data_end (rd_data_end    )
+);
 udp_128bit_send udp_128bit_send0(
     .i_udp_clk50m   (clk50m),
     .i_rst_n        (rst.ddr3_master ),
@@ -180,6 +286,7 @@ udp_128bit_send udp_128bit_send0(
     .o_ddr3_data_upd_req    (o_ddr3_data_upd_req  ),
     .o_udp_frame_down       (o_udp_frame_down     ),
     .o_busy                 (o_busy               ),
+    .o_state                (i_udp_state          ),
 
 //-------udp interface---------------//
     .o_udp_tx_en      (udp_port.I_udp_tx_en       ),
@@ -192,10 +299,6 @@ udp_128bit_send udp_128bit_send0(
     .i_udp_isLoadData (udp_port.O_udp_isLoadData  ),
     .i_1Byte_pass     (udp_port.O_1Byte_pass      )
 );
-
-logic rst_mjpeg, mjpeg_clk, mjpeg_de, mjpeg_de_o;
-logic [23:0] mjpeg_data_in;
-logic [7:0] mjpeg_data_out;
 MJPEG_Encoder_Top MJPEG_Encoder0(
     .clk        (mjpeg_clk              ), //input clk
     .rstn       (rst_mjpeg              ), //input rstn
@@ -205,7 +308,66 @@ MJPEG_Encoder_Top MJPEG_Encoder0(
     .img_valid  (mjpeg_de_o             ), //output img_valid
     .img_done   (mjpeg_down             ) //output img_done
 );
-logic mjpeg_down_bef;
+
+    // wire [63:0]         o_dpb_rd_a_rd_data     ;
+    // wire [63:0]         o_dpb_rd_a_wr_data     ;
+    // wire [9:0]          o_dpb_rd_a_addr        ;
+    // wire                o_dpb_rd_a_clk         ;
+    // wire                o_dpb_rd_a_cea         ;
+    // wire                o_dpb_rd_a_ocea        ;
+    // wire                o_dpb_rd_a_rst_n       ;
+    // wire                o_dpb_rd_a_wr_en       ;
+    
+    // wire [63:0]         o_dpb_rd_b_rd_data     ;
+    // wire [63:0]         o_dpb_rd_b_wr_data     ;
+    // wire [9:0]          o_dpb_rd_b_addr        ;
+    // wire                o_dpb_rd_b_clk         ;
+    // wire                o_dpb_rd_b_cea         ;
+    // wire                o_dpb_rd_b_ocea        ;
+    // wire                o_dpb_rd_b_rst_n       ;
+    // wire                o_dpb_rd_b_wr_en       ;
+
+
+// Gowin_DPB_RD Gowin_DPB_RD0(
+//     .douta  (o_dpb_rd_a_rd_data     ), //output [63:0] douta
+//     .dina   (o_dpb_rd_a_wr_data     ), //input [63:0] dina
+//     .ada    (o_dpb_rd_a_addr        ), //input [9:0] ada
+//     .clka   (o_dpb_rd_a_clk         ), //input clka
+//     .cea    (o_dpb_rd_a_cea         ), //input cea
+//     .ocea   (o_dpb_rd_a_ocea        ), //input ocea
+//     .reseta (o_dpb_rd_a_rst_n       ), //input reseta
+//     .wrea   (o_dpb_rd_a_wr_en       ), //input wrea
+
+//     .doutb  (o_dpb_rd_b_rd_data     ), //output [63:0] doutb
+//     .dinb   (o_dpb_rd_b_wr_data     ), //input [63:0] dinb
+//     .adb    (o_dpb_rd_b_addr        ), //input [9:0] adb
+//     .clkb   (o_dpb_rd_b_clk         ), //input clkb
+//     .oceb   (o_dpb_rd_b_cea         ), //input oceb
+//     .ceb    (o_dpb_rd_b_ocea        ), //input ceb
+//     .resetb (o_dpb_rd_b_rst_n       ), //input resetb
+//     .wreb   (o_dpb_rd_b_wr_en       )  //input wreb
+// );
+
+Gowin_DPB_128_2048 Gowin_DPB_WR0(
+    .douta  (o_dpb_wr_a_rd_data     ), //output [63:0] douta
+    .dina   (o_dpb_wr_a_wr_data     ), //input [63:0] dina
+    .ada    (o_dpb_wr_a_addr        ), //input [9:0] ada
+    .clka   (o_dpb_wr_a_clk         ), //input clka
+    .cea    (o_dpb_wr_a_cea         ), //input cea
+    .ocea   (o_dpb_wr_a_ocea        ), //input ocea
+    .reseta (o_dpb_wr_a_rst_n       ), //input reseta
+    .wrea   (o_dpb_wr_a_wr_en       ), //input wrea
+
+    .doutb  (o_dpb_wr_b_rd_data     ), //output [63:0] doutb
+    .dinb   (o_dpb_wr_b_wr_data     ), //input [63:0] dinb
+    .adb    (o_dpb_wr_b_addr        ), //input [9:0] adb
+    .clkb   (o_dpb_wr_b_clk         ), //input clkb
+    .oceb   (o_dpb_wr_b_cea         ), //input oceb
+    .ceb    (o_dpb_wr_b_ocea        ), //input ceb
+    .resetb (o_dpb_wr_b_rst_n       ), //input resetb
+    .wreb   (o_dpb_wr_b_wr_en       )  //input wreb
+);
+
 always@(posedge cam_port.cmos_pclk) begin 
     if(mjpeg_down_bef == 0 && mjpeg_down == 1'd1) begin
         led[4] <= ~led[4]; 
@@ -213,20 +375,8 @@ always@(posedge cam_port.cmos_pclk) begin
     mjpeg_down_bef <= mjpeg_down;
 end
 
-// logic memory_clk_400m, DDR_pll_lock;
-wire half_memory_clk;
+// logic memory_clk_400m, DDR_pll_lock;W
 logic init_calib_complete = 1'd1;
-
-logic cmd_ready , cmd_en;
-logic [2:0] cmd;
-logic [27:0] addr;
-
-logic wr_data_rdy, wr_data_en, wr_data_end;
-logic [127:0] wr_data;
-logic [15:0] wr_data_mask;
-
-logic [127:0] rd_data;
-logic rd_data_valid, rd_data_end;
 
 // DDR3MI DDR3_Memory_Interface_Top_inst 
 // (
@@ -372,164 +522,4 @@ always@(posedge clk or negedge rst_n)begin
         endcase
     end
 end
-//----------------dpb---------------//
-    wire [127:0]        o_dpb_wr_a_rd_data     ;
-    wire [127:0]        o_dpb_wr_a_wr_data     ;
-    wire [10:0]         o_dpb_wr_a_addr        ;
-    wire                o_dpb_wr_a_clk         ;
-    wire                o_dpb_wr_a_cea         ;
-    wire                o_dpb_wr_a_ocea        ;
-    wire                o_dpb_wr_a_rst_n       ;
-    wire                o_dpb_wr_a_wr_en       ;
-    
-    wire [127:0]        o_dpb_wr_b_rd_data     ;
-    wire [127:0]        o_dpb_wr_b_wr_data     ;
-    wire [10:0]         o_dpb_wr_b_addr        ;
-    wire                o_dpb_wr_b_clk         ;
-    wire                o_dpb_wr_b_cea         ;
-    wire                o_dpb_wr_b_ocea        ;
-    wire                o_dpb_wr_b_rst_n       ;
-    wire                o_dpb_wr_b_wr_en       ;
-
-    // wire [63:0]         o_dpb_rd_a_rd_data     ;
-    // wire [63:0]         o_dpb_rd_a_wr_data     ;
-    // wire [9:0]          o_dpb_rd_a_addr        ;
-    // wire                o_dpb_rd_a_clk         ;
-    // wire                o_dpb_rd_a_cea         ;
-    // wire                o_dpb_rd_a_ocea        ;
-    // wire                o_dpb_rd_a_rst_n       ;
-    // wire                o_dpb_rd_a_wr_en       ;
-    
-    // wire [63:0]         o_dpb_rd_b_rd_data     ;
-    // wire [63:0]         o_dpb_rd_b_wr_data     ;
-    // wire [9:0]          o_dpb_rd_b_addr        ;
-    // wire                o_dpb_rd_b_clk         ;
-    // wire                o_dpb_rd_b_cea         ;
-    // wire                o_dpb_rd_b_ocea        ;
-    // wire                o_dpb_rd_b_rst_n       ;
-    // wire                o_dpb_rd_b_wr_en       ;
-dpb_master_top ddr3_master0(
-    .clk                (clk   ),//27mhz
-    .clk50m             (clk50m),
-    .rst_n              (rst.ddr3_master ),
-
-    .i_cam_pclk         (cam_port.cmos_pclk     ),
-    .i_cam_rgb888_pclk  (cam_user.half_cmos_clk ),
-    .i_cam_vsync        (cam_user.vsync         ),
-    .i_cam_de           (cam_user.de            ),
-    .i_cam_data_rgb888  (cam_user.data_bgr888   ),
-
-    .o_mjpeg_clk        (mjpeg_clk              ),
-    .o_mjpeg_rst        (rst_mjpeg              ),
-    .o_mjpeg_de         (mjpeg_de               ),
-    .o_mjpeg_data       (mjpeg_data_in          ),
-    .i_mjpeg_de         (mjpeg_de_o             ),
-    .i_mjpeg_down       (mjpeg_down             ),
-    .i_mjpeg_data       (mjpeg_data_out         ),
-
-//-------module interface-----------//
-    .o_udp128_en                   (i_en                 ),
-    .o_udp128_ddr3_udp_wrdata      (i_ddr3_udp_wrdata    ),
-    .o_udp128_udp_last_frame_flag  (i_udp_last_frame_flag),
-    .o_udp128_mjpeg_frame_rank     (i_mjpeg_frame_rank   ),
-    .o_udp128_udp_jpeg_len         (i_udp_jpeg_len       ),
-    .o_udp128_udp_ipv4_sign        (i_udp_ipv4_sign      ),
-    .i_udp128_ddr3_data_upd_req    (o_ddr3_data_upd_req  ),
-    .i_udp128_udp_frame_down       (o_udp_frame_down     ),
-    .i_udp128_busy                 (o_busy               ),
-//----------------dpb---------------//
-    .o_dpb_wr_a_rd_data     (o_dpb_wr_a_rd_data  ),
-    .o_dpb_wr_a_wr_data     (o_dpb_wr_a_wr_data  ),
-    .o_dpb_wr_a_addr        (o_dpb_wr_a_addr     ),
-    .o_dpb_wr_a_clk         (o_dpb_wr_a_clk      ),
-    .o_dpb_wr_a_cea         (o_dpb_wr_a_cea      ),
-    .o_dpb_wr_a_ocea        (o_dpb_wr_a_ocea     ),
-    .o_dpb_wr_a_rst_n       (o_dpb_wr_a_rst_n    ),
-    .o_dpb_wr_a_wr_en       (o_dpb_wr_a_wr_en    ),
-    
-    .o_dpb_wr_b_rd_data     (o_dpb_wr_b_rd_data  ),
-    .o_dpb_wr_b_wr_data     (o_dpb_wr_b_wr_data  ),
-    .o_dpb_wr_b_addr        (o_dpb_wr_b_addr     ),
-    .o_dpb_wr_b_clk         (o_dpb_wr_b_clk      ),
-    .o_dpb_wr_b_cea         (o_dpb_wr_b_cea      ),
-    .o_dpb_wr_b_ocea        (o_dpb_wr_b_ocea     ),
-    .o_dpb_wr_b_rst_n       (o_dpb_wr_b_rst_n    ),
-    .o_dpb_wr_b_wr_en       (o_dpb_wr_b_wr_en    )
-
-    // .o_dpb_rd_a_rd_data     (o_dpb_rd_a_rd_data  ),
-    // .o_dpb_rd_a_wr_data     (o_dpb_rd_a_wr_data  ),
-    // .o_dpb_rd_a_addr        (o_dpb_rd_a_addr     ),
-    // .o_dpb_rd_a_clk         (o_dpb_rd_a_clk      ),
-    // .o_dpb_rd_a_cea         (o_dpb_rd_a_cea      ),
-    // .o_dpb_rd_a_ocea        (o_dpb_rd_a_ocea     ),
-    // .o_dpb_rd_a_rst_n       (o_dpb_rd_a_rst_n    ),
-    // .o_dpb_rd_a_wr_en       (o_dpb_rd_a_wr_en    ),
-    
-    // .o_dpb_rd_b_rd_data     (o_dpb_rd_b_rd_data  ),
-    // .o_dpb_rd_b_wr_data     (o_dpb_rd_b_wr_data  ),
-    // .o_dpb_rd_b_addr        (o_dpb_rd_b_addr     ),
-    // .o_dpb_rd_b_clk         (o_dpb_rd_b_clk      ),
-    // .o_dpb_rd_b_cea         (o_dpb_rd_b_cea      ),
-    // .o_dpb_rd_b_ocea        (o_dpb_rd_b_ocea     ),
-    // .o_dpb_rd_b_rst_n       (o_dpb_rd_b_rst_n    ),
-    // .o_dpb_rd_b_wr_en       (o_dpb_rd_b_wr_en    ),
-
-    // .o_ddr3_cmd         (cmd            ),
-    // .o_ddr3_cmd_en      (cmd_en         ),
-    // .o_ddr3_addr        (addr           ),
-    // .o_ddr3_wr_data     (wr_data        ),
-    // .o_ddr3_wr_data_en  (wr_data_en     ),
-    // .o_ddr3_wr_data_end (wr_data_end    ),
-    // .o_ddr3_wr_mask     (wr_data_mask   ),
-    // .i_ddr3_clk         (clk50m         ),
-    // .i_ddr3_memory_clk  (memory_clk_400m),
-    // .i_ddr3_half_mem_clk(half_memory_clk),
-    // .i_ddr3_cmd_ready   (cmd_ready      ),
-    // .i_ddr3_wr_data_rdy (wr_data_rdy    ),
-    // .i_ddr3_rd_data     (rd_data        ),
-    // .i_ddr3_rd_data_de  (rd_data_valid  ),
-    // .i_ddr3_rd_data_end (rd_data_end    )
-);
-
-
-// Gowin_DPB_RD Gowin_DPB_RD0(
-//     .douta  (o_dpb_rd_a_rd_data     ), //output [63:0] douta
-//     .dina   (o_dpb_rd_a_wr_data     ), //input [63:0] dina
-//     .ada    (o_dpb_rd_a_addr        ), //input [9:0] ada
-//     .clka   (o_dpb_rd_a_clk         ), //input clka
-//     .cea    (o_dpb_rd_a_cea         ), //input cea
-//     .ocea   (o_dpb_rd_a_ocea        ), //input ocea
-//     .reseta (o_dpb_rd_a_rst_n       ), //input reseta
-//     .wrea   (o_dpb_rd_a_wr_en       ), //input wrea
-
-//     .doutb  (o_dpb_rd_b_rd_data     ), //output [63:0] doutb
-//     .dinb   (o_dpb_rd_b_wr_data     ), //input [63:0] dinb
-//     .adb    (o_dpb_rd_b_addr        ), //input [9:0] adb
-//     .clkb   (o_dpb_rd_b_clk         ), //input clkb
-//     .oceb   (o_dpb_rd_b_cea         ), //input oceb
-//     .ceb    (o_dpb_rd_b_ocea        ), //input ceb
-//     .resetb (o_dpb_rd_b_rst_n       ), //input resetb
-//     .wreb   (o_dpb_rd_b_wr_en       )  //input wreb
-// );
-
-Gowin_DPB_128_2048 Gowin_DPB_WR0(
-    .douta  (o_dpb_wr_a_rd_data     ), //output [63:0] douta
-    .dina   (o_dpb_wr_a_wr_data     ), //input [63:0] dina
-    .ada    (o_dpb_wr_a_addr        ), //input [9:0] ada
-    .clka   (o_dpb_wr_a_clk         ), //input clka
-    .cea    (o_dpb_wr_a_cea         ), //input cea
-    .ocea   (o_dpb_wr_a_ocea        ), //input ocea
-    .reseta (o_dpb_wr_a_rst_n       ), //input reseta
-    .wrea   (o_dpb_wr_a_wr_en       ), //input wrea
-
-    .doutb  (o_dpb_wr_b_rd_data     ), //output [63:0] doutb
-    .dinb   (o_dpb_wr_b_wr_data     ), //input [63:0] dinb
-    .adb    (o_dpb_wr_b_addr        ), //input [9:0] adb
-    .clkb   (o_dpb_wr_b_clk         ), //input clkb
-    .oceb   (o_dpb_wr_b_cea         ), //input oceb
-    .ceb    (o_dpb_wr_b_ocea        ), //input ceb
-    .resetb (o_dpb_wr_b_rst_n       ), //input resetb
-    .wreb   (o_dpb_wr_b_wr_en       )  //input wreb
-);
-
 endmodule

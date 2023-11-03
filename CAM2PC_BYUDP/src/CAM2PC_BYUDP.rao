@@ -4,25 +4,23 @@
     <Mode>Standard</Mode>
     <AoCore index="0" sample_clock="cam_port.cmos_pclk" trig_type="0" storage_depth="2048" window_num="1" capture_amount="2048" implementation="0" trigger_pos="0" module_name="my_top" force_trigger_by_falling_edge="true">
         <SignalList>
-            <Signal>mjpeg_de_o</Signal>
-            <Signal>ddr3_master0/dpb_master_cmd0/o_ddr3_master_wr_req</Signal>
-            <Signal>ddr3_master0/dpb_master_cmd0/i_udp128_ddr3_data_upd_req</Signal>
-            <Signal>ddr3_master0/dpb_master_cmd0/i_udp128_udp_frame_down_bef</Signal>
-            <Signal>o_busy</Signal>
-            <Signal>ddr3_master0/dpb_master_wr0/frame_end_task_state</Signal>
+            <Signal>ddr3_master0/i_mjpeg_down</Signal>
             <Signal>ddr3_master0/dpb_master_wr0/frame_end_state</Signal>
             <Signal>ddr3_master0/o_ddr3_master_wr_frame_down</Signal>
-            <Signal>udp_128bit_send0/i_udp_last_frame_buf</Signal>
-            <Signal>ddr3_master0/o_udp128_udp_last_frame_flag</Signal>
-            <Signal>ddr3_master0/dpb_master_wr0/o_ddr3_master_wr_frame_down_val</Signal>
-            <Signal>udp_128bit_send0/wrdata_buf[127]</Signal>
-            <Signal>udp_128bit_send0/wrdata_buf[126]</Signal>
-            <Signal>udp_128bit_send0/wrdata_buf[125]</Signal>
-            <Signal>udp_128bit_send0/wrdata_buf[124]</Signal>
-            <Signal>udp_128bit_send0/wrdata_buf[123]</Signal>
-            <Signal>udp_128bit_send0/wrdata_buf[122]</Signal>
-            <Signal>udp_128bit_send0/wrdata_buf[121]</Signal>
-            <Signal>udp_128bit_send0/wrdata_buf[120]</Signal>
+            <Signal>ddr3_master0/o_ddr3_master_wr_req</Signal>
+            <Signal>ddr3_master0/dpb_master_cmd0/last_frame_buf.state</Signal>
+            <Signal>ddr3_master0/dpb_master_cmd0/last_frame_buf.o_udp128_udp_last_frame_flag</Signal>
+            <Signal>udp_128bit_send0/i_udp_last_frame_flag</Signal>
+            <Bus name="mac_top0/mac0/buffer_data[7:0]">
+                <Signal>mac_top0/mac0/buffer_data[7]</Signal>
+                <Signal>mac_top0/mac0/buffer_data[6]</Signal>
+                <Signal>mac_top0/mac0/buffer_data[5]</Signal>
+                <Signal>mac_top0/mac0/buffer_data[4]</Signal>
+                <Signal>mac_top0/mac0/buffer_data[3]</Signal>
+                <Signal>mac_top0/mac0/buffer_data[2]</Signal>
+                <Signal>mac_top0/mac0/buffer_data[1]</Signal>
+                <Signal>mac_top0/mac0/buffer_data[0]</Signal>
+            </Bus>
             <Bus name="mac_top0/mac0/state[7:0]">
                 <Signal>mac_top0/mac0/state[7]</Signal>
                 <Signal>mac_top0/mac0/state[6]</Signal>
@@ -33,16 +31,16 @@
                 <Signal>mac_top0/mac0/state[1]</Signal>
                 <Signal>mac_top0/mac0/state[0]</Signal>
             </Bus>
+            <Bus name="ddr3_master0/dpb_master_cmd0/state[2:0]">
+                <Signal>ddr3_master0/dpb_master_cmd0/state[2]</Signal>
+                <Signal>ddr3_master0/dpb_master_cmd0/state[1]</Signal>
+                <Signal>ddr3_master0/dpb_master_cmd0/state[0]</Signal>
+            </Bus>
             <Bus name="udp_128bit_send0/state[3:0]">
                 <Signal>udp_128bit_send0/state[3]</Signal>
                 <Signal>udp_128bit_send0/state[2]</Signal>
                 <Signal>udp_128bit_send0/state[1]</Signal>
                 <Signal>udp_128bit_send0/state[0]</Signal>
-            </Bus>
-            <Bus name="ddr3_master0/dpb_master_cmd0/state[2:0]">
-                <Signal>ddr3_master0/dpb_master_cmd0/state[2]</Signal>
-                <Signal>ddr3_master0/dpb_master_cmd0/state[1]</Signal>
-                <Signal>ddr3_master0/dpb_master_cmd0/state[0]</Signal>
             </Bus>
         </SignalList>
         <Triggers>
@@ -58,28 +56,31 @@
             </Trigger>
             <Trigger index="2">
                 <SignalList>
-                    <Signal>ddr3_master0/o_udp128_udp_last_frame_flag</Signal>
+                    <Signal>ddr3_master0/dpb_master_cmd0/last_frame_buf.state</Signal>
+                    <Bus restorename="ddr3_master0/dpb_master_cmd0/state[2:0]">
+                        <Signal>ddr3_master0/dpb_master_cmd0/state[2]</Signal>
+                        <Signal>ddr3_master0/dpb_master_cmd0/state[1]</Signal>
+                        <Signal>ddr3_master0/dpb_master_cmd0/state[0]</Signal>
+                    </Bus>
                 </SignalList>
             </Trigger>
             <Trigger index="3">
                 <SignalList>
-                    <Signal>ddr3_master0/dpb_master_wr0/i_mjpeg_busy</Signal>
+                    <Signal>ddr3_master0/i_mjpeg_down</Signal>
                 </SignalList>
             </Trigger>
             <Trigger index="4">
                 <SignalList>
-                    <Bus restorename="cam_top0/i2c_config_m0/state[2:0]">
-                        <Signal>cam_top0/i2c_config_m0/state[2]</Signal>
-                        <Signal>cam_top0/i2c_config_m0/state[1]</Signal>
-                        <Signal>cam_top0/i2c_config_m0/state[0]</Signal>
+                    <Signal>udp_128bit_send0/i_udp_last_frame_flag</Signal>
+                    <Bus restorename="udp_128bit_send0/state[3:0]">
+                        <Signal>udp_128bit_send0/state[3]</Signal>
+                        <Signal>udp_128bit_send0/state[2]</Signal>
+                        <Signal>udp_128bit_send0/state[1]</Signal>
+                        <Signal>udp_128bit_send0/state[0]</Signal>
                     </Bus>
                 </SignalList>
             </Trigger>
-            <Trigger index="5">
-                <SignalList>
-                    <Signal>ddr3_master0/i_udp128_busy</Signal>
-                </SignalList>
-            </Trigger>
+            <Trigger index="5"/>
             <Trigger index="6"/>
             <Trigger index="7"/>
             <Trigger index="8"/>
@@ -93,8 +94,8 @@
         </Triggers>
         <MatchUnits>
             <MatchUnit index="0" enabled="1" match_type="0" counter_enable="0" counter_width="2" counter="2" countinuous="0" func="0" value0="1" value1="0" trigger="0"/>
-            <MatchUnit index="1" enabled="1" match_type="0" counter_enable="0" counter_width="2" counter="2" countinuous="0" func="0" value0="1" value1="0" trigger="1"/>
-            <MatchUnit index="2" enabled="0" match_type="0" counter_enable="0" counter_width="2" counter="2" countinuous="0" func="0" value0="1" value1="0" trigger="2"/>
+            <MatchUnit index="1" enabled="1" match_type="0" counter_enable="0" counter_width="2" counter="2" countinuous="0" func="0" value0="10001" value1="00000" trigger="4"/>
+            <MatchUnit index="2" enabled="0" match_type="0" counter_enable="0" counter_width="2" counter="2" countinuous="0" func="0" value0="1010" value1="0000" trigger="2"/>
             <MatchUnit index="3" enabled="0" match_type="0" counter_enable="0" counter_width="2" counter="2" countinuous="0" func="0" value0="0001" value1="0000" trigger="3"/>
             <MatchUnit index="4" enabled="0" match_type="0" counter_enable="0" counter_width="2" counter="2" countinuous="0" func="0" value0="" value1=""/>
             <MatchUnit index="5" enabled="0" match_type="0" counter_enable="0" counter_width="2" counter="2" countinuous="0" func="0" value0="" value1=""/>
@@ -114,5 +115,5 @@
             <Expression>M1</Expression>
         </Expressions>
     </AoCore>
-    <GAO_ID>1100100010100101</GAO_ID>
+    <GAO_ID>1101001100111111</GAO_ID>
 </GAO_CONFIG>
