@@ -164,7 +164,8 @@ logic [15:0]        i_udp_ipv4_sign        ;
 logic               o_ddr3_data_upd_req;
 logic               o_udp_frame_down   ;
 logic               o_busy             ;
-logic [3:0]         i_udp_state;
+logic [3:0]         i_udp_state        ;
+logic [6:0]         o_req_128_rank     ;
 
 logic rst_mjpeg, mjpeg_clk, mjpeg_de, mjpeg_de_o;
 logic [23:0] mjpeg_data_in;
@@ -217,6 +218,7 @@ dpb_master_top ddr3_master0(
     .i_udp128_udp_frame_down       (o_udp_frame_down     ),
     .i_udp128_busy                 (o_busy               ),
     .i_udp_state                   (i_udp_state          ),
+    .i_udp_req_128_rank            (o_req_128_rank       ),
 //----------------dpb---------------//
     .o_dpb_wr_a_rd_data     (o_dpb_wr_a_rd_data  ),
     .o_dpb_wr_a_wr_data     (o_dpb_wr_a_wr_data  ),
@@ -287,6 +289,7 @@ udp_128bit_send udp_128bit_send0(
     .o_udp_frame_down       (o_udp_frame_down     ),
     .o_busy                 (o_busy               ),
     .o_state                (i_udp_state          ),
+    .o_req_128_rank         (o_req_128_rank       ),
 
 //-------udp interface---------------//
     .o_udp_tx_en      (udp_port.I_udp_tx_en       ),
@@ -299,6 +302,9 @@ udp_128bit_send udp_128bit_send0(
     .i_udp_isLoadData (udp_port.O_udp_isLoadData  ),
     .i_1Byte_pass     (udp_port.O_1Byte_pass      )
 );
+logic mjpeg_de_o_bef, mjpeg_de_pos;
+assign mjpeg_de_pos = (~mjpeg_de_o_bef)&&mjpeg_de_o;
+always@(posedge mjpeg_clk) mjpeg_de_o_bef <= mjpeg_de_o;
 MJPEG_Encoder_Top MJPEG_Encoder0(
     .clk        (mjpeg_clk              ), //input clk
     .rstn       (rst_mjpeg              ), //input rstn
@@ -348,10 +354,18 @@ MJPEG_Encoder_Top MJPEG_Encoder0(
 //     .wreb   (o_dpb_rd_b_wr_en       )  //input wreb
 // );
 
+logic o_dpb_wr_clk_half;
+initial o_dpb_wr_clk_half <= 1'd0;
+always@(posedge cam_port.cmos_pclk or negedge rst_n) begin
+if(~rst_n) o_dpb_wr_clk_half <= 1'd0;
+else o_dpb_wr_clk_half <= ~o_dpb_wr_clk_half;
+end
+
 Gowin_DPB_128_2048 Gowin_DPB_WR0(
     .douta  (o_dpb_wr_a_rd_data     ), //output [63:0] douta
     .dina   (o_dpb_wr_a_wr_data     ), //input [63:0] dina
     .ada    (o_dpb_wr_a_addr        ), //input [9:0] ada
+    // .clka   (o_dpb_wr_clk_half         ), //input clka
     .clka   (o_dpb_wr_a_clk         ), //input clka
     .cea    (o_dpb_wr_a_cea         ), //input cea
     .ocea   (o_dpb_wr_a_ocea        ), //input ocea
@@ -361,6 +375,7 @@ Gowin_DPB_128_2048 Gowin_DPB_WR0(
     .doutb  (o_dpb_wr_b_rd_data     ), //output [63:0] doutb
     .dinb   (o_dpb_wr_b_wr_data     ), //input [63:0] dinb
     .adb    (o_dpb_wr_b_addr        ), //input [9:0] adb
+    // .clkb   (o_dpb_wr_clk_half         ), //input clkb
     .clkb   (o_dpb_wr_b_clk         ), //input clkb
     .oceb   (o_dpb_wr_b_cea         ), //input oceb
     .ceb    (o_dpb_wr_b_ocea        ), //input ceb

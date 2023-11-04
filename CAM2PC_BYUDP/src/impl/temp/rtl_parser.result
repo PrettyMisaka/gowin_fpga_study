@@ -1,0 +1,206 @@
+[
+ {
+  "InstFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/my_top.sv",
+  "InstLine" : 2,
+  "InstName" : "my_top",
+  "ModuleFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/my_top.sv",
+  "ModuleLine" : 2,
+  "ModuleName" : "my_top",
+  "SubInsts" : [
+   {
+    "InstFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/my_top.sv",
+    "InstLine" : 87,
+    "InstName" : "cam_top0",
+    "ModuleFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/cam_top.sv",
+    "ModuleLine" : 2,
+    "ModuleName" : "cam_top",
+    "SubInsts" : [
+     {
+      "InstFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/cam_top.sv",
+      "InstLine" : 49,
+      "InstName" : "i2c_config_m0",
+      "ModuleFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/i2c_master/i2c_config.v",
+      "ModuleLine" : 1,
+      "ModuleName" : "i2c_config",
+      "SubInsts" : [
+       {
+        "InstFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/i2c_master/i2c_config.v",
+        "InstLine" : 115,
+        "InstName" : "i2c_master_top_m0",
+        "ModuleFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/i2c_master/i2c_master_top.v",
+        "ModuleLine" : 1,
+        "ModuleName" : "i2c_master_top",
+        "SubInsts" : [
+         {
+          "InstFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/i2c_master/i2c_master_top.v",
+          "InstLine" : 232,
+          "InstName" : "byte_controller",
+          "ModuleFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/i2c_master/i2c_master_byte_ctrl.v",
+          "ModuleLine" : 75,
+          "ModuleName" : "i2c_master_byte_ctrl",
+          "SubInsts" : [
+           {
+            "InstFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/i2c_master/i2c_master_byte_ctrl.v",
+            "InstLine" : 146,
+            "InstName" : "bit_controller",
+            "ModuleFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/i2c_master/i2c_master_bit_ctrl.v",
+            "ModuleLine" : 143,
+            "ModuleName" : "i2c_master_bit_ctrl"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "InstFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/cam_top.sv",
+      "InstLine" : 74,
+      "InstName" : "lut_ov5640_rgb565_1024_768_m0",
+      "ModuleFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/cam/lut_ov5640_rgb565_1024_768.v",
+      "ModuleLine" : 1,
+      "ModuleName" : "lut_ov5640_rgb565_1024_768"
+     },
+     {
+      "InstFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/cam_top.sv",
+      "InstLine" : 79,
+      "InstName" : "my_cmos_8_16bit_m0",
+      "ModuleFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/cmos_8_16bit.v",
+      "ModuleLine" : 1,
+      "ModuleName" : "my_cmos_8_16bit"
+     },
+     {
+      "InstFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/cam_top.sv",
+      "InstLine" : 91,
+      "InstName" : "cmos_pll_m0",
+      "ModuleFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/gowin_rpll/cmos_pll.v",
+      "ModuleLine" : 10,
+      "ModuleName" : "cmos_pll"
+     }
+    ]
+   },
+   {
+    "InstFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/my_top.sv",
+    "InstLine" : 129,
+    "InstName" : "mac_top0",
+    "ModuleFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/mac_top.sv",
+    "ModuleLine" : 5,
+    "ModuleName" : "mac_top",
+    "SubInsts" : [
+     {
+      "InstFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/mac_top.sv",
+      "InstLine" : 69,
+      "InstName" : "mac0",
+      "ModuleFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/mac.sv",
+      "ModuleLine" : 1,
+      "ModuleName" : "mac",
+      "SubInsts" : [
+       {
+        "InstFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/mac.sv",
+        "InstLine" : 362,
+        "InstName" : "rmii_txd0",
+        "ModuleFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/rmii_txd.sv",
+        "ModuleLine" : 1,
+        "ModuleName" : "rmii_txd"
+       },
+       {
+        "InstFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/mac.sv",
+        "InstLine" : 422,
+        "InstName" : "crc_tx",
+        "ModuleFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/mac.sv",
+        "ModuleLine" : 487,
+        "ModuleName" : "crc8"
+       }
+      ]
+     },
+     {
+      "InstFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/mac_top.sv",
+      "InstLine" : 103,
+      "InstName" : "mac_smi",
+      "ModuleFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/smi.sv",
+      "ModuleLine" : 2,
+      "ModuleName" : "smi",
+      "SubInsts" : [
+       {
+        "InstFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/smi.sv",
+        "InstLine" : 96,
+        "InstName" : "ct",
+        "ModuleFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/smi.sv",
+        "ModuleLine" : 111,
+        "ModuleName" : "SMI_ct"
+       }
+      ]
+     },
+     {
+      "InstFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/mac_top.sv",
+      "InstLine" : 122,
+      "InstName" : "rpll_6m",
+      "ModuleFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/gowin_rpll/gowin_rpll_6M.v",
+      "ModuleLine" : 10,
+      "ModuleName" : "Gowin_rPLL_6M"
+     }
+    ]
+   },
+   {
+    "InstFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/my_top.sv",
+    "InstLine" : 190,
+    "InstName" : "ddr3_master0",
+    "ModuleFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/dpb_master/dpb_master_top.sv",
+    "ModuleLine" : 1,
+    "ModuleName" : "dpb_master_top",
+    "SubInsts" : [
+     {
+      "InstFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/dpb_master/dpb_master_top.sv",
+      "InstLine" : 159,
+      "InstName" : "dpb_master_cmd0",
+      "ModuleFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/dpb_master/dpb_master_cmd.sv",
+      "ModuleLine" : 1,
+      "ModuleName" : "dpb_master_cmd"
+     },
+     {
+      "InstFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/dpb_master/dpb_master_top.sv",
+      "InstLine" : 192,
+      "InstName" : "dpb_master_wr0",
+      "ModuleFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/dpb_master/dpb_master_wr.sv",
+      "ModuleLine" : 1,
+      "ModuleName" : "dpb_master_wr"
+     }
+    ]
+   },
+   {
+    "InstFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/my_top.sv",
+    "InstLine" : 273,
+    "InstName" : "udp_128bit_send0",
+    "ModuleFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/udp_128bit_send.sv",
+    "ModuleLine" : 1,
+    "ModuleName" : "udp_128bit_send"
+   },
+   {
+    "InstFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/my_top.sv",
+    "InstLine" : 305,
+    "InstName" : "MJPEG_Encoder0",
+    "ModuleFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/mjpeg_encoder/mjpeg_encoder.v",
+    "ModuleLine" : 31207,
+    "ModuleName" : "MJPEG_Encoder_Top",
+    "SubInsts" : [
+     {
+      "InstFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/mjpeg_encoder/mjpeg_encoder.v",
+      "InstLine" : 31226,
+      "InstName" : "mjpeg_encoder_top",
+      "ModuleFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/mjpeg_encoder/mjpeg_encoder.v",
+      "ModuleLine" : 1,
+      "ModuleName" : "~mjpeg_encoder_top.MJPEG_Encoder_Top"
+     }
+    ]
+   },
+   {
+    "InstFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/my_top.sv",
+    "InstLine" : 361,
+    "InstName" : "Gowin_DPB_WR0",
+    "ModuleFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/gowin_dpb/gowin_dpb/gowin_dpb.v",
+    "ModuleLine" : 10,
+    "ModuleName" : "Gowin_DPB_128_2048"
+   }
+  ]
+ }
+]

@@ -1,0 +1,97 @@
+{
+ "Device" : "GW2A-18C",
+ "Files" : [
+  {
+   "Path" : "F:/Github/gowin/CAM2PC_BYUDP/src/cam/lut_ov5640_rgb565_1024_768.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "F:/Github/gowin/CAM2PC_BYUDP/src/cam_top.sv",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "F:/Github/gowin/CAM2PC_BYUDP/src/cmos_8_16bit.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "F:/Github/gowin/CAM2PC_BYUDP/src/dpb_master/dpb_master_cmd.sv",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "F:/Github/gowin/CAM2PC_BYUDP/src/dpb_master/dpb_master_top.sv",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "F:/Github/gowin/CAM2PC_BYUDP/src/dpb_master/dpb_master_wr.sv",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "F:/Github/gowin/CAM2PC_BYUDP/src/gowin_dpb/gowin_dpb/gowin_dpb.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "F:/Github/gowin/CAM2PC_BYUDP/src/gowin_rpll/cmos_pll.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "F:/Github/gowin/CAM2PC_BYUDP/src/gowin_rpll/gowin_rpll_6M.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "F:/Github/gowin/CAM2PC_BYUDP/src/i2c_master/i2c_config.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "F:/Github/gowin/CAM2PC_BYUDP/src/i2c_master/i2c_master_bit_ctrl.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "F:/Github/gowin/CAM2PC_BYUDP/src/i2c_master/i2c_master_byte_ctrl.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "F:/Github/gowin/CAM2PC_BYUDP/src/i2c_master/i2c_master_defines.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "F:/Github/gowin/CAM2PC_BYUDP/src/i2c_master/i2c_master_top.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "F:/Github/gowin/CAM2PC_BYUDP/src/mac.sv",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "F:/Github/gowin/CAM2PC_BYUDP/src/mac_top.sv",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "F:/Github/gowin/CAM2PC_BYUDP/src/mjpeg_encoder/mjpeg_encoder.v",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "F:/Github/gowin/CAM2PC_BYUDP/src/my_top.sv",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "F:/Github/gowin/CAM2PC_BYUDP/src/rmii_txd.sv",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "F:/Github/gowin/CAM2PC_BYUDP/src/smi.sv",
+   "Type" : "verilog"
+  },
+  {
+   "Path" : "F:/Github/gowin/CAM2PC_BYUDP/src/udp_128bit_send.sv",
+   "Type" : "verilog"
+  }
+ ],
+ "IncludePath" : [
+
+ ],
+ "LoopLimit" : 2000,
+ "ResultFile" : "F:/Github/gowin/CAM2PC_BYUDP/src/impl/temp/rtl_parser.result",
+ "Top" : "",
+ "VerilogStd" : "sysv",
+ "VhdlStd" : "vhdl_93"
+}

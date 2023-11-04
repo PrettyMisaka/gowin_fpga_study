@@ -101,11 +101,23 @@ assign O_head_down = (state == MAC_UDP_DATA || state == MAC_CRC || state == MAC_
 
 assign O_isLoadData = (state == MAC_UDP_DATA)?isSaveFlag:1'd0;
 
+logic [31:0] delay_1s_cnt_27mhz;
+logic [7:0] frame_down_req_cnt;
+logic [7:0] frame_down_req_cnt_save;
+
 always_ff@(posedge I_clk50m or negedge I_rst)begin
     if(!I_rst)begin
         variableRST();
     end
     else begin
+        if(delay_1s_cnt_27mhz == 32'd50000000 - 32'd1 )begin
+            delay_1s_cnt_27mhz <= 1'd0;
+            frame_down_req_cnt          <= 1'd0;
+            frame_down_req_cnt_save <= frame_down_req_cnt;
+        end
+        else begin
+            delay_1s_cnt_27mhz <= delay_1s_cnt_27mhz + 1'd1;
+        end
         case(state)
         MAC_IDLE:begin
             if(I_en)begin
@@ -290,8 +302,11 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
                 last_o_txen_state <= O_txen;
             end
             if(isSaveFlag == 1'd1)begin
+                if(byte_cnt == 16'd1&&buffer_data == 8'd0)
+                    frame_down_req_cnt <= frame_down_req_cnt + 8'd1;
                 if(byte_cnt == I_dataLen - 16'd1)begin
                     byte_cnt <= 0;
+                    // state <= MAC_END;
                     state <= MAC_CRC;
                     mac_adr_buf <= 48'd0;
                     crc_forcr_en <= 1;
@@ -336,7 +351,7 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
             if(byte_cnt == 16'd3 - 16'd1)begin
                 O_txen <= 0;
             end
-            if(byte_cnt == 16'd48 - 16'd1)begin
+            if(byte_cnt == 16'd32 - 16'd1)begin
                 state <= MAC_IDLE;
                 variableRST();
             end

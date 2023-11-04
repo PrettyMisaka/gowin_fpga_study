@@ -15,6 +15,7 @@ module udp_128bit_send(
     output logic        o_udp_frame_down        ,
     output logic        o_busy                  ,
     output logic [3:0]  o_state                 ,
+    output logic [6:0]  o_req_128_rank          ,
 
 //-------udp interface---------------//
     output logic        o_udp_tx_en      ,
@@ -98,7 +99,7 @@ always@(posedge i_udp_clk50m or negedge i_rst_n)begin
     end
     else begin
         if(delay_en)begin
-            if(delay_cnt50m == 16'd100) delay_cnt50m <= delay_cnt50m;
+            if(delay_cnt50m == 16'd50) delay_cnt50m <= delay_cnt50m;
             else delay_cnt50m <= delay_cnt50m + 16'd1;
         end
         if(delay_1s_cnt_27mhz == 32'd50000000 - 32'd1 )begin
@@ -126,7 +127,7 @@ always@(posedge i_udp_clk50m or negedge i_rst_n)begin
             HEAD_DOWN:begin
                     // wrdata_buf <= {i_udp_last_frame_flag,i_mjpeg_frame_rank,112'd0};
                 if(i_udp_head_down)begin
-                    wrdata_buf <= {i_udp_last_frame_buf,i_mjpeg_frame_rank,112'd0};
+                    wrdata_buf <= {i_udp_last_frame_flag,i_mjpeg_frame_rank,112'd0};
                     state <= SIGN_BYTE_2;
                     o_udp_tx_de <= 1'd1;
                     o_udp_tx_en <= 1'd0;
@@ -137,7 +138,7 @@ always@(posedge i_udp_clk50m or negedge i_rst_n)begin
                     o_udp_tx_de <= 1'd1;
                     o_udp_tx_en <= 1'd1;
                 end
-                if(delay_cnt50m == 16'd100&&i_udp_busy == 1'd0) state <= FINISH;
+                if(delay_cnt50m == 16'd50&&i_udp_busy == 1'd0) state <= FINISH;
                 delay_en <= 1'd1;
             end
             SIGN_BYTE_2:begin
@@ -149,12 +150,14 @@ always@(posedge i_udp_clk50m or negedge i_rst_n)begin
                     udp_jpeg_len <= i_udp_jpeg_len;
                     udp_jpeg_data_cnt <= 16'd0;
                 end
+                o_req_128_rank <= 1'd1;
             end
             WAIT_BYTE_LOAD:begin
                 if(i_udp_head_down && i_udp_isLoadData)begin
                     if(wrdata_byte_cnt == 5'd0)begin
                         wrdata_buf <= i_ddr3_udp_wrdata;
                         o_ddr3_data_upd_req_delay_val <= 1'd1;
+                        o_req_128_rank <= o_req_128_rank + 7'd1;
                     end
                     else begin
                         wrdata_buf <= {wrdata_buf[119:0],8'd0};

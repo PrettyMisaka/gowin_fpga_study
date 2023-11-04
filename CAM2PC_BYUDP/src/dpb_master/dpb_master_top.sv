@@ -32,6 +32,7 @@ module dpb_master_top#(
     input                      i_udp128_udp_frame_down        ,
     input                      i_udp128_busy                  ,
     input  [3:0]               i_udp_state                    ,
+    input  [6:0]               i_udp_req_128_rank             ,
 //----------------dpb---------------//
     input        [127:0]        o_dpb_wr_a_rd_data     ,
     output logic [127:0]        o_dpb_wr_a_wr_data     ,
@@ -91,13 +92,12 @@ enum logic [7:0] {
 } state_main;
 task task_rst();
     mjpeg_busy  <= 0;
-    o_mjpeg_rst <= 0;
     state_main <= MAIN_IDLE_HREFPOS;
     cam_new_frame <= 1'd0;
     o_mjpeg_rst <= 0;
     mjpeg_data_de <= 1'd0;
     mjpeg_delay_cnt <= 6'd0;
-    mjpeg_delay_down <= 1'd0;
+    mjpeg_delay_down <= 1'd1;
 endtask
 initial task_rst();
 always@(posedge i_cam_pclk or negedge rst_n)begin
@@ -124,15 +124,15 @@ always@(posedge i_cam_pclk or negedge rst_n)begin
                         if(mjpeg_busy == 0 && cam_new_frame )begin
                             mjpeg_data_de <= 1'd1;
                             mjpeg_busy <= 1'd1;
-                            o_mjpeg_rst <= 1'd1;
                             state_main <= MAIN_MJPEG_DOWN;
                         end
                     end
+                    o_mjpeg_rst <= 1'd1;
                 end
                 MAIN_MJPEG_DOWN:begin
                     if(i_mjpeg_down)begin
                         state_main <= MAIN_IDLE_HREFPOS;
-                        o_mjpeg_rst <= 1'd0;
+                        o_mjpeg_rst <= 1'd1;
                         mjpeg_busy <= 1'd0;
                     end
                 end
@@ -179,7 +179,8 @@ dpb_master_cmd dpb_master_cmd0(
     .i_udp128_ddr3_data_upd_req    (i_udp128_ddr3_data_upd_req  ),
     .i_udp128_udp_frame_down       (i_udp128_udp_frame_down     ),
     .i_udp128_busy                 (i_udp128_busy               ),
-
+    .i_udp_req_128_rank            (i_udp_req_128_rank          ),
+    
     .o_ddr3_master_wr_req          (o_ddr3_master_wr_req          ),
     .o_ddr3_master_wr_frame_down   (o_ddr3_master_wr_frame_down   ),
     .o_ddr3_master_wr_udp_rank     (o_ddr3_master_wr_udp_rank     ),
