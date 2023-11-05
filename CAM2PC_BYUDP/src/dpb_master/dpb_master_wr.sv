@@ -67,7 +67,7 @@ logic [31:0] jpeg_byte_cnt;
 logic [31:0] jpeg_byte_cnt_save;
 
 enum logic[3:0] {
-    MJPEG_WR_IDLE, MJPEG_WR_HALF1, MJPEG_WR_HALF2, MJPEG_WR_DOWN
+    MJPEG_WR_IDLE, MJPEG_WR_HEAD_DOWN, MJPEG_WR_DOWN
 } state_mjpeg_wr;
 task taskRst();
     error               <= 1'd1;
@@ -161,30 +161,40 @@ always@(posedge i_pclk or negedge i_rst_n)begin
             end
             MJPEG_WR_DOWN:begin
                 if(dpb_wr_addr_tmp == UDP_FRAME_MAX_SIZE_128||frame_end_task_state)begin
-                    dpb_wr_rank_working <= dpb_wr_rank_working + 4'd1;
-                    dpb_wr_rank_down    <= dpb_wr_rank_working;
+                    state_mjpeg_wr <= MJPEG_WR_HEAD_DOWN;
+                    o_dpb_wr_a_wr_en    <= 1'd1;
                     dpb_wr_addr_tmp     <= 7'd0;
                     // wr_data_byte_cnt    <= 8'd0;
-                    if(o_ddr3_master_wr_req)    error <= 1'd1;
-                    if(frame_end_task_state)begin
-                        o_ddr3_master_wr_req        <= 1'd0;
-                    end
-                    else begin
-                        o_ddr3_master_wr_req        <= 1'd1;
-                    end
-                    wr_req_cnt <= wr_req_cnt + 1'd1;
                     o_ddr3_master_wr_buf_128cnt <= dpb_wr_addr_buf;
                     o_ddr3_master_wr_udp_rank <= o_ddr3_master_wr_udp_rank + 8'd1;
 
-                    if(frame_end_task_state)begin
-                        frame_end_task_state        <= 1'd0;
-                        o_ddr3_master_wr_frame_down_val <= 1'd1;
-                    end
-                    else
-                        o_ddr3_master_wr_frame_down_val <= 1'd0;
+                    o_dpb_wr_a_wr_data <= {frame_end_task_state,7'd0,o_ddr3_master_wr_udp_rank + 8'd1,//2byte
+                                            1'd0,dpb_wr_addr_buf,2'd0,o_ddr3_master_wr_buf_Bytecnt,//2byte
+                                                96'd0};
                 end
-                o_dpb_wr_a_wr_en    <= 1'd0;
+                else begin
+                    o_dpb_wr_a_wr_en    <= 1'd0;
+                    state_mjpeg_wr      <= MJPEG_WR_IDLE;
+                end
+            end
+            MJPEG_WR_HEAD_DOWN:begin
+                dpb_wr_rank_working <= dpb_wr_rank_working + 4'd1;
+                dpb_wr_rank_down    <= dpb_wr_rank_working;
+                if(frame_end_task_state)begin
+                    o_ddr3_master_wr_req        <= 1'd0;
+                end
+                else begin
+                    o_ddr3_master_wr_req        <= 1'd1;
+                end
+                wr_req_cnt          <= wr_req_cnt + 1'd1;
                 state_mjpeg_wr      <= MJPEG_WR_IDLE;
+                
+                if(frame_end_task_state)begin
+                    frame_end_task_state        <= 1'd0;
+                    o_ddr3_master_wr_frame_down_val <= 1'd1;
+                end
+                else
+                    o_ddr3_master_wr_frame_down_val <= 1'd0;
             end
         endcase
     end
