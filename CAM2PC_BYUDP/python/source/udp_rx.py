@@ -35,8 +35,8 @@ time_start = time.time()
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 # data, addr = sock.recvfrom(1500)
 # print(data,addr,len(data))
-cv2.namedWindow("window", cv2.WINDOW_NORMAL)
-if(1):
+# cv2.namedWindow("window", cv2.WINDOW_NORMAL)
+if(0):
     # try:
     while True:
         try:
@@ -81,18 +81,16 @@ if(1):
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
         # break
-while True and 0:
-    try:
-        data, addr = sock.recvfrom(1500)
-        if(data):
-            # print(data[1],",",end="\n")
-            if(data[1] == 0):
-                # break
-                # print("\n")
-                # print(cnt)
-                cnt = cnt + 1
-    except:
-        pass
+while True and 1:
+    # print('working',end=":")
+    data, addr = sock.recvfrom(1500)
+    if(data):
+        # print(data[1],",",end="")
+        if(data[0] == 128):
+            # break
+            # print("\n")
+            # print(cnt)
+            cnt = cnt + 1
             # print(data," ",addr, " ", clen(data))
             # break
         # break

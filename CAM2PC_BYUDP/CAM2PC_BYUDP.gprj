@@ -15,7 +15,8 @@
         <File path="src/ddr3_master/ddr3_master_wr.sv" type="file.verilog" enable="0"/>
         <File path="src/ddr3_master_rd.sv" type="file.verilog" enable="0"/>
         <File path="src/ddr3_memory_interface/DDR3MI.v" type="file.verilog" enable="0"/>
-        <File path="src/dpb_master/dpb_master_cmd.sv" type="file.verilog" enable="1"/>
+        <File path="src/dpb_master/dpb_master_cmd.sv" type="file.verilog" enable="0"/>
+        <File path="src/dpb_master/dpb_master_cmd_50m.sv" type="file.verilog" enable="1"/>
         <File path="src/dpb_master/dpb_master_top.sv" type="file.verilog" enable="1"/>
         <File path="src/dpb_master/dpb_master_wr.sv" type="file.verilog" enable="1"/>
         <File path="src/gowin_dpb/gowin_dpb/gowin_dpb.v" type="file.verilog" enable="1"/>

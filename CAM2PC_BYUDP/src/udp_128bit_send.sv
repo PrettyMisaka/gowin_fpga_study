@@ -75,6 +75,7 @@ logic delay_en;
 logic [31:0] delay_1s_cnt_27mhz;
 logic [7:0] frame_down_req_cnt;
 logic [7:0] frame_down_req_cnt_save;
+logic [64:0] rank_buf;
 task task_rst();
     state <= IDLE;
     o_udp_tx_en <= 1'd0;
@@ -104,8 +105,6 @@ always@(posedge i_udp_clk50m or negedge i_rst_n)begin
         end
         if(delay_1s_cnt_27mhz == 32'd50000000 - 32'd1 )begin
             delay_1s_cnt_27mhz <= 1'd0;
-            frame_down_req_cnt          <= 1'd0;
-            frame_down_req_cnt_save <= frame_down_req_cnt;
         end
         else begin
             delay_1s_cnt_27mhz <= delay_1s_cnt_27mhz + 1'd1;
@@ -128,17 +127,23 @@ always@(posedge i_udp_clk50m or negedge i_rst_n)begin
                     // wrdata_buf <= {i_udp_last_frame_flag,i_mjpeg_frame_rank,112'd0};
                 if(i_udp_head_down)begin
                     wrdata_buf <= {i_udp_last_frame_flag,i_mjpeg_frame_rank,112'd0};
+                    rank_buf <= {rank_buf[55:0],i_mjpeg_frame_rank[7:0]};
                     state <= SIGN_BYTE_2;
                     o_udp_tx_de <= 1'd1;
                     o_udp_tx_en <= 1'd0;
-                    if(i_udp_last_frame_flag)
-                        frame_down_req_cnt <= frame_down_req_cnt + 8'd1;
+                    // if(i_udp_last_frame_flag)
+                    if(i_udp_last_frame_flag)begin
+                        frame_down_req_cnt          <= 8'd0;
+                        frame_down_req_cnt_save <= frame_down_req_cnt + 8'd1;
+                    end
+                    else
+                    frame_down_req_cnt <= frame_down_req_cnt + 8'd1;
                 end
                 else begin
                     o_udp_tx_de <= 1'd1;
                     o_udp_tx_en <= 1'd1;
                 end
-                if(delay_cnt50m == 16'd50&&i_udp_busy == 1'd0) state <= FINISH;
+                // if(delay_cnt50m == 16'd50&&i_udp_busy == 1'd0) state <= FINISH;
                 delay_en <= 1'd1;
             end
             SIGN_BYTE_2:begin
@@ -150,7 +155,7 @@ always@(posedge i_udp_clk50m or negedge i_rst_n)begin
                     udp_jpeg_len <= i_udp_jpeg_len;
                     udp_jpeg_data_cnt <= 16'd0;
                 end
-                o_req_128_rank <= 1'd1;
+                o_req_128_rank <= 7'd1;
             end
             WAIT_BYTE_LOAD:begin
                 if(i_udp_head_down && i_udp_isLoadData)begin

@@ -156,9 +156,10 @@ wire [6:0]  o_ddr3_master_wr_buf_128cnt  ;
 wire [5:0]  o_ddr3_master_wr_buf_Bytecnt ;
 wire        o_ddr3_master_wr_down        ;
 
-dpb_master_cmd dpb_master_cmd0(
+dpb_master_cmd_50m dpb_master_cmd0(
     .i_pclk        (i_cam_pclk  ),
     .i_rst_n       (rst_n_delay ),
+    .i_clk50m     (clk50m),
     
     .o_dpb_wr_b_rd_data      (o_dpb_wr_b_rd_data     ),
     .o_dpb_wr_b_wr_data      (o_dpb_wr_b_wr_data     ),
@@ -180,14 +181,16 @@ dpb_master_cmd dpb_master_cmd0(
     .i_udp128_udp_frame_down       (i_udp128_udp_frame_down     ),
     .i_udp128_busy                 (i_udp128_busy               ),
     .i_udp_req_128_rank            (i_udp_req_128_rank          ),
+    .i_udp_state                   (i_udp_state                 ),
     
-    .o_ddr3_master_wr_req          (o_ddr3_master_wr_req          ),
-    .o_ddr3_master_wr_frame_down   (o_ddr3_master_wr_frame_down   ),
-    .o_ddr3_master_wr_udp_rank     (o_ddr3_master_wr_udp_rank     ),
-    .o_ddr3_master_wr_buf_rank     (o_ddr3_master_wr_buf_rank     ),
-    .o_ddr3_master_wr_buf_128cnt   (o_ddr3_master_wr_buf_128cnt   ),
-    .o_ddr3_master_wr_buf_Bytecnt  (o_ddr3_master_wr_buf_Bytecnt  ),
-    .o_ddr3_master_wr_down         (o_ddr3_master_wr_down         )
+    // .o_ddr3_master_wr_req          (o_ddr3_master_wr_req          ),
+    // .o_ddr3_master_wr_frame_down   (o_ddr3_master_wr_frame_down   ),
+    // .o_ddr3_master_wr_udp_rank     (o_ddr3_master_wr_udp_rank     ),
+    // .o_ddr3_master_wr_buf_rank     (o_ddr3_master_wr_buf_rank     ),
+    // .o_ddr3_master_wr_buf_128cnt   (o_ddr3_master_wr_buf_128cnt   ),
+    // .o_ddr3_master_wr_buf_Bytecnt  (o_ddr3_master_wr_buf_Bytecnt  ),
+    // .o_ddr3_master_wr_down         (o_ddr3_master_wr_down         )
+    .o_ddr3_master_wr_buf_rank     (o_ddr3_master_wr_buf_rank     )
 );
 
 dpb_master_wr dpb_master_wr0(

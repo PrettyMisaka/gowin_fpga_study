@@ -83,32 +83,6 @@ typedef struct{
 wire cmos_scl, cmos_sda;
 inout_typedef cam_inout;
 inout_typedef cam_scl_inout;
-// logic rst_n_pwd;
-cam_top cam_top0(
-	.clk        (clk        ),//27mhz 
-	.rst_n      (rst.cam    ),
-    // .rst_n_pwd  (rst_n_pwd  ),
-    // .rst_n_pll  (1'd1       ),
-    .cam_port   (cam_port   ),
-	
-    .cam_init_done  (cam_user.cam_init_done),
-    .vsync          (cam_user.vsync        ),
-    .de             (cam_user.de           ),
-	.half_cmos_clk  (cam_user.half_cmos_clk),
-    .data_bgr565    (cam_user.data_bgr565  ),
-    .data_bgr888    (cam_user.data_bgr888  ),
-    
-	// .cmos_scl       (cmos_scl              ),          //cmos i2c clock
-	// .cmos_sda       (cmos_sda              ) 
-
-    .scl_i			(cam_scl_inout.in	    ),
-    .scl_o			(cam_scl_inout.out	    ),
-    .scl_out_en		(cam_scl_inout.out_en   ),
-
-    .sda_i			(cam_inout.in		   ),
-    .sda_o			(cam_inout.out		   ),
-    .sda_out_en		(cam_inout.out_en	   )
-);
 
 struct {
     logic I_udp_tx_en , I_udp_tx_de;
@@ -152,6 +126,36 @@ mac_top mac_top0(
     .mdio_i(mac_inout.in),
     .mdio_o(mac_inout.out),
     .mdio_out_en(mac_inout.out_en)
+);
+udp_128bit_send udp_128bit_send0(
+    .i_udp_clk50m   (clk50m),
+    .i_rst_n        (rst.ddr3_master ),
+    .i_en           (i_en  ),
+
+//-------module interface-----------//
+    .i_ddr3_udp_wrdata      (i_ddr3_udp_wrdata    ),
+    .i_udp_last_frame_flag  (i_udp_last_frame_flag),
+    .i_mjpeg_frame_rank     (i_mjpeg_frame_rank   ),
+    .i_udp_jpeg_len         (i_udp_jpeg_len       ),
+    // .i_udp_writing_head     (i_udp_writing_head   ),
+    .i_udp_ipv4_sign        (i_udp_ipv4_sign      ),
+
+    .o_ddr3_data_upd_req    (o_ddr3_data_upd_req  ),
+    .o_udp_frame_down       (o_udp_frame_down     ),
+    .o_busy                 (o_busy               ),
+    .o_state                (i_udp_state          ),
+    .o_req_128_rank         (o_req_128_rank       ),
+
+//-------udp interface---------------//
+    .o_udp_tx_en      (udp_port.I_udp_tx_en       ),
+    .o_udp_tx_de      (udp_port.I_udp_tx_de       ),
+    .o_udp_data       (udp_port.I_udp_data        ),
+    .o_udp_data_len   (udp_port.I_udp_data_len    ),
+    .o_ipv4_sign      (udp_port.I_ipv4_sign       ),
+    .i_udp_head_down  (udp_port.O_head_down       ),
+    .i_udp_busy       (udp_port.O_udp_busy        ),
+    .i_udp_isLoadData (udp_port.O_udp_isLoadData  ),
+    .i_1Byte_pass     (udp_port.O_1Byte_pass      )
 );
 
 logic               i_en;
@@ -272,36 +276,6 @@ dpb_master_top ddr3_master0(
     // .i_ddr3_rd_data_de  (rd_data_valid  ),
     // .i_ddr3_rd_data_end (rd_data_end    )
 );
-udp_128bit_send udp_128bit_send0(
-    .i_udp_clk50m   (clk50m),
-    .i_rst_n        (rst.ddr3_master ),
-    .i_en           (i_en  ),
-
-//-------module interface-----------//
-    .i_ddr3_udp_wrdata      (i_ddr3_udp_wrdata    ),
-    .i_udp_last_frame_flag  (i_udp_last_frame_flag),
-    .i_mjpeg_frame_rank     (i_mjpeg_frame_rank   ),
-    .i_udp_jpeg_len         (i_udp_jpeg_len       ),
-    // .i_udp_writing_head     (i_udp_writing_head   ),
-    .i_udp_ipv4_sign        (i_udp_ipv4_sign      ),
-
-    .o_ddr3_data_upd_req    (o_ddr3_data_upd_req  ),
-    .o_udp_frame_down       (o_udp_frame_down     ),
-    .o_busy                 (o_busy               ),
-    .o_state                (i_udp_state          ),
-    .o_req_128_rank         (o_req_128_rank       ),
-
-//-------udp interface---------------//
-    .o_udp_tx_en      (udp_port.I_udp_tx_en       ),
-    .o_udp_tx_de      (udp_port.I_udp_tx_de       ),
-    .o_udp_data       (udp_port.I_udp_data        ),
-    .o_udp_data_len   (udp_port.I_udp_data_len    ),
-    .o_ipv4_sign      (udp_port.I_ipv4_sign       ),
-    .i_udp_head_down  (udp_port.O_head_down       ),
-    .i_udp_busy       (udp_port.O_udp_busy        ),
-    .i_udp_isLoadData (udp_port.O_udp_isLoadData  ),
-    .i_1Byte_pass     (udp_port.O_1Byte_pass      )
-);
 logic mjpeg_de_o_bef, mjpeg_de_pos;
 assign mjpeg_de_pos = (~mjpeg_de_o_bef)&&mjpeg_de_o;
 always@(posedge mjpeg_clk) mjpeg_de_o_bef <= mjpeg_de_o;
@@ -381,6 +355,33 @@ Gowin_DPB_128_2048 Gowin_DPB_WR0(
     .ceb    (o_dpb_wr_b_ocea        ), //input ceb
     .resetb (o_dpb_wr_b_rst_n       ), //input resetb
     .wreb   (o_dpb_wr_b_wr_en       )  //input wreb
+);
+
+// logic rst_n_pwd;
+cam_top cam_top0(
+	.clk        (clk        ),//27mhz 
+	.rst_n      (rst.cam    ),
+    // .rst_n_pwd  (rst_n_pwd  ),
+    // .rst_n_pll  (1'd1       ),
+    .cam_port   (cam_port   ),
+	
+    .cam_init_done  (cam_user.cam_init_done),
+    .vsync          (cam_user.vsync        ),
+    .de             (cam_user.de           ),
+	.half_cmos_clk  (cam_user.half_cmos_clk),
+    .data_bgr565    (cam_user.data_bgr565  ),
+    .data_bgr888    (cam_user.data_bgr888  ),
+    
+	// .cmos_scl       (cmos_scl              ),          //cmos i2c clock
+	// .cmos_sda       (cmos_sda              ) 
+
+    .scl_i			(cam_scl_inout.in	    ),
+    .scl_o			(cam_scl_inout.out	    ),
+    .scl_out_en		(cam_scl_inout.out_en   ),
+
+    .sda_i			(cam_inout.in		   ),
+    .sda_o			(cam_inout.out		   ),
+    .sda_out_en		(cam_inout.out_en	   )
 );
 
 always@(posedge cam_port.cmos_pclk) begin 
