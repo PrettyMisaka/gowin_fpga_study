@@ -303,7 +303,7 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
             end
             if(isSaveFlag == 1'd1)begin
                 if(byte_cnt == 16'd1)begin
-                    if(buffer_data == 8'd0)begin
+                    if(buffer_data == 8'd1)begin
                         frame_down_req_cnt          <= 8'd0;
                         frame_down_req_cnt_save <= frame_down_req_cnt + 8'd1;
                     end
@@ -334,6 +334,7 @@ always_ff@(posedge I_clk50m or negedge I_rst)begin
             16'd3:begin buffer_data <= mac_adr_buf[7:0];   end
             endcase
             if(byte_cnt == 16'd0)begin
+                // mac_adr_buf <= {16'd0,8'b01010101,8'b01010101,8'b01010101,8'b01010101};
                 mac_adr_buf <= {16'd0,
                         {crc_out[24], crc_out[25], crc_out[26], crc_out[27], crc_out[28], crc_out[29], crc_out[30], crc_out[31]},
                         {crc_out[16], crc_out[17], crc_out[18], crc_out[19], crc_out[20], crc_out[21], crc_out[22], crc_out[23]},

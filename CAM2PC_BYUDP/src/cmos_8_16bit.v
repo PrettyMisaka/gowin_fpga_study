@@ -13,7 +13,7 @@ reg working = 0;
 reg [15:0] byte2;
 
 reg [7:0] pdata_o;
-assign o_pdata_bgr888 = i_de ? {pdata_o[7:3],3'd0,pdata_o[2:0],i_pdata[7:5],2'd0,i_pdata[4:0],3'd0} : 24'h0000;//{r,g,b}
+assign o_pdata_bgr888 = i_de ? {i_pdata[4:0],3'd0,pdata_o[2:0],i_pdata[7:5],2'd0,pdata_o[7:3],3'd0} : 24'h0000;//{r,g,b}
 assign o_pdata_bgr565 = i_de ? { pdata_o, i_pdata} : 16'h0000;
 
 reg i_de_bef;

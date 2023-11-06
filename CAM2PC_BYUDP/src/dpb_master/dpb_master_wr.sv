@@ -173,12 +173,12 @@ always@(posedge i_pclk or negedge i_rst_n)begin
                     o_ddr3_master_wr_buf_128cnt <= dpb_wr_addr_buf;
                     o_ddr3_master_wr_udp_rank <= o_ddr3_master_wr_udp_rank + 8'd1;
                     if(frame_end_task_state)begin
-                    o_dpb_wr_a_wr_data <= {frame_end_task_state,7'd0,8'd0,//2byte
+                    o_dpb_wr_a_wr_data <= {frame_end_task_state,3'd0,o_ddr3_master_wr_udp_rank,4'd0,//2byte
                                             1'd0,dpb_wr_addr_buf,2'd0,o_ddr3_master_wr_buf_Bytecnt,//2byte
                                                 64'd0,head_sign};
                     end
                     else begin
-                    o_dpb_wr_a_wr_data <= {frame_end_task_state,7'd0,o_ddr3_master_wr_udp_rank + 8'd1,//2byte
+                    o_dpb_wr_a_wr_data <= {frame_end_task_state,3'd0,o_ddr3_master_wr_udp_rank,4'd0,//2byte
                                             1'd0,dpb_wr_addr_buf,2'd0,o_ddr3_master_wr_buf_Bytecnt,//2byte
                                                 64'd0,head_sign};
                     end

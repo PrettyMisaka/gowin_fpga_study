@@ -115,16 +115,50 @@ always@(posedge i_clk50m or negedge i_rst_n)begin
                 o_udp128_udp_ipv4_sign <= o_udp128_udp_ipv4_sign + 16'd2;
             end
             if(rd_delay_cnt == 8'd2)begin
+                o_udp128_en <= 1'd1;
                 rd_head_en <= 1'd0;
+            end
+            if(rd_delay_cnt == 8'd30)begin
                 state <= FRAME_DOWN;
                 rd_delay_cnt <= 8'd0;
-                o_udp128_en <= 1'd1;
             end
             else begin
                 rd_delay_cnt <= rd_delay_cnt + 8'd1;
             end
         end
         FRAME_DOWN:begin
+            if(i_udp_state == 4'd3)
+                o_udp128_en <= 1'd0;
+            if(~i_udp128_busy)begin
+                rd_head_en <= 1'd1;
+                if(o_udp128_mjpeg_frame_rank[0] == 1'd0)begin
+                    state <= IDLE;
+                    dpb_frame_head_p <= dpb_frame_head_p + 4'd1;
+                end
+                else begin
+                    state <= SEND_AGAIN;
+                    dpb_frame_head_p <= dpb_frame_head_p;
+                end
+            end
+            else begin
+                rd_head_en <= 1'd0;
+            end
+            rd_head_en <= 1'd0;
+        end
+        SEND_AGAIN:begin
+            if(rd_delay_cnt == 8'd2)begin
+                o_udp128_en <= 1'd1;
+                rd_head_en <= 1'd0;
+            end
+            if(rd_delay_cnt == 8'd30)begin
+                state <= FINISH;
+                rd_delay_cnt <= 8'd0;
+            end
+            else begin
+                rd_delay_cnt <= rd_delay_cnt + 8'd1;
+            end
+        end
+        FINISH:begin
             if(i_udp_state == 4'd3)
                 o_udp128_en <= 1'd0;
             if(~i_udp128_busy)begin
