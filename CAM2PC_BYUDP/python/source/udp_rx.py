@@ -62,25 +62,26 @@ while True and 1:
                 # print(1)
                 # print(rank + 1)
                 jpeg_data = jpeg_data + data[2:]
-                # pilImg.open(jpeg_data)
-                if(0):
-                    image = pilImg.open(io.BytesIO(jpeg_data))
-                    # fixed_image = pilImgOps.exif_transpose(image)
-                    # image.show()
-                    print(image.format, image.size, image.mode)
-                else:
-                    sock.close()
-                    jpeg_array = np.frombuffer(jpeg_data, dtype=np.uint8)
-                    image = cv2.imdecode(jpeg_array, cv2.IMREAD_COLOR)
-                    cv2.imshow('window', image)
+                sock.close()
+                if(data[-2:] == b'\xff\xd9'):
+                    # pilImg.open(jpeg_data)
+                    if(0):
+                        image = pilImg.open(io.BytesIO(jpeg_data))
+                        # fixed_image = pilImgOps.exif_transpose(image)
+                        # image.show()
+                        print(image.format, image.size, image.mode)
+                    else:
+                        jpeg_array = np.frombuffer(jpeg_data, dtype=np.uint8)
+                        image = cv2.imdecode(jpeg_array, cv2.IMREAD_COLOR)
+                        cv2.imshow('window', image)
                     # height, width, channels = image.shape
                     # sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 0)
                     # print(f'图像的分辨率为 {width}x{height} 像素')
                     # print(jpeg_data)
-                    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 0)
-                    sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 72000)
-                    sock.bind((UDP_IP, UDP_PORT))
+                sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 0)
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 72000)
+                sock.bind((UDP_IP, UDP_PORT))
             elif(error == 0 and frame_rank > 0 and rank + 1 == frame_rank):
                 jpeg_data = jpeg_data + data[2:]
                 rank = frame_rank
@@ -106,14 +107,19 @@ while True and 1:
     # print('working',end=":")
     data, addr = sock.recvfrom(1500)
     if(data):
-        print(getRank(data[0:3]),",",end="")
+        # print(getRank(data[0:3]),",",end="")
         if(data[0]//16 == 8):
-            print("\n")
-            # print(cnt)
+            sock.close()
+            # print("\n")
+            print(cnt)
             cnt = cnt + 1
             # print(data," ",addr, " ", clen(data))
             # break
         # break
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 0)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 72000)
+            sock.bind((UDP_IP, UDP_PORT))
         time_tmp = time.time()
         if(time_tmp - time_start > 1):
             time_start = time_tmp
