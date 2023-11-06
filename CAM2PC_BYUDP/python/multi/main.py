@@ -1,7 +1,6 @@
 # import utils.threadUtil as threadUtil
 import queue
 import socket
-import queue
 # import utils.logUtil
 import threading
 import cv2
@@ -10,7 +9,9 @@ import threading
 import time
 import inspect
 import ctypes
-
+import io
+from PIL import Image as pilImage
+import warnings
 class UdpService_Multi:
     """多线程调用UDP服务时使用UdpService_Multi"""
     def __init__(self, host:str, port:int, queue = None, use_queue = False, bufsize=1500):
@@ -112,17 +113,26 @@ def main():
     t.start()
     # threadUtil.MyThread("UDP Server",service.receiver_start)  # 以子线程启动 UDP 接收服务
     print("12")
-    data = b''
     img_data = b''
     rank = 0;
     cv2.namedWindow("window", cv2.WINDOW_NORMAL)
-    data = msg_queue.get()
     error = 0
+    cnt = 0
+    time_start = time.time()
     while True:
         data = msg_queue.get()  # 从消息队列读取信息
         # print("main",getRank(data))
         frame_rank = getRank(data[0:3])
         end_state = (data[0]//16 == 8)
+        # img_data = img_data + data[2:]
+        # print(frame_rank,end=',')
+        if(end_state):
+            pass
+            # print('\n')
+        #     img_data = b''
+        # if cv2.waitKey(1) & 0xFF == ord('q'):
+        #     break
+        # continue
         if(frame_rank == 0):
             img_data = data[2:]
             error = 0
@@ -130,23 +140,38 @@ def main():
         elif(~error and (end_state) and frame_rank == rank + 1):
             # print('down')
             img_data = img_data + data[2:]
-            height = 640
-            width = 480
-            # jpeg_array = np.frombuffer(img_data, dtype=np.uint8)
-            # image = cv2.imdecode(jpeg_array, cv2.IMREAD_COLOR)
+            try:
+                image = pilImage.open(io.BytesIO(img_data))
+                image.verify()
+            except Exception as e:
+                print('Error:', e)
+            jpeg_array = np.frombuffer(img_data, dtype=np.uint8)
+            # try:
+            image = cv2.imdecode(jpeg_array, cv2.IMREAD_COLOR)
+            #     if image is None:
+            #         raise Exception('Failed to load image')
+            cv2.imshow('window', image)
+            # except:
+            #     pass
+            # if(image):
             # height, width, channels = image.shape
-            print(f'图像的分辨率为 {width}x{height} 像素')
+            # print(f'图像的分辨率为 {width}x{height} 像素')
             # if( width and height):
-            #     cv2.imshow('window', image)
-            # msg_queue.queue.clear()
-            # break
+            # try:
+            # print('down',end='')
+            cnt =cnt + 1
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
         elif(~error and frame_rank == 1 + rank):
             rank = frame_rank
             img_data = img_data + data[2:]
         else:
             error = 1
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+        time_tmp = time.time()
+        if(time_tmp - time_start > 1):
+            time_start = time_tmp
+            print(cnt)
+            cnt = 0
     stop_thread(t)
     # t._stop()  # join
     cv2.destroyAllWindows()
