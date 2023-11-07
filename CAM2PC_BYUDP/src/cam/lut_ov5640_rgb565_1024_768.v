@@ -256,8 +256,12 @@ begin
 		10'd233: lut_data <= {8'h78 , 24'h361229};
 		10'd234: lut_data <= {8'h78 , 24'h370952};
 		10'd235: lut_data <= {8'h78 , 24'h370c03}; 
-		10'd236: lut_data <= {8'h78 , 24'h3a0217};// 60Hz max exposure, night mode 5fps
+		10'd236: lut_data <= {8'h78 , 24'h3a0208};// 60Hz max exposure, night mode 5fps
 		10'd237: lut_data <= {8'h78 , 24'h3a0310};// 60Hz max exposure // banding filters are calculated automatically in camera driver
+		// 10'd236: lut_data <= {8'h78 , 24'h3a023d};// 60Hz max exposure, night mode 5fps
+		// 10'd237: lut_data <= {8'h78 , 24'h3a0380};// 60Hz max exposure // banding filters are calculated automatically in camera driver
+		// 10'd236: lut_data <= {8'h78 , 24'h3a0217};// 60Hz max exposure, night mode 5fps
+		// 10'd237: lut_data <= {8'h78 , 24'h3a0310};// 60Hz max exposure // banding filters are calculated automatically in camera driver
 		10'd238: lut_data <= {8'h78 , 24'h3a1417};// 50Hz max exposure, night mode 5fps
 		10'd239: lut_data <= {8'h78 , 24'h3a1510};// 50Hz max exposure     
 		10'd240: lut_data <= {8'h78 , 24'h400402};// BLC 2 lines 

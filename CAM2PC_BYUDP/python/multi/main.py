@@ -104,6 +104,7 @@ def _async_raise(tid, exctype):
         raise SystemError("PyThreadState_SetAsyncExc failed")
 def stop_thread(thread):
     _async_raise(thread.ident, SystemExit)
+
 def main():
     host = "192.168.15.15"  # 设置 host 地址
     port = 11451  # 设置端口号
@@ -119,6 +120,9 @@ def main():
     error = 0
     cnt = 0
     time_start = time.time()
+    msg_queue.queue.clear()  # 从消息队列读取信息
+    last_image = None
+    image_loading = 0
     while True:
         data = msg_queue.get()  # 从消息队列读取信息
         # print("main",getRank(data))
@@ -140,26 +144,11 @@ def main():
         elif(~error and (end_state) and frame_rank == rank + 1):
             # print('down')
             img_data = img_data + data[2:]
-            try:
-                image = pilImage.open(io.BytesIO(img_data))
-                image.verify()
-            except Exception as e:
-                print('Error:', e)
             jpeg_array = np.frombuffer(img_data, dtype=np.uint8)
             # try:
             image = cv2.imdecode(jpeg_array, cv2.IMREAD_COLOR)
-            #     if image is None:
-            #         raise Exception('Failed to load image')
-            cv2.imshow('window', image)
-            # except:
-            #     pass
-            # if(image):
-            # height, width, channels = image.shape
-            # print(f'图像的分辨率为 {width}x{height} 像素')
-            # if( width and height):
-            # try:
-            # print('down',end='')
             cnt =cnt + 1
+            cv2.imshow('window', image)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
         elif(~error and frame_rank == 1 + rank):
