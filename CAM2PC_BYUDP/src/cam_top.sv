@@ -71,7 +71,7 @@ i2c_config i2c_config_m0(
 
 );
 //configure look-up table
-lut_ov5640_rgb565_1024_768 lut_ov5640_rgb565_1024_768_m0(
+lut_ov5640_rgb565_640_480_45 lut_ov5640_rgb565_640_480_45_0(
 	.lut_index                  (lut_index                ),
 	.lut_data                   (lut_data                 )
 );

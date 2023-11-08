@@ -1,0 +1,14 @@
+[General]
+ipc_version=4
+file=mjpeg_encoder_1024_768
+module=MJPEG_Encoder_Top
+target_device=gw2a18c-011
+type=mjpeg_encoder
+version=1.0
+
+[Config]
+DISABLE_IO_INSERTION=true
+IMAGE_COLUMNS_WIDTH=1024
+IMAGE_ROWS_WIDTH=768
+LANG=0
+Synthesis_tool=GowinSynthesis
