@@ -149,6 +149,8 @@ def main():
             image = cv2.imdecode(jpeg_array, cv2.IMREAD_COLOR)
             cnt =cnt + 1
             cv2.imshow('window', image)
+            # height, width, channels = image.shape
+            # print(f'图像的分辨率为 {width}x{height} 像素')
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
         elif(~error and frame_rank == 1 + rank):
@@ -161,6 +163,7 @@ def main():
             time_start = time_tmp
             print(cnt)
             cnt = 0
+            msg_queue.queue.clear()  # 从消息队列读取信息
     stop_thread(t)
     # t._stop()  # join
     cv2.destroyAllWindows()

@@ -118,6 +118,7 @@ always@(posedge i_udp_clk50m or negedge i_rst_n)begin
                     // i_udp_last_frame_buf <= i_udp_last_frame_flag;
                     delay_en <= 1'd1;
                     delay_cnt50m <= 0;
+                    o_req_128_rank <= 7'd1;
                 end
                     o_udp_tx_de <= 1'd1;
                     o_ddr3_data_upd_req_delay_val <= 1'd0;

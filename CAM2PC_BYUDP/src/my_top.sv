@@ -100,6 +100,19 @@ wire mac_mdc, mac_mdio;
 // logic mac_mdio_i, mac_mdio_o, mac_out_en;
 inout_typedef mac_inout;
 // assign mac_mdio = mdio_out_en ? mac_mdio_o : mac_mdio_i;
+
+logic               i_en;
+logic [127:0]       i_ddr3_udp_wrdata      ; 
+logic               i_udp_last_frame_flag  ; 
+logic [14:0]        i_mjpeg_frame_rank     ; 
+logic [15:0]        i_udp_jpeg_len         ; 
+logic               i_udp_writing_head     ; 
+logic [15:0]        i_udp_ipv4_sign        ; 
+logic               o_ddr3_data_upd_req;
+logic               o_udp_frame_down   ;
+logic               o_busy             ;
+logic [3:0]         i_udp_state        ;
+logic [6:0]         o_req_128_rank     ;
 mac_top mac_top0(
     .clk      (clk          ),
     .rst      (rst.mac      ),
@@ -157,19 +170,6 @@ udp_128bit_send udp_128bit_send0(
     .i_udp_isLoadData (udp_port.O_udp_isLoadData  ),
     .i_1Byte_pass     (udp_port.O_1Byte_pass      )
 );
-
-logic               i_en;
-logic [127:0]       i_ddr3_udp_wrdata      ; 
-logic               i_udp_last_frame_flag  ; 
-logic [14:0]        i_mjpeg_frame_rank     ; 
-logic [15:0]        i_udp_jpeg_len         ; 
-logic               i_udp_writing_head     ; 
-logic [15:0]        i_udp_ipv4_sign        ; 
-logic               o_ddr3_data_upd_req;
-logic               o_udp_frame_down   ;
-logic               o_busy             ;
-logic [3:0]         i_udp_state        ;
-logic [6:0]         o_req_128_rank     ;
 
 logic rst_mjpeg, mjpeg_clk, mjpeg_de, mjpeg_de_o;
 logic [23:0] mjpeg_data_in;
@@ -335,7 +335,8 @@ if(~rst_n) o_dpb_wr_clk_half <= 1'd0;
 else o_dpb_wr_clk_half <= ~o_dpb_wr_clk_half;
 end
 
-Gowin_DPB_128_2048 Gowin_DPB_WR0(
+Gowin_DPB Gowin_DPB_WR0(
+// Gowin_DPB_128_2048 Gowin_DPB_WR0(
     .douta  (o_dpb_wr_a_rd_data     ), //output [63:0] douta
     .dina   (o_dpb_wr_a_wr_data     ), //input [63:0] dina
     .ada    (o_dpb_wr_a_addr        ), //input [9:0] ada

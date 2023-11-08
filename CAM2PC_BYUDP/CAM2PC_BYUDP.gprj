@@ -5,15 +5,18 @@
     <Version>5</Version>
     <Device name="GW2A-18C" pn="GW2A-LV18PG256C8/I7">gw2a18c-011</Device>
     <FileList>
-        <File path="src/cam/lut_ov5640_rgb565_1280_960_30.v" type="file.verilog" enable="0"/>
-        <File path="src/cam/lut_ov5640_rgb565_640_480_45.v" type="file.verilog" enable="1"/>
+        <File path="src/cam/lut_ov5640_rgb565_1024_768_30.v" type="file.verilog" enable="1"/>
+        <File path="src/cam/lut_ov5640_rgb565_640_480_45.v" type="file.verilog" enable="0"/>
         <File path="src/cam_top.sv" type="file.verilog" enable="1"/>
         <File path="src/cmos_8_16bit.v" type="file.verilog" enable="1"/>
-        <File path="src/dpb_master/dpb_master_cmd_50m.sv" type="file.verilog" enable="1"/>
-        <File path="src/dpb_master/dpb_master_top.sv" type="file.verilog" enable="1"/>
-        <File path="src/dpb_master/dpb_master_wr.sv" type="file.verilog" enable="1"/>
-        <File path="src/gowin_dpb/gowin_dpb/gowin_dpb.v" type="file.verilog" enable="1"/>
-        <File path="src/gowin_dpb/gowin_dpb_1024_64.v" type="file.verilog" enable="0"/>
+        <File path="src/dpb_master/dpb_master_cmd_50m.sv" type="file.verilog" enable="0"/>
+        <File path="src/dpb_master/dpb_master_top.sv" type="file.verilog" enable="0"/>
+        <File path="src/dpb_master/dpb_master_wr.sv" type="file.verilog" enable="0"/>
+        <File path="src/dpb_master_1024_768/dpb_master_cmd_50m_1024_64.sv" type="file.verilog" enable="1"/>
+        <File path="src/dpb_master_1024_768/dpb_master_top_1024_64.sv" type="file.verilog" enable="1"/>
+        <File path="src/dpb_master_1024_768/dpb_master_wr_1024_64.sv" type="file.verilog" enable="1"/>
+        <File path="src/gowin_dpb/gowin_dpb/gowin_dpb.v" type="file.verilog" enable="0"/>
+        <File path="src/gowin_dpb/gowin_dpb_1024_64.v" type="file.verilog" enable="1"/>
         <File path="src/gowin_rpll/cmos_pll.v" type="file.verilog" enable="1"/>
         <File path="src/gowin_rpll/gowin_rpll_6M.v" type="file.verilog" enable="1"/>
         <File path="src/i2c_master/i2c_config.v" type="file.verilog" enable="1"/>
@@ -23,8 +26,8 @@
         <File path="src/i2c_master/i2c_master_top.v" type="file.verilog" enable="1"/>
         <File path="src/mac.sv" type="file.verilog" enable="1"/>
         <File path="src/mac_top.sv" type="file.verilog" enable="1"/>
-        <File path="src/mjpeg_encoder/mjpeg_encoder.v" type="file.verilog" enable="1"/>
-        <File path="src/mjpeg_encoder/mjpeg_encoder_1024_768.v" type="file.verilog" enable="0"/>
+        <File path="src/mjpeg_encoder/mjpeg_encoder.v" type="file.verilog" enable="0"/>
+        <File path="src/mjpeg_encoder/mjpeg_encoder_1024_768.v" type="file.verilog" enable="1"/>
         <File path="src/my_top.sv" type="file.verilog" enable="1"/>
         <File path="src/rmii_txd.sv" type="file.verilog" enable="1"/>
         <File path="src/smi.sv" type="file.verilog" enable="1"/>

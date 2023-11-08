@@ -1,4 +1,4 @@
-module lut_ov5640_rgb565_640_480_45(
+module lut_ov5640_rgb565_1024_768_30(
 	input[9:0]             lut_index,   //Look-up table address
 	output reg[31:0]       lut_data     //Device address (8bit I2C address), register address, register data
 );
@@ -12,12 +12,10 @@ begin
 	case(lut_index)			  
 		10'd  0: lut_data <= {8'h78 , 24'h310311};// system clock from pad, bit[1]
 		10'd  1: lut_data <= {8'h78 , 24'h300882};// software reset, bit[7]// delay 5ms 
-
 		10'd  2: lut_data <= {8'h78 , 24'h300842};// software power down, bit[6]
 		10'd  3: lut_data <= {8'h78 , 24'h310303};// system clock from PLL, bit[1]
 		10'd  4: lut_data <= {8'h78 , 24'h3017ff};// FREX, Vsync, HREF, PCLK, D[9:6] output enable
 		10'd  5: lut_data <= {8'h78 , 24'h3018ff};// D[5:0], GPIO[1:0] output enable
-
 		10'd  6: lut_data <= {8'h78 , 24'h30341A};// MIPI 10-bit
 		10'd  7: lut_data <= {8'h78 , 24'h303713};// PLL root divider, bit[4], PLL pre-divider, bit[3:0]
 		10'd  8: lut_data <= {8'h78 , 24'h310801};// PCLK root divider, bit[5:4], SCLK2x root divider, bit[3:2] // SCLK root divider, bit[1:0] 
@@ -220,7 +218,7 @@ begin
 		10'd205: lut_data <= {8'h78 , 24'h530c06};// CIP sharpen TH offset 2
 		10'd206: lut_data <= {8'h78 , 24'h502500};
 		10'd207: lut_data <= {8'h78 , 24'h300802}; // wake up from standby, bit[6]
-		10'd208: lut_data <= {8'h78 , 24'h303511};// PLL
+		10'd208: lut_data <= {8'h78 , 24'h303521};// PLL
 		10'd209: lut_data <= {8'h78 , 24'h303669};// PLL
 		10'd210: lut_data <= {8'h78 , 24'h3c0708};// light meter 1 threshold [7:0]
 		10'd211: lut_data <= {8'h78 , 24'h382041};// Sensor flip off, ISP flip on
@@ -238,15 +236,11 @@ begin
 		// 10'd219: lut_data <= {8'h78 , 24'h380407};// HW (HE)         
 		// 10'd220: lut_data <= {8'h78 , 24'h380580};// HW (HE)
 		// 10'd221: lut_data <= {8'h78 , 24'h380604};// VH (VE)         
-		// 10'd222: lut_data <= {8'h78 , 24'h38073c};// VH (VE)   
-		// 10'd223: lut_data <= {8'h78 , 24'h380803};// DVPHO  
-		// 10'd224: lut_data <= {8'h78 , 24'h380920};// DVPHO
-		// 10'd225: lut_data <= {8'h78 , 24'h380a02};// DVPVO
-		// 10'd226: lut_data <= {8'h78 , 24'h380b58};// DVPVO
-		10'd223: lut_data <= {8'h78 , 24'h380802}; // DVPHO     (1280)->640
-		10'd224: lut_data <= {8'h78 , 24'h380980}; // DVPHO     (1280)->
-		10'd225: lut_data <= {8'h78 , 24'h380a01}; // DVPVO     (720)->480
-		10'd226: lut_data <= {8'h78 , 24'h380be0}; // DVPVO     (720)->
+		// 10'd222: lut_data <= {8'h78 , 24'h38073c};// VH (VE)     
+		10'd223: lut_data <= {8'h78 , 24'h380803};// DVPHO  
+		10'd224: lut_data <= {8'h78 , 24'h380920};// DVPHO
+		10'd225: lut_data <= {8'h78 , 24'h380a02};// DVPVO
+		10'd226: lut_data <= {8'h78 , 24'h380b58};// DVPVO
 		10'd227: lut_data <= {8'h78 , 24'h380c07};// HTS            //Total horizontal size 800
 		10'd228: lut_data <= {8'h78 , 24'h380d68};// HTS
 		10'd229: lut_data <= {8'h78 , 24'h380e03};// VTS            //total vertical size 500
@@ -256,12 +250,8 @@ begin
 		10'd233: lut_data <= {8'h78 , 24'h361229};
 		10'd234: lut_data <= {8'h78 , 24'h370952};
 		10'd235: lut_data <= {8'h78 , 24'h370c03}; 
-		10'd236: lut_data <= {8'h78 , 24'h3a0208};// 60Hz max exposure, night mode 5fps
+		10'd236: lut_data <= {8'h78 , 24'h3a0217};// 60Hz max exposure, night mode 5fps
 		10'd237: lut_data <= {8'h78 , 24'h3a0310};// 60Hz max exposure // banding filters are calculated automatically in camera driver
-		// 10'd236: lut_data <= {8'h78 , 24'h3a023d};// 60Hz max exposure, night mode 5fps
-		// 10'd237: lut_data <= {8'h78 , 24'h3a0380};// 60Hz max exposure // banding filters are calculated automatically in camera driver
-		// 10'd236: lut_data <= {8'h78 , 24'h3a0217};// 60Hz max exposure, night mode 5fps
-		// 10'd237: lut_data <= {8'h78 , 24'h3a0310};// 60Hz max exposure // banding filters are calculated automatically in camera driver
 		10'd238: lut_data <= {8'h78 , 24'h3a1417};// 50Hz max exposure, night mode 5fps
 		10'd239: lut_data <= {8'h78 , 24'h3a1510};// 50Hz max exposure     
 		10'd240: lut_data <= {8'h78 , 24'h400402};// BLC 2 lines 
@@ -274,9 +264,8 @@ begin
 		10'd247: lut_data <= {8'h78 , 24'h483722}; // DVP CLK divider
 		10'd248: lut_data <= {8'h78 , 24'h382402}; // DVP CLK divider 
 		10'd249: lut_data <= {8'h78 , 24'h5001a3}; // SDE on, scale on, UV average off, color matrix on, AWB on
-		// 10'd250: lut_data <= {8'h78 , 24'h350300}; // AEC/AGC on 
+		10'd250: lut_data <= {8'h78 , 24'h350300}; // AEC/AGC on 
 		10'd251: lut_data <= {8'h78 , 24'h303521};// PLL     input clock =24Mhz, PCLK =84Mhz
-		// 10'd251: lut_data <= {8'h78 , 24'h303511};// PLL     input clock =24Mhz, PCLK =84Mhzx2
 		10'd252: lut_data <= {8'h78 , 24'h303669};// PLL
 		10'd253: lut_data <= {8'h78 , 24'h3c0707}; // lightmeter 1 threshold[7:0]
 		10'd254: lut_data <= {8'h78 , 24'h382047}; // flip
@@ -287,36 +276,18 @@ begin
 		10'd259: lut_data <= {8'h78 , 24'h380100}; // HS
 		10'd260: lut_data <= {8'h78 , 24'h380200}; // VS
 		10'd261: lut_data <= {8'h78 , 24'h380304}; // VS
-		// 10'd258: lut_data <= {8'h78 , 24'h380005}; // HS
-		// 10'd259: lut_data <= {8'h78 , 24'h380100}; // HS
-		// 10'd260: lut_data <= {8'h78 , 24'h380203}; // VS
-		// 10'd261: lut_data <= {8'h78 , 24'h380304}; // VS
 		10'd262: lut_data <= {8'h78 , 24'h38040a}; // HW (HE)
 		10'd263: lut_data <= {8'h78 , 24'h38053f}; // HW (HE)
 		10'd264: lut_data <= {8'h78 , 24'h380607}; // VH (VE)
-		10'd265: lut_data <= {8'h78 , 24'h38079f}; // VH (VE)
-		// 10'd262: lut_data <= {8'h78 , 24'h380407}; // HW (HE)
-		// 10'd263: lut_data <= {8'h78 , 24'h380580}; // HW (HE)
-		// 10'd264: lut_data <= {8'h78 , 24'h380604}; // VH (VE)
-		// 10'd265: lut_data <= {8'h78 , 24'h38073c}; // VH (VE)
-		// 10'd262: lut_data <= {8'h78 , 24'h380405}; // HW (HE)
-		// 10'd263: lut_data <= {8'h78 , 24'h380500}; // HW (HE)
-		// 10'd264: lut_data <= {8'h78 , 24'h380603}; // VH (VE)
-		// 10'd265: lut_data <= {8'h78 , 24'h3807c0}; // VH (VE)
-		// 10'd266: lut_data <= {8'h78 , 24'h380804}; // DVPHO     (1280)->1024
-		// 10'd267: lut_data <= {8'h78 , 24'h380900}; // DVPHO     (1280)->1024
-		// 10'd268: lut_data <= {8'h78 , 24'h380a03}; // DVPVO     (720)->
-		// 10'd269: lut_data <= {8'h78 , 24'h380b00}; // DVPVO     (720)->
-		10'd266: lut_data <= {8'h78 , 24'h380802}; // DVPHO     (1280)->640
-		10'd267: lut_data <= {8'h78 , 24'h380980}; // DVPHO     (1280)->
-		10'd268: lut_data <= {8'h78 , 24'h380a01}; // DVPVO     (720)->480
-		10'd269: lut_data <= {8'h78 , 24'h380be0}; // DVPVO     (720)->
-
+		10'd265: lut_data <= {8'h78 , 24'h38079b}; // VH (VE)
+		10'd266: lut_data <= {8'h78 , 24'h380804}; // DVPHO     (1280)->1024
+		10'd267: lut_data <= {8'h78 , 24'h380900}; // DVPHO     (1280)->1024
+		10'd268: lut_data <= {8'h78 , 24'h380a03}; // DVPVO     (720)->
+		10'd269: lut_data <= {8'h78 , 24'h380b00}; // DVPVO     (720)->
 		10'd270: lut_data <= {8'h78 , 24'h380c07}; // HTS
 		10'd271: lut_data <= {8'h78 , 24'h380d68}; // HTS
 		10'd272: lut_data <= {8'h78 , 24'h380e03}; // VTS
 		10'd273: lut_data <= {8'h78 , 24'h380fd8}; // VTS
-		// 10'd274: lut_data <= {8'h78 , 24'h381304}; // timing V offset
 		10'd274: lut_data <= {8'h78 , 24'h381304}; // timing V offset
 		10'd275: lut_data <= {8'h78 , 24'h361800};
 		10'd276: lut_data <= {8'h78 , 24'h361229};

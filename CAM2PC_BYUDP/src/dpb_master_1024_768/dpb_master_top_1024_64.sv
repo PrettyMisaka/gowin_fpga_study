@@ -34,18 +34,18 @@ module dpb_master_top#(
     input  [3:0]               i_udp_state                    ,
     input  [6:0]               i_udp_req_128_rank             ,
 //----------------dpb---------------//
-    input        [127:0]        o_dpb_wr_a_rd_data     ,
-    output logic [127:0]        o_dpb_wr_a_wr_data     ,
-    output logic [10:0]         o_dpb_wr_a_addr        ,
+    input        [63:0]         o_dpb_wr_a_rd_data     ,
+    output logic [63:0]         o_dpb_wr_a_wr_data     ,
+    output logic [9:0]          o_dpb_wr_a_addr        ,
     output logic                o_dpb_wr_a_clk         ,
     output logic                o_dpb_wr_a_cea         ,
     output logic                o_dpb_wr_a_ocea        ,
     output logic                o_dpb_wr_a_rst_n       ,
     output logic                o_dpb_wr_a_wr_en       ,
     
-    input        [127:0]        o_dpb_wr_b_rd_data     ,
-    output logic [127:0]        o_dpb_wr_b_wr_data     ,
-    output logic [10:0]         o_dpb_wr_b_addr        ,
+    input        [63:0]         o_dpb_wr_b_rd_data     ,
+    output logic [63:0]         o_dpb_wr_b_wr_data     ,
+    output logic [9:0]          o_dpb_wr_b_addr        ,
     output logic                o_dpb_wr_b_clk         ,
     output logic                o_dpb_wr_b_cea         ,
     output logic                o_dpb_wr_b_ocea        ,
@@ -151,7 +151,7 @@ assign rst_n_delay = rst_n&mjpeg_delay_down;
 wire        o_ddr3_master_wr_req         ;
 wire        o_ddr3_master_wr_frame_down  ;
 wire [7:0]  o_ddr3_master_wr_udp_rank    ;
-wire [3:0]  o_ddr3_master_wr_buf_rank    ;
+wire [1:0]  o_ddr3_master_wr_buf_rank    ;
 wire [6:0]  o_ddr3_master_wr_buf_128cnt  ;
 wire [5:0]  o_ddr3_master_wr_buf_Bytecnt ;
 wire        o_ddr3_master_wr_down        ;
