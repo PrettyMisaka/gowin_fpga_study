@@ -266,7 +266,7 @@ begin
 		10'd249: lut_data <= {8'h78 , 24'h5001a3}; // SDE on, scale on, UV average off, color matrix on, AWB on
 		10'd250: lut_data <= {8'h78 , 24'h350300}; // AEC/AGC on 
 		10'd251: lut_data <= {8'h78 , 24'h303521};// PLL     input clock =24Mhz, PCLK =84Mhz
-		10'd252: lut_data <= {8'h78 , 24'h303669};// PLL
+		10'd252: lut_data <= {8'h78 , 24'h303678};// PLL
 		10'd253: lut_data <= {8'h78 , 24'h3c0707}; // lightmeter 1 threshold[7:0]
 		10'd254: lut_data <= {8'h78 , 24'h382047}; // flip
 		10'd255: lut_data <= {8'h78 , 24'h382101}; // mirror
@@ -280,6 +280,10 @@ begin
 		10'd263: lut_data <= {8'h78 , 24'h38053f}; // HW (HE)
 		10'd264: lut_data <= {8'h78 , 24'h380607}; // VH (VE)
 		10'd265: lut_data <= {8'h78 , 24'h38079b}; // VH (VE)
+		// 10'd262: lut_data <= {8'h78 , 24'h380409}; // HW (HE)
+		// 10'd263: lut_data <= {8'h78 , 24'h380560}; // HW (HE)
+		// 10'd264: lut_data <= {8'h78 , 24'h380607}; // VH (VE)
+		// 10'd265: lut_data <= {8'h78 , 24'h38070c}; // VH (VE)
 		10'd266: lut_data <= {8'h78 , 24'h380804}; // DVPHO     (1280)->1024
 		10'd267: lut_data <= {8'h78 , 24'h380900}; // DVPHO     (1280)->1024
 		10'd268: lut_data <= {8'h78 , 24'h380a03}; // DVPVO     (720)->

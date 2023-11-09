@@ -1,8 +1,8 @@
 # import utils.threadUtil as threadUtil
 import queue
 import socket
-# import utils.logUtil
 import threading
+# import utils.logUtil
 import cv2
 import numpy as np
 import threading
@@ -115,7 +115,7 @@ def main():
     # threadUtil.MyThread("UDP Server",service.receiver_start)  # 以子线程启动 UDP 接收服务
     print("12")
     img_data = b''
-    rank = 0;
+    rank = 0
     cv2.namedWindow("window", cv2.WINDOW_NORMAL)
     error = 0
     cnt = 0

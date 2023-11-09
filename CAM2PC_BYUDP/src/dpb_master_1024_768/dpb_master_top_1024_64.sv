@@ -79,6 +79,9 @@ end
 logic mjpeg_busy , mjpeg_data_de;
 logic [5:0] mjpeg_delay_cnt;
 logic mjpeg_delay_down;
+logic [2:0] mjpeg_rst_buf;
+logic o_mjpeg_rst_val;
+assign o_mjpeg_rst = (mjpeg_rst_buf!=3'b111||o_mjpeg_rst_val!=1'd1)?1'd0:1'd1;
 assign o_mjpeg_clk = i_cam_pclk;
 // assign o_mjpeg_clk = i_cam_rgb888_pclk;
 assign o_mjpeg_de = (i_cam_rgb888_pclk&&i_cam_de&&mjpeg_data_de)?1'd1:1'd0;
@@ -94,7 +97,8 @@ task task_rst();
     mjpeg_busy  <= 0;
     state_main <= MAIN_IDLE_HREFPOS;
     cam_new_frame <= 1'd0;
-    o_mjpeg_rst <= 0;
+    o_mjpeg_rst_val <= 0;
+    mjpeg_rst_buf <= 3'd0;
     mjpeg_data_de <= 1'd0;
     mjpeg_delay_cnt <= 6'd0;
     mjpeg_delay_down <= 1'd1;
@@ -105,10 +109,11 @@ always@(posedge i_cam_pclk or negedge rst_n)begin
         task_rst();
     end
     else begin
+        mjpeg_rst_buf <= {mjpeg_rst_buf[1:0],o_mjpeg_rst_val};
         if(cam_vsync_pos_flag == 1'd1)begin
             cam_new_frame <= 1'd1;
             mjpeg_data_de <= 1'd0;
-            // o_mjpeg_rst <= 1'd0;
+            o_mjpeg_rst_val <= 1'd0;
             if(mjpeg_delay_down == 1'd0)begin
                 if(mjpeg_delay_cnt == MJPEG_RST_DELAY_FRAME)
                     mjpeg_delay_down <= 1'd1;
@@ -127,12 +132,12 @@ always@(posedge i_cam_pclk or negedge rst_n)begin
                             state_main <= MAIN_MJPEG_DOWN;
                         end
                     end
-                    o_mjpeg_rst <= 1'd1;
+                    o_mjpeg_rst_val <= 1'd1;
                 end
                 MAIN_MJPEG_DOWN:begin
                     if(i_mjpeg_down)begin
                         state_main <= MAIN_IDLE_HREFPOS;
-                        o_mjpeg_rst <= 1'd1;
+                        o_mjpeg_rst_val <= 1'd0;
                         mjpeg_busy <= 1'd0;
                     end
                 end
