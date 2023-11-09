@@ -84,8 +84,12 @@ class Stats:
         self.ui = QUiLoader().load('CAM2PC_BYUDP/app/pyside2.ui')
 
         self.ui.btn_start.clicked.connect(self.btn_start_ctrl)
+        self.ui.btn_denoise.clicked.connect(self.denoiseFun)
+        self.ui.btn_recognition.clicked.connect(self.imgRecognitionFun)
 
         self.state = 0
+        self.denoise = False
+        self.img_ai = False
 
         self.queue = queue.Queue()
         self.socket = None
@@ -100,11 +104,29 @@ class Stats:
     def update_frame(self,img):
         self.img = img
         # print(img.shape[1], img.shape[0], img.strides[0])
-        frame = cv2.resize(img, (640,480))
-        frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
-        image = QImage(frame, frame.shape[1], frame.shape[0], frame.strides[0], QImage.Format_RGB888)
+        img = cv2.resize(img, (640,480))
+        img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+        if self.denoise:
+            img = cv2.medianBlur(img,5)
+        image = QImage(img, img.shape[1], img.shape[0], img.strides[0], QImage.Format_RGB888)
         self.ui.img.setPixmap(QPixmap.fromImage(image))
         self.ui.o_pixel.setText(str(img.shape[1])+'x'+str(img.shape[0]))
+
+    def denoiseFun(self):
+        if self.denoise:
+            self.denoise = False
+            self.ui.check_denoise.setChecked(False)
+        else:
+            self.denoise = True
+            self.ui.check_denoise.setChecked(True)
+
+    def imgRecognitionFun(self):
+        if self.img_ai:
+            self.img_ai = False
+            self.ui.check_recognition.setChecked(False)
+        else:
+            self.img_ai = True
+            self.ui.check_recognition.setChecked(True)
 
     def setBtnEnable(self,val):
         self.ui.btn_denoise.setEnabled(val)
