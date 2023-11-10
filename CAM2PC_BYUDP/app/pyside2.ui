@@ -50,6 +50,12 @@
      <height>30</height>
     </rect>
    </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <property name="font">
     <font>
      <pointsize>10</pointsize>
@@ -69,6 +75,12 @@
      <width>41</width>
      <height>30</height>
     </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
    </property>
    <property name="font">
     <font>
@@ -92,6 +104,12 @@
      <width>121</width>
      <height>30</height>
     </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
    </property>
    <property name="font">
     <font>
@@ -127,6 +145,9 @@
      <pointsize>15</pointsize>
     </font>
    </property>
+   <property name="layoutDirection">
+    <enum>Qt::RightToLeft</enum>
+   </property>
    <property name="text">
     <string>FPS</string>
    </property>
@@ -155,6 +176,9 @@
      <weight>75</weight>
      <bold>true</bold>
     </font>
+   </property>
+   <property name="layoutDirection">
+    <enum>Qt::RightToLeft</enum>
    </property>
    <property name="text">
     <string>0</string>
@@ -186,6 +210,9 @@
      <pointsize>9</pointsize>
     </font>
    </property>
+   <property name="layoutDirection">
+    <enum>Qt::RightToLeft</enum>
+   </property>
    <property name="text">
     <string>capture</string>
    </property>
@@ -214,6 +241,9 @@
      <weight>50</weight>
      <bold>false</bold>
     </font>
+   </property>
+   <property name="layoutDirection">
+    <enum>Qt::RightToLeft</enum>
    </property>
    <property name="text">
     <string>record</string>
@@ -244,6 +274,9 @@
      <bold>false</bold>
     </font>
    </property>
+   <property name="layoutDirection">
+    <enum>Qt::RightToLeft</enum>
+   </property>
    <property name="text">
     <string>denoise</string>
    </property>
@@ -273,6 +306,9 @@
      <bold>false</bold>
     </font>
    </property>
+   <property name="layoutDirection">
+    <enum>Qt::RightToLeft</enum>
+   </property>
    <property name="text">
     <string>image
 recognition</string>
@@ -293,6 +329,9 @@ recognition</string>
      <height>15</height>
     </rect>
    </property>
+   <property name="layoutDirection">
+    <enum>Qt::RightToLeft</enum>
+   </property>
    <property name="text">
     <string>0x0</string>
    </property>
@@ -309,6 +348,12 @@ recognition</string>
      <height>30</height>
     </rect>
    </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <property name="text">
     <string>192.168.15.15</string>
    </property>
@@ -321,6 +366,12 @@ recognition</string>
      <width>70</width>
      <height>30</height>
     </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
    </property>
    <property name="text">
     <string>11451</string>
@@ -338,6 +389,9 @@ recognition</string>
      <height>50</height>
     </rect>
    </property>
+   <property name="layoutDirection">
+    <enum>Qt::RightToLeft</enum>
+   </property>
    <property name="text">
     <string/>
    </property>
@@ -353,6 +407,9 @@ recognition</string>
      <width>20</width>
      <height>50</height>
     </rect>
+   </property>
+   <property name="layoutDirection">
+    <enum>Qt::RightToLeft</enum>
    </property>
    <property name="text">
     <string/>
@@ -373,6 +430,9 @@ recognition</string>
      <height>50</height>
     </rect>
    </property>
+   <property name="layoutDirection">
+    <enum>Qt::RightToLeft</enum>
+   </property>
    <property name="text">
     <string/>
    </property>
@@ -391,6 +451,9 @@ recognition</string>
      <width>20</width>
      <height>50</height>
     </rect>
+   </property>
+   <property name="layoutDirection">
+    <enum>Qt::RightToLeft</enum>
    </property>
    <property name="text">
     <string/>

@@ -86,15 +86,22 @@ class Stats:
         self.ui.btn_start.clicked.connect(self.btn_start_ctrl)
         self.ui.btn_denoise.clicked.connect(self.denoiseFun)
         self.ui.btn_recognition.clicked.connect(self.imgRecognitionFun)
+        self.ui.btn_capture.clicked.connect(self.saveImg)
+        self.ui.btn_record.clicked.connect(self.recordFun)
 
         self.state = 0
         self.denoise = False
         self.img_ai = False
+        self.record = False
+
+        self.img_save_cnt = 0
 
         self.queue = queue.Queue()
         self.socket = None
         self.t_udp = None
         self.t_img = None
+        self.fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        self.out = None
 
         self.setBtnEnable(False)
 
@@ -102,15 +109,19 @@ class Stats:
         self.ui.o_fps.setText(fps)
 
     def update_frame(self,img):
+        if self.denoise:
+            img = cv2.medianBlur(img,5)
         self.img = img
+        self.ui.o_pixel.setText(str(img.shape[1])+'x'+str(img.shape[0]))
         # print(img.shape[1], img.shape[0], img.strides[0])
         img = cv2.resize(img, (640,480))
         img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
-        if self.denoise:
-            img = cv2.medianBlur(img,5)
+        if self.record:
+            img_record = cv2.cvtColor(img,cv2.COLOR_RGB2BGR)
+            self.out.write(img_record)
         image = QImage(img, img.shape[1], img.shape[0], img.strides[0], QImage.Format_RGB888)
         self.ui.img.setPixmap(QPixmap.fromImage(image))
-        self.ui.o_pixel.setText(str(img.shape[1])+'x'+str(img.shape[0]))
+        self.ui.check_capture.setChecked(False)
 
     def denoiseFun(self):
         if self.denoise:
@@ -127,6 +138,21 @@ class Stats:
         else:
             self.img_ai = True
             self.ui.check_recognition.setChecked(True)
+
+    def recordFun(self):
+        if self.record:
+            self.record = False
+            self.ui.check_record.setChecked(False)
+            self.out.release()
+        else:
+            self.ui.check_record.setChecked(True)
+            self.out = cv2.VideoWriter('output.avi', self.fourcc, 20.0, (640,480))
+            self.record = True
+
+    def saveImg(self):
+        self.ui.check_capture.setChecked(True)
+        cv2.imwrite("output/img_"+str(self.img_save_cnt)+".jpg", self.img)
+        self.img_save_cnt = self.img_save_cnt + 1
 
     def setBtnEnable(self,val):
         self.ui.btn_denoise.setEnabled(val)
