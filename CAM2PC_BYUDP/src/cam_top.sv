@@ -2,6 +2,7 @@
 module cam_top(
 	input                       clk,//27mhz 
 	input                       rst_n,
+	input						lut_pll69_en,
 	// input						rst_n_pwd,
 	// input						rst_n_pll,
     cam_phy_interface_typedef cam_port,
@@ -74,6 +75,7 @@ i2c_config i2c_config_m0(
 lut_ov5640_rgb565_1024_768_30 lut_ov5640_rgb565_640_480_45_0(
 // lut_ov5640_rgb565_640_480_45 lut_ov5640_rgb565_640_480_45_0(
 	.lut_index                  (lut_index                ),
+	.lut_pll69_en				(lut_pll69_en			  ),
 	.lut_data                   (lut_data                 )
 );
 //CMOS sensor 8bit data is converted to 16bit data

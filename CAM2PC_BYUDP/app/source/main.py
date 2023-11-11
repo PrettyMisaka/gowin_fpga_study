@@ -128,27 +128,27 @@ class Stats:
 
         self.setBtnEnable(False)
 
-        self.ROOT   = None 
         self.stride = None
         self.model  = None 
         self.device = None 
         self.names  = None 
         self.pt     = None
+        FILE = Path(__file__).resolve()
+        self.ROOT = FILE.parents[0]  # YOLOv5 root directory
+
+        self.record_state = False
 
     def yolov5LoadModule(self):
         device = torch.device('cuda:0')
         # model = attempt_load(weights='yolov5s.pt', device='cuda:0')
-        FILE = Path(__file__).resolve()
-        ROOT = FILE.parents[0]  # YOLOv5 root directory
-        data=ROOT / 'data/coco128.yaml',  # dataset.yaml path
-        print(ROOT)
+        data=self.ROOT / 'data/coco128.yaml',  # dataset.yaml path
+        print(self.ROOT)
         dnn=False,  # use OpenCV DNN for ONNX inference
         half=False,  # use FP16 half-precision inference
-        model = DetectMultiBackend(weights=ROOT/'yolov5s.pt', device=device, dnn=dnn, data=data, fp16=False)
+        model = DetectMultiBackend(weights=self.ROOT/'yolov5s.pt', device=device, dnn=dnn, data=data, fp16=False)
         stride, names, pt = model.stride, model.names, model.pt
         imgsz = [640,640]  # check image size
         model.warmup(imgsz=(1 if pt else 1, 3, *imgsz))  # warmup
-        self.ROOT   = ROOT   
         self.stride = stride 
         self.model  = model  
         self.device = device 
@@ -207,14 +207,18 @@ class Stats:
             img = cv2.medianBlur(img,5)
         if self.yolov5:
             img = self.yolov5HandleImg(img)
+            # self.queue.queue.clear()
         self.img = img
         self.ui.o_pixel.setText(str(img.shape[1])+'x'+str(img.shape[0]))
         # print(img.shape[1], img.shape[0], img.strides[0])
-        img = cv2.resize(img, (640,480))
         img = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
+        img = cv2.resize(img, (640,480))
         if self.record:
             img_record = cv2.cvtColor(img,cv2.COLOR_RGB2BGR)
             self.out.write(img_record)
+        elif self.record_state:
+            self.out.release()
+            self.record_state = False
         image = QImage(img, img.shape[1], img.shape[0], img.strides[0], QImage.Format_RGB888)
         self.ui.img.setPixmap(QPixmap.fromImage(image))
         self.ui.check_capture.setChecked(False)
@@ -241,15 +245,17 @@ class Stats:
         if self.record:
             self.record = False
             self.ui.check_record.setChecked(False)
-            self.out.release()
+            self.record_state = True
         else:
             self.ui.check_record.setChecked(True)
+            # tmp = '../output.avi'
             self.out = cv2.VideoWriter('output.avi', self.fourcc, 20.0, (640,480))
             self.record = True
 
     def saveImg(self):
         self.ui.check_capture.setChecked(True)
-        cv2.imwrite("output/img_"+str(self.img_save_cnt)+".jpg", self.img)
+        tmp = "../output/img_"+str(self.img_save_cnt)+".jpg"
+        cv2.imwrite(self.ROOT/tmp, self.img)
         self.img_save_cnt = self.img_save_cnt + 1
 
     def setBtnEnable(self,val):

@@ -2,6 +2,7 @@
 module my_top(
     input                       clk,
 	input                       rst_n,
+    input                       lut_pll69_en,
 
     output logic                phyrst,
     output logic [5:0]          led,
@@ -360,8 +361,9 @@ Gowin_DPB Gowin_DPB_WR0(
 
 // logic rst_n_pwd;
 cam_top cam_top0(
-	.clk        (clk        ),//27mhz 
-	.rst_n      (rst.cam    ),
+	.clk            (clk        ),//27mhz 
+	.rst_n          (rst.cam    ),
+    .lut_pll69_en   (lut_pll69_en),
     // .rst_n_pwd  (rst_n_pwd  ),
     // .rst_n_pll  (1'd1       ),
     .cam_port   (cam_port   ),
