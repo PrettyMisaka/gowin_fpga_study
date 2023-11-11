@@ -446,6 +446,18 @@ logic init_calib_complete = 1'd1;
 // 	.lock 					   (DDR_pll_lock 			   )
 // 	);
 
+logic pclk_cnt_rst;
+logic [31:0] pclk_cnt;
+always@(posedge cam_port.cmos_pclk or negedge pclk_cnt_rst)begin
+    if(~pclk_cnt_rst) pclk_cnt <= 32'd0;
+    else begin
+        if(pclk_cnt == 32'd2000000)
+            pclk_cnt <= pclk_cnt;
+        else
+            pclk_cnt <= pclk_cnt + 32'd1;
+    end
+end
+
 typedef struct{
     logic isempty;
     logic [2:0] addr;
@@ -459,7 +471,7 @@ initial begin
 end
 logic [31:0] delay_cnt;
 enum logic[7:0] {
-    IDLE, MAC_INIT, MAC2CAM_DELAY , CAM_INIT, INIT_DOWN,STATE_END
+    IDLE, MAC_INIT, MAC2CAM_DELAY , CAM_INIT, INIT_DOWN, STATE_END, CAM_WORK_CHECK
 } state;
 
 inout_typedef sda_mdio_inout;
@@ -488,6 +500,7 @@ assign scl_mdc_inout.out_en = (state == IDLE || state == MAC_INIT) ? 1'd1  : (ca
 // assign sda_mdio = (state == IDLE || state == MAC_INIT) ? mac_mdio : cmos_sda;
 // assign scl_mdc  = (state == IDLE || state == CAM_INIT) ? cmos_scl : mac_mdc ;
 // assign sda_mdio = (state == IDLE || state == CAM_INIT) ? cmos_sda : mac_mdio;
+logic [31:0] clk27m_1s_cnt;
 task task_init_reg();
     state <= IDLE;
     delay_cnt<= 32'd0;
@@ -495,6 +508,9 @@ task task_init_reg();
     rst.ddr3 <= 1'd0;
     rst.cam  <= 1'd0;
     rst.ddr3_master <= 1'd0;
+
+    pclk_cnt_rst <= 1'd1;
+    clk27m_1s_cnt <= 32'd0;
     // rst_n_pwd<= 1'd1;
     led_tmp <= 6'b111111;
 endtask //automatic
@@ -517,24 +533,40 @@ always@(posedge clk or negedge rst_n)begin
                 if(mac_init_down) begin
                     state <= CAM_INIT;
                     led_tmp <= led_tmp << 1;
+                    rst.ddr3_master <= 1'd0;
                 end
             end
             CAM_INIT:begin
                 rst.cam <= 1'd1;
                 if(cam_user.cam_init_done) begin
-                    state <= INIT_DOWN;
+                    state <= CAM_WORK_CHECK;
                     led_tmp <= led_tmp << 1;
+                    pclk_cnt_rst <= 1'd1;
+                    rst.ddr3_master <= 1'd0;
+                    clk27m_1s_cnt <= 32'd0;
                 end
             end
-            INIT_DOWN:begin
-                if(init_down) begin
-                    state <= STATE_END;
-                    led_tmp <= led_tmp << 1;
-                    rst.ddr3_master <= 1'd1;
+            CAM_WORK_CHECK:begin
+                if(clk27m_1s_cnt == 32'd27000000)begin
+                    // clk27m_1s_cnt <= clk27m_1s_cnt;
+                    clk27m_1s_cnt <= clk27m_1s_cnt + 32'd1;
+                    if(pclk_cnt == 32'd2000000)
+                        rst.ddr3_master <= 1'd1;
+                    else begin
+                        state <= MAC_INIT;
+                        rst.cam <= 1'd0;
+                    end
                 end
-            end
-            STATE_END:begin
-                rst.mjpeg = 1'd1;
+                else if(clk27m_1s_cnt == 32'd54000000)begin
+                    clk27m_1s_cnt <= 32'd0;
+                end
+                else begin
+                    clk27m_1s_cnt <= clk27m_1s_cnt + 32'd1;
+                end
+                if(clk27m_1s_cnt <= 32'd27000000)
+                    pclk_cnt_rst <= 1'd1;
+                else
+                    pclk_cnt_rst <= 1'd0;
             end
         endcase
     end
