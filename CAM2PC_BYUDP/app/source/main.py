@@ -6,6 +6,16 @@ from PySide2.QtWidgets import QWidget, QLabel, QPushButton, QLineEdit, QVBoxLayo
 from PySide2.QtWebChannel import *
 from PySide2.QtUiTools import QUiLoader
 
+import torch
+from pathlib import Path
+from models.experimental import attempt_load
+from models.common       import DetectMultiBackend
+from utils.general       import non_max_suppression, scale_coords
+from utils.torch_utils   import time_sync
+from utils.plots         import Annotator, colors, save_one_box
+from utils.augmentations import (Albumentations, augment_hsv, classify_albumentations, classify_transforms, copy_paste,
+                                 letterbox, mixup, random_perspective)
+
 import queue
 import socket
 import threading
@@ -13,6 +23,19 @@ import inspect
 import ctypes
 import cv2
 import numpy as np
+
+#yolov5 param
+conf_thres = 0.25
+iou_thres = 0.45
+max_det = 1000
+classes = None
+agnostic_nms = False
+augment = False
+save_img = False
+save_crop = False
+hide_labels = False
+hide_conf = False
+line_thickness = 3
 
 def creatUDPrxThreading(socket,queue,bufsize=1500):
     def queueStart():
@@ -91,7 +114,7 @@ class Stats:
 
         self.state = 0
         self.denoise = False
-        self.img_ai = False
+        self.yolov5 = False
         self.record = False
 
         self.img_save_cnt = 0
@@ -105,12 +128,85 @@ class Stats:
 
         self.setBtnEnable(False)
 
+        self.ROOT   = None 
+        self.stride = None
+        self.model  = None 
+        self.device = None 
+        self.names  = None 
+        self.pt     = None
+
+    def yolov5LoadModule(self):
+        device = torch.device('cuda:0')
+        # model = attempt_load(weights='yolov5s.pt', device='cuda:0')
+        FILE = Path(__file__).resolve()
+        ROOT = FILE.parents[0]  # YOLOv5 root directory
+        data=ROOT / 'data/coco128.yaml',  # dataset.yaml path
+        print(ROOT)
+        dnn=False,  # use OpenCV DNN for ONNX inference
+        half=False,  # use FP16 half-precision inference
+        model = DetectMultiBackend(weights=ROOT/'yolov5s.pt', device=device, dnn=dnn, data=data, fp16=False)
+        stride, names, pt = model.stride, model.names, model.pt
+        imgsz = [640,640]  # check image size
+        model.warmup(imgsz=(1 if pt else 1, 3, *imgsz))  # warmup
+        self.ROOT   = ROOT   
+        self.stride = stride 
+        self.model  = model  
+        self.device = device 
+        self.names  = names  
+        self.pt     = pt
+
+    def yolov5HandleImg(self,im_bgr):
+        
+        # Read frame from video capture
+        # ret, frame = cap.read()
+        # im = cv2.imread(self.ROOT/'data\images\\bus.jpg')
+        # Convert frame to PyTorch tensor
+        im0s = im_bgr#bgr
+        im = cv2.cvtColor(im_bgr, cv2.COLOR_BGR2RGB)
+
+        im = letterbox(im, (640, 640), stride=self.stride, auto=self.pt)[0]
+        im = im.transpose((2, 0, 1))[::-1]  # HWC to CHW, BGR to RGB
+        im = np.ascontiguousarray(im)
+
+        im = torch.from_numpy(im).to(self.device)
+        im = im.half() if self.model.fp16 else im.float()  # uint8 to fp16/32
+        im /= 255  # 0 - 255 to 0.0 - 1.0
+        if len(im.shape) == 3:
+            im = im[None]  # expand for batch dim
+
+        # Inference
+        pred = self.model(im, augment=augment, visualize=False)
+
+        # NMS
+        pred = non_max_suppression(pred, conf_thres, iou_thres, classes, agnostic_nms, max_det=max_det)
+
+        # Add bbox to image
+        for i, det in enumerate(pred):
+            p, im0, frame = '0', im0s.copy(), 0
+            gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
+            imc = im0.copy() if save_crop else im0  # for save_crop
+            annotator = Annotator(im0, line_width=line_thickness, example=str(self.names))
+            if len(det):
+                # Rescale boxes from img_size to im0 size
+                det[:, :4] = scale_coords(im.shape[2:], det[:, :4], im0.shape).round()
+                for *xyxy, conf, cls in reversed(det):
+                    view_img = True
+                    if save_img or save_crop or view_img:  # Add bbox to image
+                        c = int(cls)  # integer class
+                        label = None if hide_labels else (self.names[c] if hide_conf else f'{self.names[c]} {conf:.2f}')
+                        annotator.box_label(xyxy, label, color=colors(c, True))
+            im0 = annotator.result()
+            return im0
+            cv2.imshow('frame', im0)
+
     def updata_fps(self,fps):
         self.ui.o_fps.setText(fps)
 
     def update_frame(self,img):
         if self.denoise:
             img = cv2.medianBlur(img,5)
+        if self.yolov5:
+            img = self.yolov5HandleImg(img)
         self.img = img
         self.ui.o_pixel.setText(str(img.shape[1])+'x'+str(img.shape[0]))
         # print(img.shape[1], img.shape[0], img.strides[0])
@@ -132,11 +228,13 @@ class Stats:
             self.ui.check_denoise.setChecked(True)
 
     def imgRecognitionFun(self):
-        if self.img_ai:
-            self.img_ai = False
+        if self.yolov5:
+            self.yolov5 = False
             self.ui.check_recognition.setChecked(False)
         else:
-            self.img_ai = True
+            if self.model == None :
+                self.yolov5LoadModule()
+            self.yolov5 = True
             self.ui.check_recognition.setChecked(True)
 
     def recordFun(self):

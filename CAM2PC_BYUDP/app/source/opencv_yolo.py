@@ -17,9 +17,10 @@ device = torch.device('cuda:0')
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]  # YOLOv5 root directory
 data=ROOT / 'data/coco128.yaml',  # dataset.yaml path
+print(ROOT)
 dnn=False,  # use OpenCV DNN for ONNX inference
 half=False,  # use FP16 half-precision inference
-model = DetectMultiBackend(weights='yolov5s.pt', device=device, dnn=dnn, data=data, fp16=False)
+model = DetectMultiBackend(weights=ROOT/'yolov5s.pt', device=device, dnn=dnn, data=data, fp16=False)
 stride, names, pt = model.stride, model.names, model.pt
 imgsz = [640,640]  # check image size
 model.warmup(imgsz=(1 if pt else 1, 3, *imgsz))  # warmup
@@ -40,15 +41,10 @@ hide_labels = False
 hide_conf = False
 line_thickness = 3
 
-# Open video capture
-
-# cap = cv2.VideoCapture(0,cv2.CAP_DSHOW)
-seen, windows, dt = 0, [], [0.0, 0.0, 0.0]
-
 if True:
     # Read frame from video capture
     # ret, frame = cap.read()
-    im = cv2.imread('data\images\\bus.jpg')
+    im = cv2.imread(ROOT/'data\images\\bus.jpg')
 
     # Convert frame to PyTorch tensor
     im0s = im#bgr
@@ -72,7 +68,6 @@ if True:
 
     # Add bbox to image
     for i, det in enumerate(pred):
-        seen += 1
         p, im0, frame = '0', im0s.copy(), 0
 
         # p = Path(p)  # to Path
