@@ -3,6 +3,8 @@
 <Project>
     <Template>FPGA</Template>
     <Version>5</Version>
-    <Device name="" pn="">gw2a18-024</Device>
-    <FileList/>
+    <Device name="GW2A-18" pn="GW2A-LV18PG256CC8/I7">gw2a18-024</Device>
+    <FileList>
+        <File path="src/gowin_rpll/gowin_rpll.v" type="file.verilog" enable="1"/>
+    </FileList>
 </Project>

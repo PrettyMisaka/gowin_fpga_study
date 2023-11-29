@@ -1,5 +1,5 @@
 module sdio_tx(
-    input   clk         ,
+    input   ctrl_clk         ,
     input   sdio_clk    ,
     input   rst_n       ,
 
@@ -25,7 +25,7 @@ reg [15:0]  bit_cnt;
 reg [5:0]   cmd_buf;
 reg [31:0]  para_buf;
 
-wire [6:0]   crc7_o;
+wire [6:0]  crc7_o;
 reg [6:0]   crc7_buf;
 
 initial begin
@@ -38,7 +38,7 @@ initial begin
 
     crc7_en     <= 1'd0;
 end
-always @(posedge clk or negedge rst_n) begin
+always @(posedge ctrl_clk or negedge rst_n) begin
     if(~rst_n)begin
         state       <= IDLE;
         sdio_cmd_o  <= 1'd1;
@@ -104,13 +104,14 @@ always @(posedge clk or negedge rst_n) begin
             DOWN:begin
                 state <= IDLE;
                 crc7_clear  <= 1'd0;
+                o_busy      <= 1'd0;
             end
         endcase
     end
 end
 
 CRC7 CRC70(
-    .clk                (   clk             ),
+    .clk                (   ctrl_clk        ),
     .rst_n              (   rst_n           ),
     .clear              (   crc7_clear      ),
     .idata              (   sdio_cmd_o      ),
