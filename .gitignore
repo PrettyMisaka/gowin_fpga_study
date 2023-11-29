@@ -7,6 +7,9 @@
 
 */impl/temp/*
 
+*/modelsim/work/*
+*/modelsim/vsim.wlf
+
 /modelSimPrj
 *.user
 CAM2PC_BYUDP/simprj/mjpegSim/work/_vmake
@@ -21,3 +24,6 @@ CAM2PC_BYUDP/simprj/mjpegSim/vsim.wlf
 *.avi
 *.jpg
 *.mp4
+CAM2PC_BYUDP.7z
+sd_fat32/modelsim/sd_fat32.mpf
+sd_fat32/modelsim/sd_fat32.cr.mti
