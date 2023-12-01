@@ -1,9 +1,8 @@
 module sdio_tx(
-    input   ctrl_clk         ,
+    input   ctrl_clk    ,
     input   sdio_clk    ,
     input   rst_n       ,
 
-    input   sdio_cmd_i  ,
     output  reg sdio_cmd_o  ,
     output  reg sdio_cmd_oen,
 
@@ -28,6 +27,8 @@ reg [31:0]  para_buf;
 wire [6:0]  crc7_o;
 reg [6:0]   crc7_buf;
 
+reg tx_en_state;
+
 initial begin
     state   <= IDLE;
     o_busy  <= 1'd0;
@@ -37,6 +38,7 @@ initial begin
     sdio_cmd_oen<= 1'd0;
 
     crc7_en     <= 1'd0;
+    tx_en_state <= 1'd0;
 end
 always @(posedge ctrl_clk or negedge rst_n) begin
     if(~rst_n)begin
@@ -45,11 +47,14 @@ always @(posedge ctrl_clk or negedge rst_n) begin
         bit_cnt     <= 16'd0;
         
         crc7_en     <= 1'd0;
+        sdio_cmd_oen<= 1'd0;
+        tx_en_state <= 1'd0;
     end
     else begin
+        if(i_en) tx_en_state <= 1'd1;
         case (state)
             IDLE:begin
-                if(i_en && sdio_clk == 1'd1)begin
+                if(tx_en_state && sdio_clk == 1'd1)begin
                     o_busy      <= 1'd1;
                     sdio_cmd_o  <= 1'd0;
                     bit_cnt     <= bit_cnt + 16'd1;
@@ -57,6 +62,8 @@ always @(posedge ctrl_clk or negedge rst_n) begin
                     cmd_buf     <= i_cmd;
                     para_buf    <= i_para;
                     crc7_en     <= 1'd1;
+                    sdio_cmd_oen<= 1'd1;
+                    tx_en_state <= 1'd0;
                 end
                 else begin
                     o_busy      <= 1'd0;
@@ -64,10 +71,12 @@ always @(posedge ctrl_clk or negedge rst_n) begin
                     bit_cnt     <= 16'd0;
                     state       <= IDLE;
                     crc7_en     <= 1'd0;
+                    sdio_cmd_oen<= 1'd0;
                 end
                 crc7_clear  <= 1'd0;
             end
             WORK:begin
+                sdio_cmd_oen<= 1'd1;
                 bit_cnt     <= bit_cnt + 16'd1;
                 if(bit_cnt[15:1] <= 15'd39 && bit_cnt[0] == 1'd0)
                     crc7_en     <= 1'd1;
@@ -102,9 +111,13 @@ always @(posedge ctrl_clk or negedge rst_n) begin
                 end
             end
             DOWN:begin
-                state <= IDLE;
-                crc7_clear  <= 1'd0;
-                o_busy      <= 1'd0;
+                bit_cnt     <= bit_cnt + 16'd1;
+                if(bit_cnt[0] == 1'd0)begin
+                    state <= IDLE;
+                    crc7_clear  <= 1'd0;
+                    o_busy      <= 1'd0;
+                    sdio_cmd_oen<= 1'd0;
+                end
             end
         endcase
     end
@@ -134,6 +147,11 @@ module CRC7(
 reg[6:0]    crc_reg;
 
 assign      crc = crc_reg;
+
+initial begin
+    crc_reg <= 'd0;
+end
+
 always@(posedge clk or negedge rst_n)
 begin
     if( rst_n == 1'b0 )

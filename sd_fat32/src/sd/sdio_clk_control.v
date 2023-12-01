@@ -3,7 +3,7 @@ module sdio_clk_control(
     input       clk48mhz    ,
     input       clk_mod     ,
     output wire ctrl_clk    ,
-    output wire  sdio_clk    
+    output wire sdio_clk        
 );
 
 reg sdio_clk200khz, sdio_clk24mhz;
@@ -15,6 +15,8 @@ assign sdio_clk = (clk_mod == 1'd0) ? sdio_clk200khz : sdio_clk24mhz;
 initial begin
     sdio_clk200khz  <= 1'd0;
     sdio_clk24mhz   <= 1'd0;
+    clk400khz       <= 1'd0;
+    clk400khz_cnt   <= 6'd0;
 end
 
 always@(posedge clk48mhz or negedge rst_n)begin

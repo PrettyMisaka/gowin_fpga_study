@@ -20,7 +20,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>tang primer 20k monitor by 伊蕾娜后援团</string>
+   <string>tang primer 20k monitor</string>
   </property>
   <widget class="QLabel" name="img">
    <property name="geometry">
